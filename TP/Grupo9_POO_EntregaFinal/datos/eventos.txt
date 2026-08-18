@@ -1,0 +1,2 @@
+100|Rock en Vivo|Recital exclusivo online|2026-06-12T21:05:33.789675600|2026-06-12T23:15:33.789675600|PROGRAMADO|5|PREMIUM|Buenos Aires|true|true|1
+101|Backstage Prisma Live|Presentacion en vivo para usuarios Artist Pass|2026-06-12T21:10:33.790676200|2026-06-12T22:15:33.790676200|EN_ESPERA|2|ARTIST_PASS|Streaming|true|true|2

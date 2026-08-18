@@ -1,0 +1,2 @@
+1|Banda Horizonte|Rock|Banda argentina de rock alternativo.|true
+2|DJ Prisma|Electronica|Productora de shows audiovisuales.|true
