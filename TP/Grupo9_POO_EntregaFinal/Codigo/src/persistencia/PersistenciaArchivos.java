@@ -8,6 +8,7 @@ import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
+import modelo.TipoUsuario;
 import modelo.Usuario;
 
 import java.io.IOException;
@@ -85,7 +86,8 @@ public class PersistenciaArchivos {
                     + "|" + limpiar(usuario.getEmail())
                     + "|" + limpiar(usuario.getContrasena())
                     + "|" + usuario.getPlanSuscripcion()
-                    + "|" + usuario.isActivo());
+                    + "|" + usuario.isActivo()
+                    + "|" + usuario.getTipoUsuario());
         }
 
         // Files.write escribe todas las lineas en el archivo indicado.
@@ -103,7 +105,10 @@ public class PersistenciaArchivos {
                     + "|" + limpiar(artista.getNombreArtistico())
                     + "|" + limpiar(artista.getGeneroPrincipal())
                     + "|" + limpiar(artista.getBiografia())
-                    + "|" + artista.isVerificado());
+                    + "|" + artista.isVerificado()
+                    + "|" + limpiar(artista.getNombreUsuario())
+                    + "|" + limpiar(artista.getContrasena())
+                    + "|" + artista.getTipoUsuario());
         }
 
         Files.write(ARCHIVO_ARTISTAS, lineas);
@@ -168,6 +173,12 @@ public class PersistenciaArchivos {
             String[] datos = linea.split("\\|", -1);
 
             if (datos.length >= 8) {
+                // Archivos viejos (8 campos) no tienen tipoUsuario: uso
+                // USUARIO por defecto para no romper la carga.
+                TipoUsuario tipo = datos.length >= 9
+                        ? TipoUsuario.valueOf(datos[8])
+                        : TipoUsuario.USUARIO;
+
                 // Con los datos leidos reconstruyo el objeto Usuario.
                 usuarios.add(new Usuario(
                         Integer.parseInt(datos[0]),
@@ -177,7 +188,8 @@ public class PersistenciaArchivos {
                         datos[4],
                         datos[5],
                         PlanSuscripcion.valueOf(datos[6]),
-                        Boolean.parseBoolean(datos[7])
+                        Boolean.parseBoolean(datos[7]),
+                        tipo
                 ));
             }
         }
@@ -196,9 +208,19 @@ public class PersistenciaArchivos {
             String[] datos = linea.split("\\|", -1);
 
             if (datos.length >= 5) {
+                // Archivos viejos (5 campos) no tienen credenciales: genero
+                // el mismo default que el constructor de compatibilidad de
+                // Artista, para no duplicar esa regla en dos lugares.
+                String nombreUsuario = datos.length >= 8
+                        ? datos[5]
+                        : "artista" + datos[0];
+                String contrasena = datos.length >= 8 ? datos[6] : "";
+
                 // Reconstruyo el artista con los datos del TXT.
                 artistas.add(new Artista(
                         Integer.parseInt(datos[0]),
+                        nombreUsuario,
+                        contrasena,
                         datos[1],
                         datos[2],
                         datos[3],
