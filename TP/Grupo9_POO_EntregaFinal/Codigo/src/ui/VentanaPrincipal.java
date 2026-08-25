@@ -198,9 +198,11 @@ public class VentanaPrincipal extends JFrame {
         String nombre = leerTexto("Nombre:");
         String apellido = leerTexto("Apellido:");
         String email = leerTexto("Email:");
+        String contrasena = leerTexto("Contrasena:");
         PlanSuscripcion plan = seleccionarPlan();
 
         if (nombre == null || apellido == null || email == null
+                || contrasena == null || contrasena.isEmpty()
                 || plan == null) {
             return;
         }
@@ -212,7 +214,7 @@ public class VentanaPrincipal extends JFrame {
                 nombre,
                 apellido,
                 email,
-                "1234",
+                contrasena,
                 plan,
                 true
         );

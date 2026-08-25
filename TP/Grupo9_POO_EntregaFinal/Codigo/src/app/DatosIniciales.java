@@ -49,7 +49,7 @@ public final class DatosIniciales {
                 "Lucia",
                 "Gabian",
                 "lucia.gabian@uadebeats.com",
-                "1234",
+                "lgabian2024",
                 PlanSuscripcion.PREMIUM,
                 true
         );
@@ -61,7 +61,7 @@ public final class DatosIniciales {
                 "Leandro",
                 "Ferraro",
                 "leandro.ferraro@uadebeats.com",
-                "1234",
+                "lferraro2024",
                 PlanSuscripcion.ARTIST_PASS,
                 true
         );
@@ -73,7 +73,7 @@ public final class DatosIniciales {
                 "Nicolas",
                 "Caggia",
                 "nicolas.caggia@uadebeats.com",
-                "1234",
+                "ncaggia2024",
                 PlanSuscripcion.FREE,
                 true
         );

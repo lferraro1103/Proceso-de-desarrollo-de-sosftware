@@ -102,17 +102,23 @@ public final class MenuAcciones {
         System.out.print("Ingrese email: ");
         String email = scanner.nextLine();
 
+        // Lee y valida la contrasena para el login.
+        String contrasena = leerContrasenaNueva(scanner);
+        if (contrasena == null) {
+            return;
+        }
+
         // Permite elegir FREE, PREMIUM o ARTIST_PASS.
         PlanSuscripcion plan = seleccionarPlan(scanner);
 
-        // Crea el usuario con ID incremental y contrasena simple de prueba.
+        // Crea el usuario con ID incremental y la contrasena ingresada.
         Usuario nuevoUsuario = new Usuario(
                 siguienteIdUsuario,
                 nombreUsuario,
                 nombre,
                 apellido,
                 email,
-                "1234",
+                contrasena,
                 plan,
                 true
         );
@@ -152,6 +158,19 @@ public final class MenuAcciones {
         }
 
         return nombreUsuario;
+    }
+
+    // Pide la contrasena para el registro y valida que no este vacia.
+    private static String leerContrasenaNueva(Scanner scanner) {
+        System.out.print("Ingrese contrasena: ");
+        String contrasena = scanner.nextLine();
+
+        if (contrasena.isEmpty()) {
+            System.out.println("La contrasena no puede estar vacia.");
+            return null;
+        }
+
+        return contrasena;
     }
 
     /*
