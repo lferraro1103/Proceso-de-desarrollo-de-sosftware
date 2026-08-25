@@ -118,21 +118,6 @@ public class App {
                     MenuAcciones.listarRegistros(gestor);
                     break;
 
-                case 16:
-                    // Guarda informacion relevante en archivos TXT.
-                    MenuAcciones.guardarDatos(gestor);
-                    break;
-
-                case 17:
-                    // Carga informacion guardada en archivos TXT.
-                    MenuAcciones.cargarDatos(gestor);
-                    break;
-
-                case 18:
-                    // Abre la interfaz grafica Swing.
-                    MenuAcciones.abrirInterfazGrafica(gestor);
-                    break;
-
                 case 0:
                     // Corta el ciclo del menu.
                     System.out.println("Programa finalizado.");
@@ -167,9 +152,6 @@ public class App {
         System.out.println("13. Reanudar evento");
         System.out.println("14. Finalizar evento");
         System.out.println("15. Ver registros de acceso");
-        System.out.println("16. Guardar datos en archivos TXT");
-        System.out.println("17. Cargar datos desde archivos TXT");
-        System.out.println("18. Abrir interfaz grafica Swing");
         System.out.println("0. Salir");
     }
 }
