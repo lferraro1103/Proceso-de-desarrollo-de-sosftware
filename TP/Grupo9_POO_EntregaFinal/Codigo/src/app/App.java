@@ -138,6 +138,11 @@ public class App {
                     MenuAcciones.login(scanner, gestor);
                     break;
 
+                case 20:
+                    // Cancela un evento (excepto finalizado/ya cancelado).
+                    MenuAcciones.cambiarEstadoEvento(scanner, gestor, "cancelar");
+                    break;
+
                 case 0:
                     // Corta el ciclo del menu.
                     System.out.println("Programa finalizado.");
@@ -176,6 +181,7 @@ public class App {
         System.out.println("17. Cargar datos desde archivos TXT");
         System.out.println("18. Abrir interfaz grafica Swing");
         System.out.println("19. Iniciar sesion (login)");
+        System.out.println("20. Cancelar evento");
         System.out.println("0. Salir");
     }
 }

@@ -366,11 +366,14 @@ public class GestorEventosEnVivo {
     /*
      * Expulsa un usuario conectado a un evento.
      *
-     * Devuelve true si lo encontro y lo expulso.
-     * Devuelve false si no existia el evento, el usuario, el evento no estaba
-     * en curso o el usuario no estaba conectado.
+     * Devuelve el usuario expulsado si pudo hacerlo, para que quien llama
+     * pueda notificarlo. Devuelve null si no existia el evento, el usuario,
+     * el evento no estaba en curso o el usuario no estaba conectado.
+     *
+     * Ademas deja trazabilidad de la expulsion en RegistroAcceso, igual
+     * que se hace con los intentos de ingreso.
      */
-    public boolean expulsarUsuario(int idEvento, int idUsuario) {
+    public Usuario expulsarUsuario(int idEvento, int idUsuario) {
         Evento evento = buscarEventoPorId(idEvento);
         Usuario usuario = buscarUsuarioPorId(idUsuario);
 
@@ -381,10 +384,15 @@ public class GestorEventosEnVivo {
             RecitalEnVivo recital = (RecitalEnVivo) evento;
             if (recital.getUsuariosConectados().contains(usuario)) {
                 recital.expulsarUsuario(usuario);
-                return true;
+
+                registrarAcceso(RegistroAcceso.generarRegistro(
+                        usuario, evento, false, "Expulsado del evento."
+                ));
+
+                return usuario;
             }
         }
 
-        return false;
+        return null;
     }
 }

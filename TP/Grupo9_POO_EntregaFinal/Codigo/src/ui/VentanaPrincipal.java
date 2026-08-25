@@ -365,8 +365,12 @@ public class VentanaPrincipal extends JFrame {
             return;
         }
 
-        if (gestor.expulsarUsuario(evento.getId(), usuario.getId())) {
-            mostrarMensaje("Usuario expulsado.");
+        Usuario usuarioExpulsado = gestor.expulsarUsuario(
+                evento.getId(), usuario.getId());
+
+        if (usuarioExpulsado != null) {
+            mostrarMensaje("Usuario expulsado. Se notifico a "
+                    + usuarioExpulsado.getNombreCompleto() + ".");
             actualizarListas();
         } else {
             mostrarMensaje("No se pudo expulsar al usuario.");

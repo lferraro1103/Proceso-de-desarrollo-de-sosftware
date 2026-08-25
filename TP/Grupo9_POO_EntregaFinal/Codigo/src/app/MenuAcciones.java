@@ -508,9 +508,18 @@ public final class MenuAcciones {
         int idUsuario = ConsoleIO.leerEntero(
                 scanner, "Ingrese ID de usuario a expulsar: ");
 
-        // El gestor devuelve true si pudo expulsarlo.
-        if (gestor.expulsarUsuario(idEvento, idUsuario)) {
+        // El gestor devuelve el usuario expulsado, o null si no se pudo.
+        Usuario usuarioExpulsado = gestor.expulsarUsuario(idEvento, idUsuario);
+
+        if (usuarioExpulsado != null) {
             System.out.println("Usuario expulsado.");
+
+            // Notificacion simple: en esta consola no hay sesiones
+            // separadas por usuario, asi que se informa que el sistema
+            // ya genero el aviso para el usuario afectado.
+            System.out.println("Se notifico a "
+                    + usuarioExpulsado.getNombreCompleto()
+                    + " que fue expulsado del evento.");
         } else {
             System.out.println("Usuario no encontrado en el evento.");
         }
@@ -610,6 +619,9 @@ public final class MenuAcciones {
         } else if ("finalizar".equals(accion)) {
             evento.finalizarEvento();
             System.out.println("Evento finalizado.");
+        } else if ("cancelar".equals(accion)) {
+            evento.cancelarEvento();
+            System.out.println("Evento cancelado.");
         }
     }
 
@@ -671,6 +683,13 @@ public final class MenuAcciones {
             return estado == EstadoEvento.EN_CURSO;
         }
 
+        // Se puede cancelar cualquier evento que no haya terminado su
+        // ciclo de vida (ya finalizado o ya cancelado).
+        if ("cancelar".equals(accion)) {
+            return estado != EstadoEvento.FINALIZADO
+                    && estado != EstadoEvento.CANCELADO;
+        }
+
         return false;
     }
 
@@ -694,6 +713,10 @@ public final class MenuAcciones {
 
         if ("expulsar".equals(accion)) {
             return "expulsar";
+        }
+
+        if ("cancelar".equals(accion)) {
+            return "cancelar";
         }
 
         return "modificar";
