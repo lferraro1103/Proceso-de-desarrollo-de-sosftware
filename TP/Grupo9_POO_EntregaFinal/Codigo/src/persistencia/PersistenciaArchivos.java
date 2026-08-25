@@ -2,6 +2,7 @@ package persistencia;
 
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
+import modelo.DatosRecital;
 import modelo.EstadoEvento;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
@@ -224,8 +225,7 @@ public class PersistenciaArchivos {
 
             if (datos.length >= 12) {
                 // Reconstruyo el recital leyendo los campos en el mismo orden.
-                RecitalEnVivo recital = new RecitalEnVivo(
-                        Integer.parseInt(datos[0]),
+                DatosRecital datosRecital = new DatosRecital(
                         datos[1],
                         datos[2],
                         LocalDateTime.parse(datos[3]),
@@ -236,6 +236,11 @@ public class PersistenciaArchivos {
                         datos[8],
                         Boolean.parseBoolean(datos[9]),
                         Boolean.parseBoolean(datos[10])
+                );
+
+                RecitalEnVivo recital = new RecitalEnVivo(
+                        Integer.parseInt(datos[0]),
+                        datosRecital
                 );
 
                 // Vuelvo a unir el evento con sus artistas guardados.

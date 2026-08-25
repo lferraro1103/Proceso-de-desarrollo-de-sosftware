@@ -3,6 +3,7 @@ package gestor;
 import excepciones.AccesoDenegadoException;
 import modelo.AccesoEvento;
 import modelo.Artista;
+import modelo.DatosRecital;
 import modelo.EstadoEvento;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
@@ -236,19 +237,7 @@ public class GestorEventosEnVivo {
         if (evento == null) {
             RegistroAcceso registro = RegistroAcceso.registrarIntentoFallido(
                     usuario,
-                    new RecitalEnVivo(
-                            -1,
-                            "Evento inexistente",
-                            "Evento no encontrado",
-                            LocalDateTime.now(),
-                            LocalDateTime.now(),
-                            EstadoEvento.CANCELADO,
-                            0,
-                            PlanSuscripcion.FREE,
-                            "",
-                            true,
-                            false
-                    ),
+                    eventoDesconocido(),
                     "Evento inexistente."
             );
             registrarAcceso(registro);
@@ -278,7 +267,7 @@ public class GestorEventosEnVivo {
                 usuario.isActivo(),
                 "GENERAL",
                 recital.getPlanMinimoRequerido(),
-                usuario.getPlanSuscripcion() == PlanSuscripcion.ARTIST_PASS
+                usuario.tieneAccesoPrioritario()
         );
 
         try {
@@ -333,22 +322,10 @@ public class GestorEventosEnVivo {
                 false
         );
 
-        Evento eventoRegistrado = evento;
-        if (eventoRegistrado == null) {
-            eventoRegistrado = new RecitalEnVivo(
-                    -1,
-                    "Evento desconocido",
-                    "Evento no encontrado",
-                    LocalDateTime.now(),
-                    LocalDateTime.now(),
-                    EstadoEvento.CANCELADO,
-                    0,
-                    PlanSuscripcion.FREE,
-                    "",
-                    true,
-                    false
-            );
-        }
+        // Si tampoco hay evento, se reutiliza el mismo evento "placeholder"
+        // que usa solicitarIngreso para el caso evento==null (antes se
+        // duplicaba esta misma construccion en los dos lugares).
+        Evento eventoRegistrado = (evento != null) ? evento : eventoDesconocido();
 
         RegistroAcceso registro = RegistroAcceso.registrarIntentoFallido(
                 usuarioDesconocido,
@@ -357,6 +334,28 @@ public class GestorEventosEnVivo {
         );
         registrarAcceso(registro);
         return registro;
+    }
+
+    /*
+     * Evento "placeholder" usado unicamente para poder generar un
+     * RegistroAcceso cuando no hay un evento real asociado al intento
+     * (usuario o evento inexistente). No se agrega a la lista de eventos.
+     */
+    private RecitalEnVivo eventoDesconocido() {
+        DatosRecital datos = new DatosRecital(
+                "Evento desconocido",
+                "Evento no encontrado",
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                EstadoEvento.CANCELADO,
+                0,
+                PlanSuscripcion.FREE,
+                "",
+                true,
+                false
+        );
+
+        return new RecitalEnVivo(-1, datos);
     }
 
     /*

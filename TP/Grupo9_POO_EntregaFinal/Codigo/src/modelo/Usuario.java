@@ -131,6 +131,11 @@ public class Usuario {
         return sesionIniciada;
     }
 
+    // El plan ARTIST_PASS habilita acceso prioritario a los eventos.
+    public boolean tieneAccesoPrioritario() {
+        return planSuscripcion == PlanSuscripcion.ARTIST_PASS;
+    }
+
     public String getNombreCompleto() {
         return (nombre + " " + apellido).trim();
     }

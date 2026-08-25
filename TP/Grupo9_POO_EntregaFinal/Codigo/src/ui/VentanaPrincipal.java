@@ -3,6 +3,7 @@ package ui;
 import excepciones.AccesoDenegadoException;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
+import modelo.DatosRecital;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.Usuario;
@@ -292,8 +293,7 @@ public class VentanaPrincipal extends JFrame {
                 .plusMinutes(minutosInicio);
         LocalDateTime fin = inicio.plusMinutes(duracion);
 
-        RecitalEnVivo recital = new RecitalEnVivo(
-                siguienteIdEvento(),
+        DatosRecital datosRecital = new DatosRecital(
                 titulo,
                 descripcion,
                 inicio,
@@ -304,6 +304,11 @@ public class VentanaPrincipal extends JFrame {
                 ubicacion,
                 streaming,
                 exclusivo
+        );
+
+        RecitalEnVivo recital = new RecitalEnVivo(
+                siguienteIdEvento(),
+                datosRecital
         );
 
         gestor.crearEvento(recital, artista);
