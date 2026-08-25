@@ -5,17 +5,11 @@ import java.util.Objects;
 /*
  * Entidad comun Usuario.
  *
- * Esta clase fue ampliada para respetar la estructura base obligatoria
- * de la consigna. Se usa en el modulo para validar planes, usuarios
- * activos y usuarios conectados a eventos.
+ * Hereda de Cuenta el id, nombreUsuario, contrasena, activo, sesionIniciada
+ * y tipoUsuario. Un Administrador es un Usuario con
+ * tipoUsuario=ADMINISTRADOR, no hay una clase Java aparte para ese rol.
  */
-public class Usuario {
-
-    // Identificador unico del usuario.
-    private int id;
-
-    // Nombre de cuenta dentro de la plataforma.
-    private String nombreUsuario;
+public class Usuario extends Cuenta {
 
     // Nombre real.
     private String nombre;
@@ -26,19 +20,33 @@ public class Usuario {
     // Email de contacto.
     private String email;
 
-    // Contrasena simplificada para el prototipo.
-    private String contrasena;
-
     // Plan contratado por el usuario.
     private PlanSuscripcion planSuscripcion;
 
-    // Indica si el usuario esta habilitado en la plataforma.
-    private boolean activo;
+    // Constructor completo con rol explicito.
+    public Usuario(int id,
+                   String nombreUsuario,
+                   String nombre,
+                   String apellido,
+                   String email,
+                   String contrasena,
+                   PlanSuscripcion planSuscripcion,
+                   boolean activo,
+                   TipoUsuario tipoUsuario) {
 
-    // Indica si inicio sesion.
-    private boolean sesionIniciada;
+        super(id, nombreUsuario, contrasena, activo, tipoUsuario);
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.planSuscripcion = planSuscripcion;
+    }
 
-    // Constructor completo alineado con la estructura base.
+    /*
+     * Constructor de compatibilidad (mismo orden que el original de 8
+     * parametros). Delega con TipoUsuario.USUARIO por defecto para no
+     * romper a los call sites existentes (DatosIniciales, MenuAcciones,
+     * VentanaPrincipal, GestorEventosEnVivo.registrarFalloSinUsuario).
+     */
     public Usuario(int id,
                    String nombreUsuario,
                    String nombre,
@@ -48,15 +56,8 @@ public class Usuario {
                    PlanSuscripcion planSuscripcion,
                    boolean activo) {
 
-        this.id = id;
-        this.nombreUsuario = nombreUsuario;
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.email = email;
-        this.contrasena = contrasena;
-        this.planSuscripcion = planSuscripcion;
-        this.activo = activo;
-        this.sesionIniciada = false;
+        this(id, nombreUsuario, nombre, apellido, email, contrasena,
+                planSuscripcion, activo, TipoUsuario.USUARIO);
     }
 
     // Constructor corto usado para pruebas rapidas.
@@ -71,28 +72,6 @@ public class Usuario {
                 true);
     }
 
-    // Inicia sesion solo si el usuario esta activo.
-    public void iniciarSesion() {
-        if (activo) {
-            sesionIniciada = true;
-        }
-    }
-
-    /*
-     * Valida la contrasena ingresada para el login.
-     *
-     * No expone la contrasena con un getter: la comparacion se hace
-     * adentro de Usuario para mantener encapsulado ese dato.
-     */
-    public boolean validarContrasena(String contrasenaIngresada) {
-        return contrasena.equals(contrasenaIngresada);
-    }
-
-    // Cierra la sesion del usuario.
-    public void cerrarSesion() {
-        sesionIniciada = false;
-    }
-
     // Actualiza datos principales del perfil.
     public void actualizarPerfil(String nombre,
                                  String apellido,
@@ -105,18 +84,12 @@ public class Usuario {
 
     // Version simple para cumplir el metodo de la estructura base.
     public void actualizarPerfil() {
-        activo = true;
+        // Nada que hacer aca: activo ahora vive en Cuenta y ya se define
+        // en el constructor. Se mantiene el metodo por compatibilidad con
+        // la estructura base de la consigna.
     }
 
     // Getters de consulta.
-    public int getId() {
-        return id;
-    }
-
-    public String getNombreUsuario() {
-        return nombreUsuario;
-    }
-
     public String getNombre() {
         return nombre;
     }
@@ -129,21 +102,8 @@ public class Usuario {
         return email;
     }
 
-    // Getter usado solo por la capa de persistencia para guardar el usuario.
-    public String getContrasena() {
-        return contrasena;
-    }
-
     public PlanSuscripcion getPlanSuscripcion() {
         return planSuscripcion;
-    }
-
-    public boolean isActivo() {
-        return activo;
-    }
-
-    public boolean isSesionIniciada() {
-        return sesionIniciada;
     }
 
     // El plan ARTIST_PASS habilita acceso prioritario a los eventos.
@@ -174,22 +134,22 @@ public class Usuario {
         }
 
         Usuario usuario = (Usuario) obj;
-        return id == usuario.id;
+        return getId() == usuario.getId();
     }
 
     // hashCode debe ser coherente con equals para funcionar bien en HashSet.
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(getId());
     }
 
     // Texto legible para imprimir usuarios en el menu.
     @Override
     public String toString() {
-        return "ID: " + id
-                + " | Usuario: " + nombreUsuario
+        return "ID: " + getId()
+                + " | Usuario: " + getNombreUsuario()
                 + " | Nombre: " + getNombreCompleto()
                 + " | Plan: " + planSuscripcion
-                + " | Activo: " + activo;
+                + " | Activo: " + isActivo();
     }
 }
