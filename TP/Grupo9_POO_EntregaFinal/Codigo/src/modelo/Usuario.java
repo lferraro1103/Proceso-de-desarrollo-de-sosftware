@@ -129,6 +129,11 @@ public class Usuario {
         return email;
     }
 
+    // Getter usado solo por la capa de persistencia para guardar el usuario.
+    public String getContrasena() {
+        return contrasena;
+    }
+
     public PlanSuscripcion getPlanSuscripcion() {
         return planSuscripcion;
     }

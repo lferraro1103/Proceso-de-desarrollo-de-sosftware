@@ -83,6 +83,7 @@ public class PersistenciaArchivos {
                     + "|" + limpiar(usuario.getNombre())
                     + "|" + limpiar(usuario.getApellido())
                     + "|" + limpiar(usuario.getEmail())
+                    + "|" + limpiar(usuario.getContrasena())
                     + "|" + usuario.getPlanSuscripcion()
                     + "|" + usuario.isActivo());
         }
@@ -166,7 +167,7 @@ public class PersistenciaArchivos {
             // split separa la linea usando el mismo separador que use al guardar.
             String[] datos = linea.split("\\|", -1);
 
-            if (datos.length >= 7) {
+            if (datos.length >= 8) {
                 // Con los datos leidos reconstruyo el objeto Usuario.
                 usuarios.add(new Usuario(
                         Integer.parseInt(datos[0]),
@@ -174,9 +175,9 @@ public class PersistenciaArchivos {
                         datos[2],
                         datos[3],
                         datos[4],
-                        "1234",
-                        PlanSuscripcion.valueOf(datos[5]),
-                        Boolean.parseBoolean(datos[6])
+                        datos[5],
+                        PlanSuscripcion.valueOf(datos[6]),
+                        Boolean.parseBoolean(datos[7])
                 ));
             }
         }
