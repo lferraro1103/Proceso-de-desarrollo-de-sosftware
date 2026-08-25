@@ -10,10 +10,14 @@ import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
 import modelo.Usuario;
+import persistencia.PersistenciaArchivos;
+import ui.VentanaPrincipal;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
+import javax.swing.SwingUtilities;
 
 /*
  * Implementacion de cada opcion del menu de consola.
@@ -33,6 +37,42 @@ public final class MenuAcciones {
     private static int siguienteIdEvento = 102;
 
     private MenuAcciones() {
+    }
+
+    /*
+     * Login simple por consola.
+     *
+     * Pide nombre de usuario y contrasena, busca el usuario y valida
+     * la contrasena. Si es correcta, inicia sesion (Usuario.iniciarSesion
+     * ya contempla que el usuario este activo).
+     */
+    public static void login(Scanner scanner, GestorEventosEnVivo gestor) {
+        System.out.print("Ingrese nombre de usuario: ");
+        String nombreUsuario = scanner.nextLine().trim();
+
+        Usuario usuario = gestor.buscarUsuarioPorNombreUsuario(nombreUsuario);
+
+        if (usuario == null) {
+            System.out.println("Usuario inexistente.");
+            return;
+        }
+
+        System.out.print("Ingrese contrasena: ");
+        String contrasena = scanner.nextLine();
+
+        if (!usuario.validarContrasena(contrasena)) {
+            System.out.println("Contrasena incorrecta.");
+            return;
+        }
+
+        if (!usuario.isActivo()) {
+            System.out.println("El usuario no esta activo.");
+            return;
+        }
+
+        usuario.iniciarSesion();
+        System.out.println("Sesion iniciada. Bienvenido, "
+                + usuario.getNombreCompleto() + ".");
     }
 
     /*
@@ -638,6 +678,71 @@ public final class MenuAcciones {
         }
 
         return "modificar";
+    }
+
+    // Guarda usuarios, artistas, eventos y registros en archivos TXT.
+    public static void guardarDatos(GestorEventosEnVivo gestor) {
+        try {
+            PersistenciaArchivos.guardarDatos(gestor);
+            System.out.println("Datos guardados correctamente en carpeta datos.");
+        } catch (IOException e) {
+            System.out.println("No se pudieron guardar los datos: "
+                    + e.getMessage());
+        }
+    }
+
+    // Carga usuarios, artistas y eventos desde archivos TXT.
+    public static void cargarDatos(GestorEventosEnVivo gestor) {
+        try {
+            PersistenciaArchivos.cargarDatos(gestor);
+            actualizarIdsDesdeGestor(gestor);
+            System.out.println("Datos cargados correctamente desde carpeta datos.");
+        } catch (IOException | RuntimeException e) {
+            System.out.println("No se pudieron cargar los datos: "
+                    + e.getMessage());
+        }
+    }
+
+    // Abre la ventana Swing reutilizando el mismo gestor del menu consola.
+    public static void abrirInterfazGrafica(GestorEventosEnVivo gestor) {
+        SwingUtilities.invokeLater(() ->
+                new VentanaPrincipal(gestor).setVisible(true)
+        );
+
+        System.out.println("Interfaz grafica abierta.");
+    }
+
+    /*
+     * Actualiza los IDs incrementales despues de cargar datos.
+     *
+     * Evita que un nuevo usuario, artista o evento repita un ID ya cargado.
+     */
+    private static void actualizarIdsDesdeGestor(GestorEventosEnVivo gestor) {
+        int mayorUsuario = 0;
+        int mayorArtista = 0;
+        int mayorEvento = 0;
+
+        for (Usuario usuario : gestor.listarUsuarios()) {
+            if (usuario.getId() > mayorUsuario) {
+                mayorUsuario = usuario.getId();
+            }
+        }
+
+        for (Artista artista : gestor.listarArtistas()) {
+            if (artista.getId() > mayorArtista) {
+                mayorArtista = artista.getId();
+            }
+        }
+
+        for (Evento evento : gestor.listarEventos()) {
+            if (evento.getId() > mayorEvento) {
+                mayorEvento = evento.getId();
+            }
+        }
+
+        siguienteIdUsuario = mayorUsuario + 1;
+        siguienteIdArtista = mayorArtista + 1;
+        siguienteIdEvento = mayorEvento + 1;
     }
 
     // Lista todos los registros de acceso guardados por el gestor.

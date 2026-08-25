@@ -78,6 +78,16 @@ public class Usuario {
         }
     }
 
+    /*
+     * Valida la contrasena ingresada para el login.
+     *
+     * No expone la contrasena con un getter: la comparacion se hace
+     * adentro de Usuario para mantener encapsulado ese dato.
+     */
+    public boolean validarContrasena(String contrasenaIngresada) {
+        return contrasena.equals(contrasenaIngresada);
+    }
+
     // Cierra la sesion del usuario.
     public void cerrarSesion() {
         sesionIniciada = false;

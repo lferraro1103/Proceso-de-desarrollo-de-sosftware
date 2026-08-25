@@ -178,14 +178,19 @@ public class GestorEventosEnVivo {
 
     // Verifica si ya existe un usuario con ese nombre de cuenta.
     public boolean existeNombreUsuario(String nombreUsuario) {
+        return buscarUsuarioPorNombreUsuario(nombreUsuario) != null;
+    }
+
+    // Busca un usuario por nombre de cuenta. Si no existe, devuelve null.
+    public Usuario buscarUsuarioPorNombreUsuario(String nombreUsuario) {
         for (Usuario usuario : usuariosRegistrados) {
             if (usuario.getNombreUsuario().equalsIgnoreCase(
                     nombreUsuario.trim())) {
-                return true;
+                return usuario;
             }
         }
 
-        return false;
+        return null;
     }
 
     // Busca un artista por ID. Si no existe, devuelve null.
