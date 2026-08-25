@@ -6,6 +6,7 @@ import modelo.DatosRecital;
 import modelo.EstadoEvento;
 import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
+import modelo.TipoUsuario;
 import modelo.Usuario;
 
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ public final class DatosIniciales {
      */
     public static void cargar(GestorEventosEnVivo gestor) {
         cargarUsuariosIniciales(gestor);
+        cargarAdministradorInicial(gestor);
 
         // Cada artista queda asociado a "su" recital dentro del arreglo,
         // en el mismo orden en que se crean.
@@ -81,6 +83,27 @@ public final class DatosIniciales {
         gestor.registrarUsuario(usuario1);
         gestor.registrarUsuario(usuario2);
         gestor.registrarUsuario(usuario3);
+    }
+
+    /*
+     * Crea el Administrador de arranque para poder loguear ese rol desde el
+     * primer arranque del programa (SEED-01), sin depender de que alguien
+     * lo de de alta a mano primero.
+     */
+    private static void cargarAdministradorInicial(GestorEventosEnVivo gestor) {
+        Usuario administrador = new Usuario(
+                99,
+                "admin",
+                "Administrador",
+                "UADE Beats",
+                "admin@uadebeats.com",
+                "admin123",
+                PlanSuscripcion.PREMIUM,
+                true,
+                TipoUsuario.ADMINISTRADOR
+        );
+
+        gestor.registrarUsuario(administrador);
     }
 
     // Crea y registra los 2 artistas de prueba. Devuelve ambos ya registrados.
