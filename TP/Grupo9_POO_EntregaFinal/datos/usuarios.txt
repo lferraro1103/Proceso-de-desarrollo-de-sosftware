@@ -2,3 +2,4 @@
 2|lferraro|Leandro|Ferraro|leandro.ferraro@uadebeats.com|lferraro2024|ARTIST_PASS|true|USUARIO
 3|ncaggia|Nicolas|Caggia|nicolas.caggia@uadebeats.com|ncaggia2024|FREE|true|USUARIO
 99|admin|Administrador|UADE Beats|admin@uadebeats.com|admin123|PREMIUM|true|ADMINISTRADOR
+100|1|1|1|1|1|FREE|true|USUARIO

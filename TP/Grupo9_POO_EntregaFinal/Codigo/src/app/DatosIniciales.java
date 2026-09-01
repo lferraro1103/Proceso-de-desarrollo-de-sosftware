@@ -8,7 +8,9 @@ import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.TipoUsuario;
 import modelo.Usuario;
+import persistencia.PersistenciaArchivos;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 /*
@@ -24,15 +26,18 @@ public final class  DatosIniciales {
     }
 
     /*
-     * Carga datos iniciales para que el programa ya tenga informacion
-     * apenas arranca.
+     * Carga los datos con los que arranca el programa.
      *
-     * Se cargan:
-     * - 3 usuarios con planes diferentes;
-     * - 2 artistas;
-     * - 2 recitales con distintos planes requeridos.
+     * Si ya existen archivos guardados (de una corrida anterior, por
+     * ejemplo despues de registrar usuarios/artistas), se cargan esos
+     * en vez de pisarlos con los datos fijos de prueba. Solo se siembran
+     * los datos fijos si todavia no hay nada guardado (primera corrida).
      */
     public static void cargar(GestorEventosEnVivo gestor) {
+        if (cargarDesdeArchivos(gestor)) {
+            return;
+        }
+
         cargarUsuariosIniciales(gestor);
         cargarAdministradorInicial(gestor);
 
@@ -40,6 +45,22 @@ public final class  DatosIniciales {
         // en el mismo orden en que se crean.
         Artista[] artistas = cargarArtistasIniciales(gestor);
         cargarEventosIniciales(gestor, artistas[0], artistas[1]);
+    }
+
+    /*
+     * Intenta cargar usuarios/artistas/eventos desde la carpeta datos.
+     *
+     * Devuelve true solo si habia usuarios guardados (si el archivo no
+     * existe o esta vacio, PersistenciaArchivos.cargarDatos no tira error
+     * pero tampoco carga nada util, y en ese caso hay que sembrar).
+     */
+    private static boolean cargarDesdeArchivos(GestorEventosEnVivo gestor) {
+        try {
+            PersistenciaArchivos.cargarDatos(gestor);
+            return !gestor.listarUsuarios().isEmpty();
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     // Crea y registra los 3 usuarios de prueba, uno por cada plan.
