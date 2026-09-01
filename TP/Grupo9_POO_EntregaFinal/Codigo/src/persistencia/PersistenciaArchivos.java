@@ -42,10 +42,14 @@ public class PersistenciaArchivos {
      *
      * Antes se usaba Paths.get("datos"), relativa al working directory con
      * el que se lanza el programa. Eso hacia que, segun la configuracion de
-     * ejecucion (por ejemplo en IntelliJ), los datos se guardaran en una
-     * carpeta "datos" distinta a la real del proyecto. Subiendo desde la
-     * ubicacion del .class hasta encontrar la carpeta "Grupo9_POO_EntregaFinal",
-     * el resultado es siempre el mismo sin importar como se ejecute.
+     * ejecucion, los datos se guardaran en una carpeta "datos" distinta a
+     * la real del proyecto (por ejemplo, en IntelliJ con
+     * inherit-compiler-output, los .class terminan bajo
+     * out/production/<nombre-del-proyecto>/..., no dentro de
+     * Grupo9_POO_EntregaFinal). Por eso no se busca solo el nombre de
+     * carpeta "Grupo9_POO_EntregaFinal": se sube desde la ubicacion del
+     * .class buscando, en cada nivel, un ancestro que ya sea esa carpeta
+     * o que la contenga como "TP/Grupo9_POO_EntregaFinal".
      */
     private static Path resolverCarpetaDatos() {
         try {
@@ -57,10 +61,19 @@ public class PersistenciaArchivos {
 
             Path actual = ubicacion;
             while (actual != null) {
+                // Caso 1: ya estamos dentro (o en) Grupo9_POO_EntregaFinal.
                 if (actual.getFileName() != null
                         && "Grupo9_POO_EntregaFinal"
                                 .equals(actual.getFileName().toString())) {
                     return actual.resolve("datos");
+                }
+
+                // Caso 2: este ancestro contiene TP/Grupo9_POO_EntregaFinal
+                // (por ejemplo, la raiz del proyecto/repositorio).
+                Path candidato = actual.resolve("TP")
+                        .resolve("Grupo9_POO_EntregaFinal");
+                if (Files.isDirectory(candidato)) {
+                    return candidato.resolve("datos");
                 }
 
                 actual = actual.getParent();
