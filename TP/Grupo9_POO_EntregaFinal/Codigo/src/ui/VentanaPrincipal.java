@@ -3,6 +3,7 @@ package ui;
 import excepciones.AccesoDenegadoException;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
+import modelo.DatosRecital;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.Usuario;
@@ -197,9 +198,11 @@ public class VentanaPrincipal extends JFrame {
         String nombre = leerTexto("Nombre:");
         String apellido = leerTexto("Apellido:");
         String email = leerTexto("Email:");
+        String contrasena = leerTexto("Contrasena:");
         PlanSuscripcion plan = seleccionarPlan();
 
         if (nombre == null || apellido == null || email == null
+                || contrasena == null || contrasena.isEmpty()
                 || plan == null) {
             return;
         }
@@ -211,7 +214,7 @@ public class VentanaPrincipal extends JFrame {
                 nombre,
                 apellido,
                 email,
-                "1234",
+                contrasena,
                 plan,
                 true
         );
@@ -221,6 +224,9 @@ public class VentanaPrincipal extends JFrame {
 
             // Refresco para que aparezca en la lista de la ventana.
             actualizarListas();
+
+            // Persiste de una para no perder el alta si se cierra sin guardar.
+            guardarSilencioso();
         } else {
             mostrarMensaje("Ese nombre de usuario ya esta registrado.");
         }
@@ -250,6 +256,9 @@ public class VentanaPrincipal extends JFrame {
         gestor.registrarArtista(artista);
         mostrarMensaje("Artista registrado correctamente.");
         actualizarListas();
+
+        // Persiste de una para no perder el alta si se cierra sin guardar.
+        guardarSilencioso();
     }
 
     private void crearEvento() {
@@ -292,8 +301,7 @@ public class VentanaPrincipal extends JFrame {
                 .plusMinutes(minutosInicio);
         LocalDateTime fin = inicio.plusMinutes(duracion);
 
-        RecitalEnVivo recital = new RecitalEnVivo(
-                siguienteIdEvento(),
+        DatosRecital datosRecital = new DatosRecital(
                 titulo,
                 descripcion,
                 inicio,
@@ -304,6 +312,11 @@ public class VentanaPrincipal extends JFrame {
                 ubicacion,
                 streaming,
                 exclusivo
+        );
+
+        RecitalEnVivo recital = new RecitalEnVivo(
+                siguienteIdEvento(),
+                datosRecital
         );
 
         gestor.crearEvento(recital, artista);
@@ -358,8 +371,12 @@ public class VentanaPrincipal extends JFrame {
             return;
         }
 
-        if (gestor.expulsarUsuario(evento.getId(), usuario.getId())) {
-            mostrarMensaje("Usuario expulsado.");
+        Usuario usuarioExpulsado = gestor.expulsarUsuario(
+                evento.getId(), usuario.getId());
+
+        if (usuarioExpulsado != null) {
+            mostrarMensaje("Usuario expulsado. Se notifico a "
+                    + usuarioExpulsado.getNombreCompleto() + ".");
             actualizarListas();
         } else {
             mostrarMensaje("No se pudo expulsar al usuario.");
@@ -607,6 +624,22 @@ public class VentanaPrincipal extends JFrame {
             // Guarda usuarios, artistas, eventos y registros en archivos TXT.
             PersistenciaArchivos.guardarDatos(gestor);
             mostrarMensaje("Datos guardados en carpeta datos.");
+        } catch (IOException e) {
+            mostrarMensaje("No se pudieron guardar los datos: "
+                    + e.getMessage());
+        }
+    }
+
+    /*
+     * Igual que guardarDatos(), pero sin popup de confirmacion.
+     *
+     * Se usa despues de un alta (usuario/artista) para no perder el dato
+     * si se cierra la ventana sin apretar "Guardar TXT", sin interrumpir
+     * al operador con un segundo mensaje encima del de "registrado".
+     */
+    private void guardarSilencioso() {
+        try {
+            PersistenciaArchivos.guardarDatos(gestor);
         } catch (IOException e) {
             mostrarMensaje("No se pudieron guardar los datos: "
                     + e.getMessage());
