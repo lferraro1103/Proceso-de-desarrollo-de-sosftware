@@ -3,6 +3,7 @@ package gestor;
 import excepciones.AccesoDenegadoException;
 import modelo.AccesoEvento;
 import modelo.Artista;
+import modelo.DatosRecital;
 import modelo.EstadoEvento;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
@@ -177,14 +178,19 @@ public class GestorEventosEnVivo {
 
     // Verifica si ya existe un usuario con ese nombre de cuenta.
     public boolean existeNombreUsuario(String nombreUsuario) {
+        return buscarUsuarioPorNombreUsuario(nombreUsuario) != null;
+    }
+
+    // Busca un usuario por nombre de cuenta. Si no existe, devuelve null.
+    public Usuario buscarUsuarioPorNombreUsuario(String nombreUsuario) {
         for (Usuario usuario : usuariosRegistrados) {
             if (usuario.getNombreUsuario().equalsIgnoreCase(
                     nombreUsuario.trim())) {
-                return true;
+                return usuario;
             }
         }
 
-        return false;
+        return null;
     }
 
     // Busca un artista por ID. Si no existe, devuelve null.
@@ -236,19 +242,7 @@ public class GestorEventosEnVivo {
         if (evento == null) {
             RegistroAcceso registro = RegistroAcceso.registrarIntentoFallido(
                     usuario,
-                    new RecitalEnVivo(
-                            -1,
-                            "Evento inexistente",
-                            "Evento no encontrado",
-                            LocalDateTime.now(),
-                            LocalDateTime.now(),
-                            EstadoEvento.CANCELADO,
-                            0,
-                            PlanSuscripcion.FREE,
-                            "",
-                            true,
-                            false
-                    ),
+                    eventoDesconocido(),
                     "Evento inexistente."
             );
             registrarAcceso(registro);
@@ -278,7 +272,7 @@ public class GestorEventosEnVivo {
                 usuario.isActivo(),
                 "GENERAL",
                 recital.getPlanMinimoRequerido(),
-                usuario.getPlanSuscripcion() == PlanSuscripcion.ARTIST_PASS
+                usuario.tieneAccesoPrioritario()
         );
 
         try {
@@ -333,22 +327,10 @@ public class GestorEventosEnVivo {
                 false
         );
 
-        Evento eventoRegistrado = evento;
-        if (eventoRegistrado == null) {
-            eventoRegistrado = new RecitalEnVivo(
-                    -1,
-                    "Evento desconocido",
-                    "Evento no encontrado",
-                    LocalDateTime.now(),
-                    LocalDateTime.now(),
-                    EstadoEvento.CANCELADO,
-                    0,
-                    PlanSuscripcion.FREE,
-                    "",
-                    true,
-                    false
-            );
-        }
+        // Si tampoco hay evento, se reutiliza el mismo evento "placeholder"
+        // que usa solicitarIngreso para el caso evento==null (antes se
+        // duplicaba esta misma construccion en los dos lugares).
+        Evento eventoRegistrado = (evento != null) ? evento : eventoDesconocido();
 
         RegistroAcceso registro = RegistroAcceso.registrarIntentoFallido(
                 usuarioDesconocido,
@@ -360,13 +342,38 @@ public class GestorEventosEnVivo {
     }
 
     /*
+     * Evento "placeholder" usado unicamente para poder generar un
+     * RegistroAcceso cuando no hay un evento real asociado al intento
+     * (usuario o evento inexistente). No se agrega a la lista de eventos.
+     */
+    private RecitalEnVivo eventoDesconocido() {
+        DatosRecital datos = new DatosRecital(
+                "Evento desconocido",
+                "Evento no encontrado",
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                EstadoEvento.CANCELADO,
+                0,
+                PlanSuscripcion.FREE,
+                "",
+                true,
+                false
+        );
+
+        return new RecitalEnVivo(-1, datos);
+    }
+
+    /*
      * Expulsa un usuario conectado a un evento.
      *
-     * Devuelve true si lo encontro y lo expulso.
-     * Devuelve false si no existia el evento, el usuario, el evento no estaba
-     * en curso o el usuario no estaba conectado.
+     * Devuelve el usuario expulsado si pudo hacerlo, para que quien llama
+     * pueda notificarlo. Devuelve null si no existia el evento, el usuario,
+     * el evento no estaba en curso o el usuario no estaba conectado.
+     *
+     * Ademas deja trazabilidad de la expulsion en RegistroAcceso, igual
+     * que se hace con los intentos de ingreso.
      */
-    public boolean expulsarUsuario(int idEvento, int idUsuario) {
+    public Usuario expulsarUsuario(int idEvento, int idUsuario) {
         Evento evento = buscarEventoPorId(idEvento);
         Usuario usuario = buscarUsuarioPorId(idUsuario);
 
@@ -377,10 +384,15 @@ public class GestorEventosEnVivo {
             RecitalEnVivo recital = (RecitalEnVivo) evento;
             if (recital.getUsuariosConectados().contains(usuario)) {
                 recital.expulsarUsuario(usuario);
-                return true;
+
+                registrarAcceso(RegistroAcceso.generarRegistro(
+                        usuario, evento, false, "Expulsado del evento."
+                ));
+
+                return usuario;
             }
         }
 
-        return false;
+        return null;
     }
 }
