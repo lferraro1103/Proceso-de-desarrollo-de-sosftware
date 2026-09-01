@@ -1,4 +1,4 @@
-1|lgabian|Lucia|Gabian|lucia.gabian@uadebeats.com|lgabian2024|PREMIUM|true|2|lferraro|Leandro|Ferraro|leandro.ferraro@uadebeats.com|lferraro2024|ARTIST_PASS|true
-3|ncaggia|Nicolas|Caggia|nicolas.caggia@uadebeats.com|ncaggi2024|FREE|true
-4|admin|Admin|Admin|admin@uadebeats.com|admin2024|PREMIUM|trueIUM|trueO
-99|admin|admin|UADE Beats|admin@uadebeats.com|admin|PREMIUM|true|ADMINISTRADOR
+1|lgabian|Lucia|Gabian|lucia.gabian@uadebeats.com|lgabian2024|PREMIUM|true|USUARIO
+2|lferraro|Leandro|Ferraro|leandro.ferraro@uadebeats.com|lferraro2024|ARTIST_PASS|true|USUARIO
+3|ncaggia|Nicolas|Caggia|nicolas.caggia@uadebeats.com|ncaggia2024|FREE|true|USUARIO
+99|admin|Administrador|UADE Beats|admin@uadebeats.com|admin123|PREMIUM|true|ADMINISTRADOR

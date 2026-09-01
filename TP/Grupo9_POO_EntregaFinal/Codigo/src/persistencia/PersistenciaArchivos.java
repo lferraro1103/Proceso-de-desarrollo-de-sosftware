@@ -12,6 +12,7 @@ import modelo.TipoUsuario;
 import modelo.Usuario;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,9 +31,47 @@ import java.nio.file.Paths;
  */
 public class PersistenciaArchivos {
 
-    // Ruta relativa. No depende de una carpeta de mi PC.
-    // Si el programa se ejecuta desde el proyecto, crea/usa proyecto/datos.
-    private static final Path CARPETA_DATOS = Paths.get("datos");
+    // Carpeta datos del proyecto (ver resolverCarpetaDatos): no depende de
+    // desde donde se lance el programa, siempre es la del proyecto.
+    private static final Path CARPETA_DATOS = resolverCarpetaDatos();
+
+    /*
+     * Ubica la carpeta "datos" del proyecto (Grupo9_POO_EntregaFinal/datos)
+     * a partir de donde esta el .class compilado, en vez de usar una ruta
+     * relativa al directorio actual del proceso.
+     *
+     * Antes se usaba Paths.get("datos"), relativa al working directory con
+     * el que se lanza el programa. Eso hacia que, segun la configuracion de
+     * ejecucion (por ejemplo en IntelliJ), los datos se guardaran en una
+     * carpeta "datos" distinta a la real del proyecto. Subiendo desde la
+     * ubicacion del .class hasta encontrar la carpeta "Grupo9_POO_EntregaFinal",
+     * el resultado es siempre el mismo sin importar como se ejecute.
+     */
+    private static Path resolverCarpetaDatos() {
+        try {
+            Path ubicacion = Paths.get(PersistenciaArchivos.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI());
+
+            Path actual = ubicacion;
+            while (actual != null) {
+                if (actual.getFileName() != null
+                        && "Grupo9_POO_EntregaFinal"
+                                .equals(actual.getFileName().toString())) {
+                    return actual.resolve("datos");
+                }
+
+                actual = actual.getParent();
+            }
+        } catch (URISyntaxException | SecurityException e) {
+            // Si por algun motivo no se puede determinar la ubicacion del
+            // .class, se cae al comportamiento anterior como respaldo.
+        }
+
+        return Paths.get("datos");
+    }
 
     // Cada tipo de informacion se guarda en su propio archivo.
     private static final Path ARCHIVO_USUARIOS =
