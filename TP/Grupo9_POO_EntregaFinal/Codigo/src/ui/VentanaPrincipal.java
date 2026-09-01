@@ -224,6 +224,9 @@ public class VentanaPrincipal extends JFrame {
 
             // Refresco para que aparezca en la lista de la ventana.
             actualizarListas();
+
+            // Persiste de una para no perder el alta si se cierra sin guardar.
+            guardarSilencioso();
         } else {
             mostrarMensaje("Ese nombre de usuario ya esta registrado.");
         }
@@ -253,6 +256,9 @@ public class VentanaPrincipal extends JFrame {
         gestor.registrarArtista(artista);
         mostrarMensaje("Artista registrado correctamente.");
         actualizarListas();
+
+        // Persiste de una para no perder el alta si se cierra sin guardar.
+        guardarSilencioso();
     }
 
     private void crearEvento() {
@@ -618,6 +624,22 @@ public class VentanaPrincipal extends JFrame {
             // Guarda usuarios, artistas, eventos y registros en archivos TXT.
             PersistenciaArchivos.guardarDatos(gestor);
             mostrarMensaje("Datos guardados en carpeta datos.");
+        } catch (IOException e) {
+            mostrarMensaje("No se pudieron guardar los datos: "
+                    + e.getMessage());
+        }
+    }
+
+    /*
+     * Igual que guardarDatos(), pero sin popup de confirmacion.
+     *
+     * Se usa despues de un alta (usuario/artista) para no perder el dato
+     * si se cierra la ventana sin apretar "Guardar TXT", sin interrumpir
+     * al operador con un segundo mensaje encima del de "registrado".
+     */
+    private void guardarSilencioso() {
+        try {
+            PersistenciaArchivos.guardarDatos(gestor);
         } catch (IOException e) {
             mostrarMensaje("No se pudieron guardar los datos: "
                     + e.getMessage());

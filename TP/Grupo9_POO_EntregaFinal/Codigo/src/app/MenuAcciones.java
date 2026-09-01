@@ -133,6 +133,9 @@ public final class MenuAcciones {
         System.out.println("Usuario registrado correctamente.");
         System.out.println("ID asignado: " + siguienteIdUsuario);
         siguienteIdUsuario++;
+
+        // Persiste de una para no perder el alta si se cierra sin guardar.
+        guardarDatos(gestor);
     }
 
     /*
@@ -208,6 +211,9 @@ public final class MenuAcciones {
         System.out.println("Artista registrado correctamente.");
         System.out.println("ID asignado: " + siguienteIdArtista);
         siguienteIdArtista++;
+
+        // Persiste de una para no perder el alta si se cierra sin guardar.
+        guardarDatos(gestor);
     }
 
     /*
