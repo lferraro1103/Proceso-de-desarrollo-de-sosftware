@@ -640,9 +640,7 @@ public final class MenuAcciones {
     private static boolean listarEventosParaCambio(GestorEventosEnVivo gestor,
                                                    String accion) {
 
-        System.out.println("\nEventos disponibles para "
-                + obtenerNombreAccion(accion)
-                + ":");
+        System.out.println("\nEventos disponibles para " + accion + ":");
 
         boolean hayEventos = false;
 
@@ -697,35 +695,6 @@ public final class MenuAcciones {
         }
 
         return false;
-    }
-
-    // Devuelve un texto legible para mostrar la accion en consola.
-    private static String obtenerNombreAccion(String accion) {
-        if ("iniciar".equals(accion)) {
-            return "iniciar";
-        }
-
-        if ("pausar".equals(accion)) {
-            return "pausar";
-        }
-
-        if ("reanudar".equals(accion)) {
-            return "reanudar";
-        }
-
-        if ("finalizar".equals(accion)) {
-            return "finalizar";
-        }
-
-        if ("expulsar".equals(accion)) {
-            return "expulsar";
-        }
-
-        if ("cancelar".equals(accion)) {
-            return "cancelar";
-        }
-
-        return "modificar";
     }
 
     // Guarda usuarios, artistas, eventos y registros en archivos TXT.
