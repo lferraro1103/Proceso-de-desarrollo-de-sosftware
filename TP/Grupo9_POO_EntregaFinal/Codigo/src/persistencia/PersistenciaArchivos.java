@@ -2,14 +2,17 @@ package persistencia;
 
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
+import modelo.DatosRecital;
 import modelo.EstadoEvento;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
+import modelo.TipoUsuario;
 import modelo.Usuario;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,9 +31,60 @@ import java.nio.file.Paths;
  */
 public class PersistenciaArchivos {
 
-    // Ruta relativa. No depende de una carpeta de mi PC.
-    // Si el programa se ejecuta desde el proyecto, crea/usa proyecto/datos.
-    private static final Path CARPETA_DATOS = Paths.get("datos");
+    // Carpeta datos del proyecto (ver resolverCarpetaDatos): no depende de
+    // desde donde se lance el programa, siempre es la del proyecto.
+    private static final Path CARPETA_DATOS = resolverCarpetaDatos();
+
+    /*
+     * Ubica la carpeta "datos" del proyecto (Grupo9_POO_EntregaFinal/datos)
+     * a partir de donde esta el .class compilado, en vez de usar una ruta
+     * relativa al directorio actual del proceso.
+     *
+     * Antes se usaba Paths.get("datos"), relativa al working directory con
+     * el que se lanza el programa. Eso hacia que, segun la configuracion de
+     * ejecucion, los datos se guardaran en una carpeta "datos" distinta a
+     * la real del proyecto (por ejemplo, en IntelliJ con
+     * inherit-compiler-output, los .class terminan bajo
+     * out/production/<nombre-del-proyecto>/..., no dentro de
+     * Grupo9_POO_EntregaFinal). Por eso no se busca solo el nombre de
+     * carpeta "Grupo9_POO_EntregaFinal": se sube desde la ubicacion del
+     * .class buscando, en cada nivel, un ancestro que ya sea esa carpeta
+     * o que la contenga como "TP/Grupo9_POO_EntregaFinal".
+     */
+    private static Path resolverCarpetaDatos() {
+        try {
+            Path ubicacion = Paths.get(PersistenciaArchivos.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI());
+
+            Path actual = ubicacion;
+            while (actual != null) {
+                // Caso 1: ya estamos dentro (o en) Grupo9_POO_EntregaFinal.
+                if (actual.getFileName() != null
+                        && "Grupo9_POO_EntregaFinal"
+                                .equals(actual.getFileName().toString())) {
+                    return actual.resolve("datos");
+                }
+
+                // Caso 2: este ancestro contiene TP/Grupo9_POO_EntregaFinal
+                // (por ejemplo, la raiz del proyecto/repositorio).
+                Path candidato = actual.resolve("TP")
+                        .resolve("Grupo9_POO_EntregaFinal");
+                if (Files.isDirectory(candidato)) {
+                    return candidato.resolve("datos");
+                }
+
+                actual = actual.getParent();
+            }
+        } catch (URISyntaxException | SecurityException e) {
+            // Si por algun motivo no se puede determinar la ubicacion del
+            // .class, se cae al comportamiento anterior como respaldo.
+        }
+
+        return Paths.get("datos");
+    }
 
     // Cada tipo de informacion se guarda en su propio archivo.
     private static final Path ARCHIVO_USUARIOS =
@@ -82,8 +136,10 @@ public class PersistenciaArchivos {
                     + "|" + limpiar(usuario.getNombre())
                     + "|" + limpiar(usuario.getApellido())
                     + "|" + limpiar(usuario.getEmail())
+                    + "|" + limpiar(usuario.getContrasena())
                     + "|" + usuario.getPlanSuscripcion()
-                    + "|" + usuario.isActivo());
+                    + "|" + usuario.isActivo()
+                    + "|" + usuario.getTipoUsuario());
         }
 
         // Files.write escribe todas las lineas en el archivo indicado.
@@ -101,7 +157,10 @@ public class PersistenciaArchivos {
                     + "|" + limpiar(artista.getNombreArtistico())
                     + "|" + limpiar(artista.getGeneroPrincipal())
                     + "|" + limpiar(artista.getBiografia())
-                    + "|" + artista.isVerificado());
+                    + "|" + artista.isVerificado()
+                    + "|" + limpiar(artista.getNombreUsuario())
+                    + "|" + limpiar(artista.getContrasena())
+                    + "|" + artista.getTipoUsuario());
         }
 
         Files.write(ARCHIVO_ARTISTAS, lineas);
@@ -165,7 +224,13 @@ public class PersistenciaArchivos {
             // split separa la linea usando el mismo separador que use al guardar.
             String[] datos = linea.split("\\|", -1);
 
-            if (datos.length >= 7) {
+            if (datos.length >= 8) {
+                // Archivos viejos (8 campos) no tienen tipoUsuario: uso
+                // USUARIO por defecto para no romper la carga.
+                TipoUsuario tipo = datos.length >= 9
+                        ? TipoUsuario.valueOf(datos[8])
+                        : TipoUsuario.USUARIO;
+
                 // Con los datos leidos reconstruyo el objeto Usuario.
                 usuarios.add(new Usuario(
                         Integer.parseInt(datos[0]),
@@ -173,9 +238,10 @@ public class PersistenciaArchivos {
                         datos[2],
                         datos[3],
                         datos[4],
-                        "1234",
-                        PlanSuscripcion.valueOf(datos[5]),
-                        Boolean.parseBoolean(datos[6])
+                        datos[5],
+                        PlanSuscripcion.valueOf(datos[6]),
+                        Boolean.parseBoolean(datos[7]),
+                        tipo
                 ));
             }
         }
@@ -194,9 +260,19 @@ public class PersistenciaArchivos {
             String[] datos = linea.split("\\|", -1);
 
             if (datos.length >= 5) {
+                // Archivos viejos (5 campos) no tienen credenciales: genero
+                // el mismo default que el constructor de compatibilidad de
+                // Artista, para no duplicar esa regla en dos lugares.
+                String nombreUsuario = datos.length >= 8
+                        ? datos[5]
+                        : "artista" + datos[0];
+                String contrasena = datos.length >= 8 ? datos[6] : "";
+
                 // Reconstruyo el artista con los datos del TXT.
                 artistas.add(new Artista(
                         Integer.parseInt(datos[0]),
+                        nombreUsuario,
+                        contrasena,
                         datos[1],
                         datos[2],
                         datos[3],
@@ -224,8 +300,7 @@ public class PersistenciaArchivos {
 
             if (datos.length >= 12) {
                 // Reconstruyo el recital leyendo los campos en el mismo orden.
-                RecitalEnVivo recital = new RecitalEnVivo(
-                        Integer.parseInt(datos[0]),
+                DatosRecital datosRecital = new DatosRecital(
                         datos[1],
                         datos[2],
                         LocalDateTime.parse(datos[3]),
@@ -236,6 +311,11 @@ public class PersistenciaArchivos {
                         datos[8],
                         Boolean.parseBoolean(datos[9]),
                         Boolean.parseBoolean(datos[10])
+                );
+
+                RecitalEnVivo recital = new RecitalEnVivo(
+                        Integer.parseInt(datos[0]),
+                        datosRecital
                 );
 
                 // Vuelvo a unir el evento con sus artistas guardados.

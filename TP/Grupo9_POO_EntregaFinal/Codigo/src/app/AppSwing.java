@@ -15,7 +15,7 @@ public class AppSwing {
         GestorEventosEnVivo gestor = new GestorEventosEnVivo();
 
         // Cargo los datos iniciales para que la ventana no arranque vacia.
-        App.cargarDatosIniciales(gestor);
+        DatosIniciales.cargar(gestor);
 
         // invokeLater es la forma recomendada de abrir ventanas Swing.
         // Ejecuta la creacion de la ventana en el hilo grafico de Java.

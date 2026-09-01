@@ -8,13 +8,11 @@ import java.util.Map;
 /*
  * Representa a un artista o banda dentro de UADE Beats.
  *
- * En este modulo se usa para asociar artistas a eventos en vivo,
- * corrigiendo la observacion del profesor sobre la falta de esta relacion.
+ * Hereda de Cuenta para tener credenciales propias (nombreUsuario y
+ * contrasena) y poder loguearse, en vez de ser un dato publico sin login
+ * como antes (CU04-01).
  */
-public class Artista {
-
-    // Identificador unico del artista.
-    private int id;
+public class Artista extends Cuenta {
 
     // Nombre publico del artista o banda.
     private String nombreArtistico;
@@ -37,14 +35,20 @@ public class Artista {
     // Redes sociales: clave = nombre de red, valor = URL.
     private Map<String, String> redesSociales;
 
-    // Constructor con los datos principales definidos en la consigna.
+    /*
+     * Constructor completo con credenciales propias (CU04-01). Un artista
+     * siempre esta activo y su tipoUsuario siempre es ARTISTA: son
+     * invariantes de esta clase, no se reciben como parametro.
+     */
     public Artista(int id,
+                   String nombreUsuario,
+                   String contrasena,
                    String nombreArtistico,
                    String generoPrincipal,
                    String biografia,
                    boolean verificado) {
 
-        this.id = id;
+        super(id, nombreUsuario, contrasena, true, TipoUsuario.ARTISTA);
         this.nombreArtistico = nombreArtistico;
         this.generoPrincipal = generoPrincipal;
         this.biografia = biografia;
@@ -52,6 +56,23 @@ public class Artista {
         this.eventosCreados = new ArrayList<>();
         this.obras = new ArrayList<>();
         this.redesSociales = new HashMap<>();
+    }
+
+    /*
+     * Constructor de compatibilidad con la firma actual de 5 parametros,
+     * usada hoy por MenuAcciones.registrarArtista y
+     * VentanaPrincipal.registrarArtista (que todavia no piden credenciales
+     * en esta fase; eso es CU04-02, fuera de alcance de la Fase 1). Genera
+     * un nombre de cuenta a partir del ID y deja la contrasena vacia.
+     */
+    public Artista(int id,
+                   String nombreArtistico,
+                   String generoPrincipal,
+                   String biografia,
+                   boolean verificado) {
+
+        this(id, "artista" + id, "", nombreArtistico, generoPrincipal,
+                biografia, verificado);
     }
 
     // Asocia un evento al artista.
@@ -83,10 +104,6 @@ public class Artista {
     }
 
     // Getters de consulta.
-    public int getId() {
-        return id;
-    }
-
     public String getNombreArtistico() {
         return nombreArtistico;
     }
@@ -111,7 +128,7 @@ public class Artista {
     // Texto legible para listar artistas en consola.
     @Override
     public String toString() {
-        return "ID: " + id
+        return "ID: " + getId()
                 + " | Artista: " + nombreArtistico
                 + " | Genero: " + generoPrincipal
                 + " | Verificado: " + verificado;
