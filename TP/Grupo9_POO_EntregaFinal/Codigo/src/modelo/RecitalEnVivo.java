@@ -143,9 +143,9 @@ public class RecitalEnVivo extends Evento {
         }
     }
 
-    // Expulsa o desconecta un usuario del recital.
-    public void expulsarUsuario(Usuario usuario) {
-        usuariosConectados.remove(usuario);
+    // Expulsa al usuario y devuelve si estaba conectado.
+    public boolean expulsarUsuario(Usuario usuario) {
+        return usuariosConectados.remove(usuario);
     }
 
     // Devuelve una vista no modificable para proteger el Set interno.

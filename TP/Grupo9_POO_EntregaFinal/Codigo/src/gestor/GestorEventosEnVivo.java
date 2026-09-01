@@ -372,13 +372,10 @@ public class GestorEventosEnVivo {
                 && evento.getEstado() == EstadoEvento.EN_CURSO
                 && usuario != null) {
             RecitalEnVivo recital = (RecitalEnVivo) evento;
-            if (recital.getUsuariosConectados().contains(usuario)) {
-                recital.expulsarUsuario(usuario);
-
+            if (recital.expulsarUsuario(usuario)) {
                 registrarAcceso(RegistroAcceso.generarRegistro(
                         usuario, evento, false, "Expulsado del evento."
                 ));
-
                 return usuario;
             }
         }
