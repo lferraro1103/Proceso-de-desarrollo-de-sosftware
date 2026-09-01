@@ -2,11 +2,13 @@ package persistencia;
 
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
+import modelo.DatosRecital;
 import modelo.EstadoEvento;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
+import modelo.TipoUsuario;
 import modelo.Usuario;
 
 import java.io.IOException;
@@ -82,8 +84,10 @@ public class PersistenciaArchivos {
                     + "|" + limpiar(usuario.getNombre())
                     + "|" + limpiar(usuario.getApellido())
                     + "|" + limpiar(usuario.getEmail())
+                    + "|" + limpiar(usuario.getContrasena())
                     + "|" + usuario.getPlanSuscripcion()
-                    + "|" + usuario.isActivo());
+                    + "|" + usuario.isActivo()
+                    + "|" + usuario.getTipoUsuario());
         }
 
         // Files.write escribe todas las lineas en el archivo indicado.
@@ -101,7 +105,10 @@ public class PersistenciaArchivos {
                     + "|" + limpiar(artista.getNombreArtistico())
                     + "|" + limpiar(artista.getGeneroPrincipal())
                     + "|" + limpiar(artista.getBiografia())
-                    + "|" + artista.isVerificado());
+                    + "|" + artista.isVerificado()
+                    + "|" + limpiar(artista.getNombreUsuario())
+                    + "|" + limpiar(artista.getContrasena())
+                    + "|" + artista.getTipoUsuario());
         }
 
         Files.write(ARCHIVO_ARTISTAS, lineas);
@@ -165,7 +172,13 @@ public class PersistenciaArchivos {
             // split separa la linea usando el mismo separador que use al guardar.
             String[] datos = linea.split("\\|", -1);
 
-            if (datos.length >= 7) {
+            if (datos.length >= 8) {
+                // Archivos viejos (8 campos) no tienen tipoUsuario: uso
+                // USUARIO por defecto para no romper la carga.
+                TipoUsuario tipo = datos.length >= 9
+                        ? TipoUsuario.valueOf(datos[8])
+                        : TipoUsuario.USUARIO;
+
                 // Con los datos leidos reconstruyo el objeto Usuario.
                 usuarios.add(new Usuario(
                         Integer.parseInt(datos[0]),
@@ -173,9 +186,10 @@ public class PersistenciaArchivos {
                         datos[2],
                         datos[3],
                         datos[4],
-                        "1234",
-                        PlanSuscripcion.valueOf(datos[5]),
-                        Boolean.parseBoolean(datos[6])
+                        datos[5],
+                        PlanSuscripcion.valueOf(datos[6]),
+                        Boolean.parseBoolean(datos[7]),
+                        tipo
                 ));
             }
         }
@@ -194,9 +208,19 @@ public class PersistenciaArchivos {
             String[] datos = linea.split("\\|", -1);
 
             if (datos.length >= 5) {
+                // Archivos viejos (5 campos) no tienen credenciales: genero
+                // el mismo default que el constructor de compatibilidad de
+                // Artista, para no duplicar esa regla en dos lugares.
+                String nombreUsuario = datos.length >= 8
+                        ? datos[5]
+                        : "artista" + datos[0];
+                String contrasena = datos.length >= 8 ? datos[6] : "";
+
                 // Reconstruyo el artista con los datos del TXT.
                 artistas.add(new Artista(
                         Integer.parseInt(datos[0]),
+                        nombreUsuario,
+                        contrasena,
                         datos[1],
                         datos[2],
                         datos[3],
@@ -224,8 +248,7 @@ public class PersistenciaArchivos {
 
             if (datos.length >= 12) {
                 // Reconstruyo el recital leyendo los campos en el mismo orden.
-                RecitalEnVivo recital = new RecitalEnVivo(
-                        Integer.parseInt(datos[0]),
+                DatosRecital datosRecital = new DatosRecital(
                         datos[1],
                         datos[2],
                         LocalDateTime.parse(datos[3]),
@@ -236,6 +259,11 @@ public class PersistenciaArchivos {
                         datos[8],
                         Boolean.parseBoolean(datos[9]),
                         Boolean.parseBoolean(datos[10])
+                );
+
+                RecitalEnVivo recital = new RecitalEnVivo(
+                        Integer.parseInt(datos[0]),
+                        datosRecital
                 );
 
                 // Vuelvo a unir el evento con sus artistas guardados.

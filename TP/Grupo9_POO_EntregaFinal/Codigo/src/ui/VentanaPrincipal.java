@@ -3,6 +3,7 @@ package ui;
 import excepciones.AccesoDenegadoException;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
+import modelo.DatosRecital;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.Usuario;
@@ -197,9 +198,11 @@ public class VentanaPrincipal extends JFrame {
         String nombre = leerTexto("Nombre:");
         String apellido = leerTexto("Apellido:");
         String email = leerTexto("Email:");
+        String contrasena = leerTexto("Contrasena:");
         PlanSuscripcion plan = seleccionarPlan();
 
         if (nombre == null || apellido == null || email == null
+                || contrasena == null || contrasena.isEmpty()
                 || plan == null) {
             return;
         }
@@ -211,7 +214,7 @@ public class VentanaPrincipal extends JFrame {
                 nombre,
                 apellido,
                 email,
-                "1234",
+                contrasena,
                 plan,
                 true
         );
@@ -292,8 +295,7 @@ public class VentanaPrincipal extends JFrame {
                 .plusMinutes(minutosInicio);
         LocalDateTime fin = inicio.plusMinutes(duracion);
 
-        RecitalEnVivo recital = new RecitalEnVivo(
-                siguienteIdEvento(),
+        DatosRecital datosRecital = new DatosRecital(
                 titulo,
                 descripcion,
                 inicio,
@@ -304,6 +306,11 @@ public class VentanaPrincipal extends JFrame {
                 ubicacion,
                 streaming,
                 exclusivo
+        );
+
+        RecitalEnVivo recital = new RecitalEnVivo(
+                siguienteIdEvento(),
+                datosRecital
         );
 
         gestor.crearEvento(recital, artista);
@@ -358,8 +365,12 @@ public class VentanaPrincipal extends JFrame {
             return;
         }
 
-        if (gestor.expulsarUsuario(evento.getId(), usuario.getId())) {
-            mostrarMensaje("Usuario expulsado.");
+        Usuario usuarioExpulsado = gestor.expulsarUsuario(
+                evento.getId(), usuario.getId());
+
+        if (usuarioExpulsado != null) {
+            mostrarMensaje("Usuario expulsado. Se notifico a "
+                    + usuarioExpulsado.getNombreCompleto() + ".");
             actualizarListas();
         } else {
             mostrarMensaje("No se pudo expulsar al usuario.");

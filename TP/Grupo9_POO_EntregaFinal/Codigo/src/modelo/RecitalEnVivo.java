@@ -33,32 +33,29 @@ public class RecitalEnVivo extends Evento {
     // Set de usuarios conectados. Se usa Set para evitar duplicados.
     private Set<Usuario> usuariosConectados;
 
-    // Constructor completo del recital.
-    public RecitalEnVivo(int id,
-                         String titulo,
-                         String descripcion,
-                         LocalDateTime fechaHoraInicio,
-                         LocalDateTime fechaHoraFin,
-                         EstadoEvento estado,
-                         int capacidadMaxima,
-                         PlanSuscripcion planMinimoRequerido,
-                         String ubicacion,
-                         boolean esStreaming,
-                         boolean exclusivo) {
+    /*
+     * Constructor completo del recital.
+     *
+     * Recibe el id aparte (se asigna al crear el evento, no es un dato
+     * propio del recital) y el resto de los datos agrupados en
+     * DatosRecital, para no tener un constructor con 11 parametros
+     * sueltos.
+     */
+    public RecitalEnVivo(int id, DatosRecital datos) {
 
         super(id,
-                titulo,
-                descripcion,
-                fechaHoraInicio,
-                fechaHoraFin,
-                estado,
-                capacidadMaxima);
+                datos.getTitulo(),
+                datos.getDescripcion(),
+                datos.getFechaHoraInicio(),
+                datos.getFechaHoraFin(),
+                datos.getEstado(),
+                datos.getCapacidadMaxima());
 
-        this.planMinimoRequerido = planMinimoRequerido;
-        this.ubicacion = ubicacion;
+        this.planMinimoRequerido = datos.getPlanMinimoRequerido();
+        this.ubicacion = datos.getUbicacion();
 
-        this.esStreaming = esStreaming;
-        this.exclusivo = exclusivo;
+        this.esStreaming = datos.isEsStreaming();
+        this.exclusivo = datos.isExclusivo();
 
         this.usuariosConectados = new HashSet<>();
     }
