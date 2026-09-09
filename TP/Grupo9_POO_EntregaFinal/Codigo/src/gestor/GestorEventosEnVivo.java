@@ -229,16 +229,13 @@ public class GestorEventosEnVivo {
      * 5. Guarda un RegistroAcceso con resultado exitoso o fallido.
      */
     public RegistroAcceso solicitarIngreso(int idUsuario, int idEvento) {
-        // Se buscan las entidades involucradas.
         Usuario usuario = buscarUsuarioPorId(idUsuario);
         Evento evento = buscarEventoPorId(idEvento);
 
-        // Si el usuario no existe, se registra fallo.
         if (usuario == null) {
             return registrarFalloSinUsuario(evento, "Usuario inexistente.");
         }
 
-        // Si el evento no existe, se registra fallo asociado al usuario.
         if (evento == null) {
             RegistroAcceso registro = RegistroAcceso.registrarIntentoFallido(
                     usuario,
@@ -249,7 +246,6 @@ public class GestorEventosEnVivo {
             return registro;
         }
 
-        // Este modulo opera con RecitalEnVivo.
         if (!(evento instanceof RecitalEnVivo)) {
             RegistroAcceso registro = RegistroAcceso.registrarIntentoFallido(
                     usuario,
@@ -260,11 +256,36 @@ public class GestorEventosEnVivo {
             return registro;
         }
 
-        // Se castea porque ya se valido que el evento es un RecitalEnVivo.
-        RecitalEnVivo recital = (RecitalEnVivo) evento;
+        return intentarIngreso(usuario, (RecitalEnVivo) evento);
+    }
 
-        // Se crea el acceso con el plan requerido por el recital.
-        AccesoEvento acceso = new AccesoEvento(
+    // Valida el acceso, conecta al usuario y registra el resultado.
+    private RegistroAcceso intentarIngreso(Usuario usuario,
+                                            RecitalEnVivo recital) {
+        AccesoEvento acceso = crearAcceso(usuario, recital);
+
+        try {
+            acceso.validarAutorizacion();
+            acceso.validarPlan();
+            recital.permitirIngreso(usuario);
+
+            RegistroAcceso registro = RegistroAcceso.generarRegistro(
+                    usuario, recital, true, ""
+            );
+            registrarAcceso(registro);
+            return registro;
+        } catch (AccesoDenegadoException e) {
+            RegistroAcceso registro = RegistroAcceso.registrarIntentoFallido(
+                    usuario, recital, e.getMessage()
+            );
+            registrarAcceso(registro);
+            return registro;
+        }
+    }
+
+    private AccesoEvento crearAcceso(Usuario usuario,
+                                     RecitalEnVivo recital) {
+        return new AccesoEvento(
                 siguienteIdAcceso++,
                 usuario,
                 recital,
@@ -274,37 +295,6 @@ public class GestorEventosEnVivo {
                 recital.getPlanMinimoRequerido(),
                 usuario.tieneAccesoPrioritario()
         );
-
-        try {
-            // Valida si el usuario esta activo y autorizado.
-            acceso.validarAutorizacion();
-
-            // Valida si el plan del usuario alcanza el requerido.
-            acceso.validarPlan();
-
-            // Valida estado, horario, capacidad y duplicado; si pasa, conecta.
-            recital.permitirIngreso(usuario);
-
-            // Si todo salio bien, se crea registro exitoso.
-            RegistroAcceso registro = RegistroAcceso.generarRegistro(
-                    usuario,
-                    recital,
-                    true,
-                    ""
-            );
-            registrarAcceso(registro);
-            return registro;
-
-        } catch (AccesoDenegadoException e) {
-            // Si alguna validacion falla, se registra el motivo exacto.
-            RegistroAcceso registro = RegistroAcceso.registrarIntentoFallido(
-                    usuario,
-                    recital,
-                    e.getMessage()
-            );
-            registrarAcceso(registro);
-            return registro;
-        }
     }
 
     /*
@@ -382,13 +372,10 @@ public class GestorEventosEnVivo {
                 && evento.getEstado() == EstadoEvento.EN_CURSO
                 && usuario != null) {
             RecitalEnVivo recital = (RecitalEnVivo) evento;
-            if (recital.getUsuariosConectados().contains(usuario)) {
-                recital.expulsarUsuario(usuario);
-
+            if (recital.expulsarUsuario(usuario)) {
                 registrarAcceso(RegistroAcceso.generarRegistro(
                         usuario, evento, false, "Expulsado del evento."
                 ));
-
                 return usuario;
             }
         }
