@@ -145,6 +145,7 @@ public class VentanaPrincipal extends JFrame {
         JButton pausar = new JButton("Pausar");
         JButton reanudar = new JButton("Reanudar");
         JButton finalizar = new JButton("Finalizar");
+        JButton cancelar = new JButton("Cancelar");
         JButton crear = new JButton("Crear evento");
         JButton ingresar = new JButton("Dar acceso");
         JButton expulsar = new JButton("Expulsar usuario");
@@ -155,6 +156,7 @@ public class VentanaPrincipal extends JFrame {
         pausar.addActionListener(e -> cambiarEstadoSeleccionado("pausar"));
         reanudar.addActionListener(e -> cambiarEstadoSeleccionado("reanudar"));
         finalizar.addActionListener(e -> cambiarEstadoSeleccionado("finalizar"));
+        cancelar.addActionListener(e -> cambiarEstadoSeleccionado("cancelar"));
         crear.addActionListener(e -> crearEvento());
         ingresar.addActionListener(e -> solicitarIngreso());
         expulsar.addActionListener(e -> expulsarUsuario());
@@ -167,6 +169,7 @@ public class VentanaPrincipal extends JFrame {
         acciones.add(pausar);
         acciones.add(reanudar);
         acciones.add(finalizar);
+        acciones.add(cancelar);
         acciones.add(actualizar);
 
         panel.add(new JScrollPane(listaEventos), BorderLayout.CENTER);
@@ -593,23 +596,19 @@ public class VentanaPrincipal extends JFrame {
             return;
         }
 
-        Evento evento = gestor.buscarEventoPorId(idEvento);
-
-        if (evento == null) {
-            mostrarMensaje("Evento inexistente.");
-            return;
-        }
-
         try {
-            // Segun la accion, llamo al metodo correspondiente del evento.
+            // El gestor centraliza las transiciones de estado (patron
+            // Controlador): esta clase no llama a los metodos de Evento.
             if ("iniciar".equals(accion)) {
-                evento.iniciarEvento();
+                gestor.iniciarEvento(idEvento);
             } else if ("pausar".equals(accion)) {
-                evento.pausarEvento();
+                gestor.pausarEvento(idEvento);
             } else if ("reanudar".equals(accion)) {
-                evento.reanudarEvento();
+                gestor.reanudarEvento(idEvento);
             } else if ("finalizar".equals(accion)) {
-                evento.finalizarEvento();
+                gestor.finalizarEvento(idEvento);
+            } else if ("cancelar".equals(accion)) {
+                gestor.cancelarEvento(idEvento);
             }
 
             mostrarMensaje("Estado actualizado.");
