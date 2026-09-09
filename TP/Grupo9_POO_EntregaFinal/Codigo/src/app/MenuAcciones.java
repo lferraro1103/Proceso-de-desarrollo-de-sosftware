@@ -418,9 +418,6 @@ public final class MenuAcciones {
         // El gestor coordina validaciones y devuelve el registro generado.
         RegistroAcceso registro = gestor.solicitarIngreso(idUsuario, idEvento);
 
-        // Imprime una traza basica del registro.
-        registro.guardarRegistro();
-
         // Muestra el resultado final al usuario de consola.
         if (registro.isExitoso()) {
             System.out.println("Ingreso autorizado.");
