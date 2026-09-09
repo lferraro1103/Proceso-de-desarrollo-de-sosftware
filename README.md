@@ -1,40 +1,34 @@
-# Correcciones aplicadas — TP Proceso de Desarrollo de Software
+# Corrección de código — Clase 5: GRASP
 
-Módulo: UADE Beats — Acceso a eventos en vivo (`TP/Grupo9_POO_EntregaFinal`)
+Módulo: UADE Beats — Acceso a eventos en vivo
 
-## 1. Herencia (unificación de cuentas)
+## 1. Bad smells corregidos
 
-**Antes:** `Usuario` y `Artista` eran clases independientes, cada una con sus propios campos de identidad (`id`, `nombreUsuario`, `contrasena`, `activo`), duplicando la misma información y la misma lógica de login en dos lugares.
-
-**Corrección:** se creó la clase base `Cuenta` (`modelo/Cuenta.java`) con `id`, `nombreUsuario`, `contrasena`, `activo`, `sesionIniciada` y `tipoUsuario` (enum `TipoUsuario`: USUARIO, ADMINISTRADOR, ARTISTA). `Usuario` y `Artista` ahora extienden `Cuenta` en vez de duplicar esos campos. Un Administrador es simplemente un `Usuario` con `tipoUsuario=ADMINISTRADOR`, no se creó una clase Java aparte para evitar una clase sin atributos propios.
-
-## 2. Bad smells corregidos (según Clase 4 — Bad Smells)
-
-| Smell | Dónde estaba | Corrección |
+| Smell | Descripción | Solución aplicada |
 |---|---|---|
-| **Código duplicado** | `GestorEventosEnVivo.solicitarIngreso` y `registrarFalloSinUsuario` construían el mismo evento "placeholder" (id=-1, CANCELADO) por separado | Se extrajo `eventoDesconocido()` como método único, reutilizado en ambos lugares |
-| **Código duplicado** | `App.java` tenía `listarEventosParaExpulsion` con la misma lógica de filtrado que `listarEventosParaCambio` | Se eliminó el método aparte; se agregó el caso `"expulsar"` a `puedeAplicarAccion`/`obtenerNombreAccion` (mismo patrón que ya usaban iniciar/pausar/reanudar/finalizar) |
-| **Nombre poco representativo / lógica escondida en parámetro** | `usuario.getPlanSuscripcion() == PlanSuscripcion.ARTIST_PASS` pasado directo como argumento booleano al crear `AccesoEvento` | Se agregó el método `Usuario.tieneAccesoPrioritario()` con nombre explícito |
-| **God Class** | `App.java` concentraba 999 líneas: menú, lectura de consola, validaciones, construcción de entidades y persistencia | Se separó en `ConsoleIO` (lectura de consola), `DatosIniciales` (datos semilla) y `MenuAcciones` (ejecución de cada opción del menú); `App` quedó solo con `main()` y el despacho del switch |
-| **Método largo** | `crearEventoManual` mezclaba selección de artista, lectura de datos, validación y construcción en un solo método | Se extrajeron `seleccionarArtistaParaEvento`, `leerDuracionMinutos`, `leerCapacidadMaxima` |
-| **Método largo** | `registrarUsuario` mezclaba lectura y validación del nombre de cuenta con el resto del alta | Se extrajo `leerNombreUsuarioNuevo` |
-| **Parámetros largos** | Constructor de `RecitalEnVivo` con 11 parámetros posicionales | Se creó `DatosRecital` (objeto de parámetros) agrupando los 10 datos propios del recital; el constructor quedó en `(id, DatosRecital)` |
+| Contrato sin efecto | `Usuario.actualizarPerfil()` y `Artista.actualizarInformacionArtistica()`, en su versión sin argumentos, no realizaban ninguna operación real | Se eliminaron ambos métodos |
+| Responsabilidad de entrada/salida en el modelo | `RegistroAcceso` imprimía por consola el resultado de un intento de acceso, mezclando el modelo de dominio con la interfaz | Se eliminó esa responsabilidad de `RegistroAcceso`; la comunicación del resultado queda a cargo de la clase que atiende la interfaz |
 
-## 3. Cambios dentro del alcance del programa (funcionalidad)
+## 2. Patrones GRASP aplicados
 
-Correcciones sobre los 4 casos de uso definidos en el TP1 oficial:
+### Experto en información
 
-- **CU-02 (ciclo de vida del evento):** "cancelar evento" existía en el modelo (`Evento.cancelarEvento()`) pero no estaba enganchada a ninguna opción de menú — se agregó al menú de consola.
-- **CU-03 (expulsar usuario):** la expulsión no dejaba trazabilidad ni notificaba al usuario — ahora `GestorEventosEnVivo.expulsarUsuario` genera un `RegistroAcceso` de la expulsión y devuelve el usuario afectado para poder notificarlo (consola y Swing).
-- **Persistencia:** se detectó que la contraseña nunca se guardaba en `usuarios.txt` (al recargar, siempre se hardcodeaba `"1234"`); se agregó el campo al formato de archivo.
+Cada clase valida aquello sobre lo que tiene la información necesaria. `RecitalEnVivo` valida su propia disponibilidad, capacidad y usuarios conectados; `AccesoEvento` valida la autorización del usuario y la compatibilidad de su plan de suscripción.
 
-## 4. Sistema de roles y permisos (en progreso)
+### Creador
 
-A partir del TP1 oficial (CU-04: "Registrar artista y crear evento"), se está agregando un sistema de roles:
+La asociación entre `Evento` y `Artista` se establece en un único punto: el método `Evento.agregarArtista`. De esta forma la clase encargada de mantener la colección de artistas asociados es también la responsable de crear la relación, evitando que se duplique desde distintos lugares del sistema.
 
-- **Fase 1 (completa):** `TipoUsuario` (enum), `Cuenta` (clase base), `Artista` con credenciales propias (antes no tenía login), persistencia actualizada de forma retrocompatible, y un Administrador sembrado por defecto (`admin`/`admin123`) para poder probar ese rol.
-- **Fase 2 (pendiente):** login unificado para cualquier tipo de cuenta + middleware que calcula qué opciones de menú están permitidas según el rol.
-- **Fase 3 (pendiente):** 4 pantallas de consola (login + menú Usuario + menú Artista + menú Administrador) y alta real de artistas con credenciales por parte del Administrador.
+### Controlador
 
----
-*Notas de trabajo, no parte de la entrega formal del TP.*
+`GestorEventosEnVivo` centraliza la recepción de los eventos del sistema (iniciar, pausar, reanudar, finalizar y cancelar un evento; solicitar ingreso; expulsar un usuario) y coordina su ejecución delegando en las entidades correspondientes. La interfaz de consola y la interfaz gráfica solicitan estas operaciones al gestor en lugar de invocar directamente los métodos de las entidades del dominio.
+
+### Alta cohesión
+
+Cada clase mantiene una única responsabilidad bien definida. `RegistroAcceso` conserva únicamente los datos del registro de acceso; la comunicación del resultado al usuario queda a cargo de la interfaz correspondiente.
+
+### Bajo acoplamiento
+
+Al centralizar las operaciones en el gestor y mantener a cada entidad responsable únicamente de su propia información, las interfaces de consola y gráfica dependen exclusivamente del gestor, sin necesidad de conocer las reglas internas de las entidades del dominio.
+
+Los diagramas de interacción correspondientes a cada patrón se encuentran en `DIAGRAMAS_GRASP.md`.
