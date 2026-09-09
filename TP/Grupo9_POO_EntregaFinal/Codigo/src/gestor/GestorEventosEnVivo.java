@@ -146,12 +146,13 @@ public class GestorEventosEnVivo {
      */
     public void reemplazarDatos(List<Usuario> usuarios,
                                 List<Artista> artistas,
-                                List<Evento> eventosCargados) {
+                                List<Evento> eventosCargados,
+                                List<RegistroAcceso> registrosCargados) {
 
         usuariosRegistrados = new ArrayList<>(usuarios);
         artistasRegistrados = new ArrayList<>(artistas);
         eventos = new ArrayList<>(eventosCargados);
-        registros = new ArrayList<>();
+        registros = new ArrayList<>(registrosCargados);
     }
 
     // Busca un evento por ID. Si no existe, devuelve null.

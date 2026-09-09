@@ -119,9 +119,10 @@ public class PersistenciaArchivos {
         List<Usuario> usuarios = cargarUsuarios();
         List<Artista> artistas = cargarArtistas();
         List<Evento> eventos = cargarEventos(artistas);
+        List<RegistroAcceso> registros = cargarRegistros(usuarios, eventos);
 
         // Reemplazo los datos en memoria por los datos leidos del TXT.
-        gestor.reemplazarDatos(usuarios, artistas, eventos);
+        gestor.reemplazarDatos(usuarios, artistas, eventos, registros);
     }
 
     private static void guardarUsuarios(List<Usuario> usuarios)
@@ -325,6 +326,66 @@ public class PersistenciaArchivos {
         }
 
         return eventos;
+    }
+
+    /*
+     * Reconstruye los registros de acceso guardados, buscando el usuario y
+     * el evento correspondientes por ID entre los ya cargados. Si alguno
+     * no aparece (por ejemplo, se borro al usuario), se descarta esa linea
+     * en vez de romper la carga completa.
+     */
+    private static List<RegistroAcceso> cargarRegistros(
+            List<Usuario> usuarios, List<Evento> eventos)
+            throws IOException {
+
+        List<RegistroAcceso> registros = new ArrayList<>();
+
+        if (!Files.exists(ARCHIVO_REGISTROS)) {
+            return registros;
+        }
+
+        for (String linea : Files.readAllLines(ARCHIVO_REGISTROS)) {
+            String[] datos = linea.split("\\|", -1);
+
+            if (datos.length >= 5) {
+                Usuario usuario = buscarUsuarioPorId(
+                        usuarios, Integer.parseInt(datos[1]));
+                Evento evento = buscarEventoPorId(
+                        eventos, Integer.parseInt(datos[2]));
+
+                if (usuario != null && evento != null) {
+                    registros.add(RegistroAcceso.reconstruirRegistro(
+                            usuario,
+                            evento,
+                            LocalDateTime.parse(datos[0]),
+                            Boolean.parseBoolean(datos[3]),
+                            datos[4]
+                    ));
+                }
+            }
+        }
+
+        return registros;
+    }
+
+    private static Usuario buscarUsuarioPorId(List<Usuario> usuarios, int id) {
+        for (Usuario usuario : usuarios) {
+            if (usuario.getId() == id) {
+                return usuario;
+            }
+        }
+
+        return null;
+    }
+
+    private static Evento buscarEventoPorId(List<Evento> eventos, int id) {
+        for (Evento evento : eventos) {
+            if (evento.getId() == id) {
+                return evento;
+            }
+        }
+
+        return null;
     }
 
     private static Map<Integer, Artista> mapearArtistas(
