@@ -599,31 +599,39 @@ public final class MenuAcciones {
         }
 
         try {
-            ejecutarCambioDeEstado(evento, accion);
+            ejecutarCambioDeEstado(gestor, idEvento, accion);
         } catch (AccesoDenegadoException e) {
             System.out.println("No se pudo cambiar el estado: "
                     + e.getMessage());
         }
     }
 
-    // Ejecuta sobre el evento la transicion de estado pedida por accion.
-    private static void ejecutarCambioDeEstado(Evento evento, String accion)
+    /*
+     * Pide al gestor que ejecute la transicion de estado.
+     *
+     * El gestor centraliza las operaciones sobre Evento (patron
+     * Controlador): esta clase no llama iniciarEvento/pausarEvento/etc
+     * directamente sobre el Evento.
+     */
+    private static void ejecutarCambioDeEstado(GestorEventosEnVivo gestor,
+                                               int idEvento,
+                                               String accion)
             throws AccesoDenegadoException {
 
         if ("iniciar".equals(accion)) {
-            evento.iniciarEvento();
+            gestor.iniciarEvento(idEvento);
             System.out.println("Evento iniciado.");
         } else if ("pausar".equals(accion)) {
-            evento.pausarEvento();
+            gestor.pausarEvento(idEvento);
             System.out.println("Evento pausado.");
         } else if ("reanudar".equals(accion)) {
-            evento.reanudarEvento();
+            gestor.reanudarEvento(idEvento);
             System.out.println("Evento reanudado.");
         } else if ("finalizar".equals(accion)) {
-            evento.finalizarEvento();
+            gestor.finalizarEvento(idEvento);
             System.out.println("Evento finalizado.");
         } else if ("cancelar".equals(accion)) {
-            evento.cancelarEvento();
+            gestor.cancelarEvento(idEvento);
             System.out.println("Evento cancelado.");
         }
     }

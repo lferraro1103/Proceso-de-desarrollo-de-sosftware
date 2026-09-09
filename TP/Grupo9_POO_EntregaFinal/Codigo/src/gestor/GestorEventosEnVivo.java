@@ -204,11 +204,53 @@ public class GestorEventosEnVivo {
         return null;
     }
 
-    // Cancela un evento si existe.
-    public void cancelarEvento(Evento evento) {
-        if (evento != null) {
-            evento.cancelarEvento();
+    /*
+     * Centraliza las transiciones de estado pedidas por las interfaces.
+     *
+     * Consola y Swing llaman a estos metodos en vez de invocar
+     * iniciarEvento/pausarEvento/etc directamente sobre el Evento: el
+     * gestor es quien recibe el pedido, busca el evento y coordina.
+     */
+    public void iniciarEvento(int idEvento) throws AccesoDenegadoException {
+        buscarEventoParaCambio(idEvento).iniciarEvento();
+    }
+
+    public void pausarEvento(int idEvento) throws AccesoDenegadoException {
+        buscarEventoParaCambio(idEvento).pausarEvento();
+    }
+
+    public void reanudarEvento(int idEvento) throws AccesoDenegadoException {
+        buscarEventoParaCambio(idEvento).reanudarEvento();
+    }
+
+    public void finalizarEvento(int idEvento) throws AccesoDenegadoException {
+        buscarEventoParaCambio(idEvento).finalizarEvento();
+    }
+
+    public void cancelarEvento(int idEvento) throws AccesoDenegadoException {
+        Evento evento = buscarEventoParaCambio(idEvento);
+
+        if (evento.getEstado() == EstadoEvento.FINALIZADO
+                || evento.getEstado() == EstadoEvento.CANCELADO) {
+            throw new AccesoDenegadoException(
+                    "No se puede cancelar un evento en estado "
+                            + evento.getEstado() + "."
+            );
         }
+
+        evento.cancelarEvento();
+    }
+
+    private Evento buscarEventoParaCambio(int idEvento)
+            throws AccesoDenegadoException {
+
+        Evento evento = buscarEventoPorId(idEvento);
+
+        if (evento == null) {
+            throw new AccesoDenegadoException("Evento inexistente.");
+        }
+
+        return evento;
     }
 
     // Agrega un registro a la trazabilidad del gestor.
