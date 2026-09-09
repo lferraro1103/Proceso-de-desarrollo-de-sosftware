@@ -82,13 +82,6 @@ public class Usuario extends Cuenta {
         this.email = email;
     }
 
-    // Version simple para cumplir el metodo de la estructura base.
-    public void actualizarPerfil() {
-        // Nada que hacer aca: activo ahora vive en Cuenta y ya se define
-        // en el constructor. Se mantiene el metodo por compatibilidad con
-        // la estructura base de la consigna.
-    }
-
     // Getters de consulta.
     public String getNombre() {
         return nombre;

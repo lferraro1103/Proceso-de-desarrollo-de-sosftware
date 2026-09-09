@@ -88,11 +88,6 @@ public class Artista extends Cuenta {
         return biografia;
     }
 
-    // Version simple que solo devuelve la biografia actual.
-    public String actualizarInformacionArtistica() {
-        return biografia;
-    }
-
     // Registra una obra o cancion del artista.
     public void agregarObra(String titulo) {
         obras.add(titulo);
