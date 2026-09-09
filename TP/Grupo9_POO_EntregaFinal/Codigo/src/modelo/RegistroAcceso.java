@@ -68,22 +68,17 @@ public class RegistroAcceso {
         return new RegistroAcceso(usuario, evento, false, motivoRechazo);
     }
 
-    // Imprime en consola una confirmacion del registro.
-    public void guardarRegistro() {
+    // Reconstruye un registro persistido sin modificar su fecha original.
+    public static RegistroAcceso reconstruirRegistro(Usuario usuario,
+                                                      Evento evento,
+                                                      LocalDateTime fechaHoraIngreso,
+                                                      boolean exitoso,
+                                                      String motivoRechazo) {
 
-        if (exitoso) {
-
-            System.out.println(
-                    "Ingreso registrado."
-            );
-
-        } else {
-
-            System.out.println(
-                    "Acceso rechazado: "
-                            + motivoRechazo
-            );
-        }
+        RegistroAcceso registro =
+                new RegistroAcceso(usuario, evento, exitoso, motivoRechazo);
+        registro.fechaHoraIngreso = fechaHoraIngreso;
+        return registro;
     }
 
     // Getters de consulta.
