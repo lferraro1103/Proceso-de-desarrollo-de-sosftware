@@ -99,6 +99,86 @@ public class GestorEventosEnVivo {
     }
 
     /*
+     * Da de alta un usuario nuevo a partir de los datos crudos que junta
+     * la vista. El gestor es quien conoce los usuarios existentes, por lo
+     * tanto es quien asigna el ID y construye el objeto del modelo.
+     *
+     * Devuelve el usuario creado o null si el nombre de usuario ya existe.
+     */
+    public Usuario registrarUsuario(String nombreUsuario,
+                                    String nombre,
+                                    String apellido,
+                                    String email,
+                                    String contrasena,
+                                    PlanSuscripcion plan) {
+
+        Usuario usuario = new Usuario(
+                siguienteIdUsuario(),
+                nombreUsuario,
+                nombre,
+                apellido,
+                email,
+                contrasena,
+                plan,
+                true
+        );
+
+        return registrarUsuario(usuario) ? usuario : null;
+    }
+
+    // Da de alta un artista nuevo y devuelve el objeto creado.
+    public Artista registrarArtista(String nombreArtistico,
+                                    String generoPrincipal,
+                                    String biografia,
+                                    boolean verificado) {
+
+        Artista artista = new Artista(
+                siguienteIdArtista(),
+                nombreArtistico,
+                generoPrincipal,
+                biografia,
+                verificado
+        );
+
+        registrarArtista(artista);
+        return artista;
+    }
+
+    // Da de alta un recital nuevo asociado a un artista y lo devuelve.
+    public RecitalEnVivo crearEvento(DatosRecital datos, Artista artista) {
+        RecitalEnVivo recital = new RecitalEnVivo(siguienteIdEvento(), datos);
+        crearEvento(recital, artista);
+        return recital;
+    }
+
+    // El proximo ID de usuario es el mayor existente mas uno.
+    private int siguienteIdUsuario() {
+        int mayor = 0;
+        for (Usuario usuario : usuariosRegistrados) {
+            mayor = Math.max(mayor, usuario.getId());
+        }
+        return mayor + 1;
+    }
+
+    // El proximo ID de artista es el mayor existente mas uno.
+    private int siguienteIdArtista() {
+        int mayor = 0;
+        for (Artista artista : artistasRegistrados) {
+            mayor = Math.max(mayor, artista.getId());
+        }
+        return mayor + 1;
+    }
+
+    // El proximo ID de evento es el mayor existente mas uno.
+    private int siguienteIdEvento() {
+        int mayor = 0;
+        for (Evento evento : eventos) {
+            mayor = Math.max(mayor, evento.getId());
+        }
+        return mayor + 1;
+    }
+
+    /*
      * Devuelve eventos disponibles para operar.
      *
      * Excluye cancelados y finalizados porque ya no deberian aparecer

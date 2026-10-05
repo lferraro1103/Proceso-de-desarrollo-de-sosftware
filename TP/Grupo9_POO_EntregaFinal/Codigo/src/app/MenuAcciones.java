@@ -27,15 +27,6 @@ import javax.swing.SwingUtilities;
  */
 public final class MenuAcciones {
 
-    // ID incremental para usuarios nuevos cargados desde el menu.
-    private static int siguienteIdUsuario = 4;
-
-    // ID incremental para artistas nuevos cargados desde el menu.
-    private static int siguienteIdArtista = 3;
-
-    // ID incremental para eventos nuevos cargados desde el menu.
-    private static int siguienteIdEvento = 102;
-
     private MenuAcciones() {
     }
 
@@ -111,28 +102,24 @@ public final class MenuAcciones {
         // Permite elegir FREE, PREMIUM o ARTIST_PASS.
         PlanSuscripcion plan = seleccionarPlan(scanner);
 
-        // Crea el usuario con ID incremental y la contrasena ingresada.
-        Usuario nuevoUsuario = new Usuario(
-                siguienteIdUsuario,
+        // El gestor asigna el ID y construye el usuario.
+        Usuario nuevoUsuario = gestor.registrarUsuario(
                 nombreUsuario,
                 nombre,
                 apellido,
                 email,
                 contrasena,
-                plan,
-                true
+                plan
         );
 
-        // Guarda el usuario en el gestor.
-        if (!gestor.registrarUsuario(nuevoUsuario)) {
+        if (nuevoUsuario == null) {
             System.out.println("Ese nombre de usuario ya esta registrado.");
             return;
         }
 
-        // Informa resultado y avanza el contador de IDs.
+        // Informa el resultado.
         System.out.println("Usuario registrado correctamente.");
-        System.out.println("ID asignado: " + siguienteIdUsuario);
-        siguienteIdUsuario++;
+        System.out.println("ID asignado: " + nuevoUsuario.getId());
 
         // Persiste de una para no perder el alta si se cierra sin guardar.
         guardarDatos(gestor);
@@ -198,19 +185,15 @@ public final class MenuAcciones {
                 "El artista esta verificado"
         );
 
-        Artista artista = new Artista(
-                siguienteIdArtista,
+        Artista artista = gestor.registrarArtista(
                 nombreArtistico,
                 generoPrincipal,
                 biografia,
                 verificado
         );
 
-        gestor.registrarArtista(artista);
-
         System.out.println("Artista registrado correctamente.");
-        System.out.println("ID asignado: " + siguienteIdArtista);
-        siguienteIdArtista++;
+        System.out.println("ID asignado: " + artista.getId());
 
         // Persiste de una para no perder el alta si se cierra sin guardar.
         guardarDatos(gestor);
@@ -278,16 +261,14 @@ public final class MenuAcciones {
                 esStreaming,
                 exclusivo
         );
-        RecitalEnVivo recital = new RecitalEnVivo(siguienteIdEvento, datosRecital);
 
-        // Paso 5: darlo de alta en el gestor e informar el resultado.
-        gestor.crearEvento(recital, artista);
+        // Paso 5: el gestor asigna el ID, lo crea y lo asocia al artista.
+        RecitalEnVivo recital = gestor.crearEvento(datosRecital, artista);
 
         System.out.println("Evento creado correctamente.");
-        System.out.println("ID asignado: " + siguienteIdEvento);
+        System.out.println("ID asignado: " + recital.getId());
         System.out.println("Artista asociado: "
                 + artista.getNombreArtistico());
-        siguienteIdEvento++;
     }
 
     /*
@@ -748,7 +729,6 @@ public final class MenuAcciones {
     public static void cargarDatos(GestorEventosEnVivo gestor) {
         try {
             PersistenciaArchivos.cargarDatos(gestor);
-            actualizarIdsDesdeGestor(gestor);
             System.out.println("Datos cargados correctamente desde carpeta datos.");
         } catch (IOException | RuntimeException e) {
             System.out.println("No se pudieron cargar los datos: "
@@ -763,39 +743,6 @@ public final class MenuAcciones {
         );
 
         System.out.println("Interfaz grafica abierta.");
-    }
-
-    /*
-     * Actualiza los IDs incrementales despues de cargar datos.
-     *
-     * Evita que un nuevo usuario, artista o evento repita un ID ya cargado.
-     */
-    private static void actualizarIdsDesdeGestor(GestorEventosEnVivo gestor) {
-        int mayorUsuario = 0;
-        int mayorArtista = 0;
-        int mayorEvento = 0;
-
-        for (Usuario usuario : gestor.listarUsuarios()) {
-            if (usuario.getId() > mayorUsuario) {
-                mayorUsuario = usuario.getId();
-            }
-        }
-
-        for (Artista artista : gestor.listarArtistas()) {
-            if (artista.getId() > mayorArtista) {
-                mayorArtista = artista.getId();
-            }
-        }
-
-        for (Evento evento : gestor.listarEventos()) {
-            if (evento.getId() > mayorEvento) {
-                mayorEvento = evento.getId();
-            }
-        }
-
-        siguienteIdUsuario = mayorUsuario + 1;
-        siguienteIdArtista = mayorArtista + 1;
-        siguienteIdEvento = mayorEvento + 1;
     }
 
     // Lista todos los registros de acceso guardados por el gestor.
