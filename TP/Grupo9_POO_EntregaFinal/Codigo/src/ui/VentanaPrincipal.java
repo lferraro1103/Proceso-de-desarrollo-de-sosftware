@@ -210,19 +210,17 @@ public class VentanaPrincipal extends JFrame {
             return;
         }
 
-        Usuario usuario = new Usuario(
-                // El ID se calcula mirando los usuarios ya cargados.
-                siguienteIdUsuario(),
+        // El gestor asigna el ID y construye el usuario.
+        Usuario usuario = gestor.registrarUsuario(
                 nombreUsuario,
                 nombre,
                 apellido,
                 email,
                 contrasena,
-                plan,
-                true
+                plan
         );
 
-        if (gestor.registrarUsuario(usuario)) {
+        if (usuario != null) {
             mostrarMensaje("Usuario registrado correctamente.");
 
             // Refresco para que aparezca en la lista de la ventana.
@@ -247,16 +245,12 @@ public class VentanaPrincipal extends JFrame {
 
         boolean verificado = leerBooleano("El artista esta verificado?");
 
-        Artista artista = new Artista(
-                // Igual que usuarios, el ID se calcula automaticamente.
-                siguienteIdArtista(),
+        gestor.registrarArtista(
                 nombreArtistico,
                 genero,
                 biografia,
                 verificado
         );
-
-        gestor.registrarArtista(artista);
         mostrarMensaje("Artista registrado correctamente.");
         actualizarListas();
 
@@ -317,12 +311,7 @@ public class VentanaPrincipal extends JFrame {
                 exclusivo
         );
 
-        RecitalEnVivo recital = new RecitalEnVivo(
-                siguienteIdEvento(),
-                datosRecital
-        );
-
-        gestor.crearEvento(recital, artista);
+        gestor.crearEvento(datosRecital, artista);
         mostrarMensaje("Evento creado correctamente.");
         actualizarListas();
     }
@@ -531,45 +520,6 @@ public class VentanaPrincipal extends JFrame {
         );
 
         return respuesta == JOptionPane.YES_OPTION;
-    }
-
-    private int siguienteIdUsuario() {
-        // Busco el mayor ID existente y devuelvo el siguiente.
-        int mayor = 0;
-
-        for (Usuario usuario : gestor.listarUsuarios()) {
-            if (usuario.getId() > mayor) {
-                mayor = usuario.getId();
-            }
-        }
-
-        return mayor + 1;
-    }
-
-    private int siguienteIdArtista() {
-        // Misma idea que con usuarios, pero para artistas.
-        int mayor = 0;
-
-        for (Artista artista : gestor.listarArtistas()) {
-            if (artista.getId() > mayor) {
-                mayor = artista.getId();
-            }
-        }
-
-        return mayor + 1;
-    }
-
-    private int siguienteIdEvento() {
-        // Misma idea que con usuarios, pero para eventos.
-        int mayor = 0;
-
-        for (Evento evento : gestor.listarEventos()) {
-            if (evento.getId() > mayor) {
-                mayor = evento.getId();
-            }
-        }
-
-        return mayor + 1;
     }
 
     private JPanel crearPanelPersistencia() {
