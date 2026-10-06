@@ -1,6 +1,7 @@
 package app;
 
 import gestor.GestorEventosEnVivo;
+import persistencia.PersistenciaArchivos;
 
 import java.util.Scanner;
 
@@ -25,7 +26,7 @@ public class App {
         Scanner scanner = new Scanner(System.in);
 
         // Gestor central del modulo: administra eventos, usuarios y registros.
-        GestorEventosEnVivo gestor = new GestorEventosEnVivo();
+        GestorEventosEnVivo gestor = new GestorEventosEnVivo(new PersistenciaArchivos());
 
         // Carga usuarios, artistas y recitales iniciales para poder probar.
         DatosIniciales.cargar(gestor);
