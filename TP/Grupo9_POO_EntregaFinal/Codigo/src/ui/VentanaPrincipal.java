@@ -7,9 +7,7 @@ import modelo.DatosRecital;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.Usuario;
-import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
-import persistencia.PersistenciaArchivos;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -345,12 +343,12 @@ public class VentanaPrincipal extends JFrame {
         // Primero elijo el evento y despues un usuario conectado a ese evento.
         Evento evento = seleccionarEvento();
 
-        if (!(evento instanceof RecitalEnVivo)) {
-            mostrarMensaje("Seleccione un recital valido.");
+        if (evento == null) {
+            mostrarMensaje("Seleccione un evento valido.");
             return;
         }
 
-        RecitalEnVivo recital = (RecitalEnVivo) evento;
+        Evento recital = evento;
 
         if (recital.getUsuariosConectados().isEmpty()) {
             mostrarMensaje("No hay usuarios conectados en este evento.");
@@ -396,7 +394,7 @@ public class VentanaPrincipal extends JFrame {
         return gestor.buscarUsuarioPorId(obtenerIdDesdeTexto(seleccionado));
     }
 
-    private Usuario seleccionarUsuarioConectado(RecitalEnVivo recital) {
+    private Usuario seleccionarUsuarioConectado(Evento recital) {
         // Solo muestro los usuarios conectados a este recital.
         List<String> opciones = new ArrayList<>();
 
@@ -571,7 +569,7 @@ public class VentanaPrincipal extends JFrame {
     private void guardarDatos() {
         try {
             // Guarda usuarios, artistas, eventos y registros en archivos TXT.
-            PersistenciaArchivos.guardarDatos(gestor);
+            gestor.guardarDatos();
             mostrarMensaje("Datos guardados en carpeta datos.");
         } catch (IOException e) {
             mostrarMensaje("No se pudieron guardar los datos: "
@@ -588,7 +586,7 @@ public class VentanaPrincipal extends JFrame {
      */
     private void guardarSilencioso() {
         try {
-            PersistenciaArchivos.guardarDatos(gestor);
+            gestor.guardarDatos();
         } catch (IOException e) {
             mostrarMensaje("No se pudieron guardar los datos: "
                     + e.getMessage());
@@ -598,7 +596,7 @@ public class VentanaPrincipal extends JFrame {
     private void cargarDatos() {
         try {
             // Carga usuarios, artistas y eventos desde los TXT.
-            PersistenciaArchivos.cargarDatos(gestor);
+            gestor.cargarDatos();
 
             // Despues de cargar, refresco lo que se ve en pantalla.
             actualizarListas();

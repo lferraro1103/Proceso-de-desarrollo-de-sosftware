@@ -73,6 +73,7 @@ public class RecitalEnVivo extends Evento {
      * - capacidad;
      * - usuario no conectado previamente.
      */
+    @Override
     public void permitirIngreso(Usuario usuario)
             throws AccesoDenegadoException {
 
@@ -144,21 +145,25 @@ public class RecitalEnVivo extends Evento {
     }
 
     // Expulsa o desconecta un usuario del recital.
+    @Override
     public void expulsarUsuario(Usuario usuario) {
         usuariosConectados.remove(usuario);
     }
 
     // Devuelve una vista no modificable para proteger el Set interno.
+    @Override
     public Set<Usuario> getUsuariosConectados() {
         return Collections.unmodifiableSet(usuariosConectados);
     }
 
     // Devuelve la cantidad actual de conectados.
+    @Override
     public int getCantidadConectados() {
         return usuariosConectados.size();
     }
 
     // Getters de datos propios del recital.
+    @Override
     public PlanSuscripcion getPlanMinimoRequerido() {
         return planMinimoRequerido;
     }

@@ -5,6 +5,7 @@ import excepciones.AccesoDenegadoException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /*
  * Clase abstracta base para cualquier evento de UADE Beats.
@@ -115,6 +116,22 @@ public abstract class Evento {
                         + estado + "."
         );
     }
+
+    // Plan minimo que necesita un usuario para entrar al evento.
+    public abstract PlanSuscripcion getPlanMinimoRequerido();
+
+    // Conecta al usuario si el evento lo admite; si no, lanza la excepcion.
+    public abstract void permitirIngreso(Usuario usuario)
+            throws AccesoDenegadoException;
+
+    // Desconecta al usuario del evento.
+    public abstract void expulsarUsuario(Usuario usuario);
+
+    // Usuarios conectados actualmente (vista no modificable).
+    public abstract Set<Usuario> getUsuariosConectados();
+
+    // Cantidad actual de usuarios conectados.
+    public abstract int getCantidadConectados();
 
     // Devuelve el estado como texto.
     public String mostrarEstado() {
