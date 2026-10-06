@@ -1,6 +1,7 @@
 package app;
 
 import gestor.GestorEventosEnVivo;
+import persistencia.PersistenciaArchivos;
 import ui.VentanaPrincipal;
 
 import javax.swing.SwingUtilities;
@@ -12,7 +13,7 @@ public class AppSwing {
 
     public static void main(String[] args) {
         // Creo el gestor igual que en la consola.
-        GestorEventosEnVivo gestor = new GestorEventosEnVivo();
+        GestorEventosEnVivo gestor = new GestorEventosEnVivo(new PersistenciaArchivos());
 
         // Cargo los datos iniciales para que la ventana no arranque vacia.
         DatosIniciales.cargar(gestor);

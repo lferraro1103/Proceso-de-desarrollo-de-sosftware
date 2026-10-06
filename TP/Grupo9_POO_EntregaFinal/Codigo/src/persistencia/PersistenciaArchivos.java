@@ -1,6 +1,7 @@
 package persistencia;
 
 import gestor.GestorEventosEnVivo;
+import gestor.Persistencia;
 import modelo.Artista;
 import modelo.DatosRecital;
 import modelo.EstadoEvento;
@@ -29,7 +30,7 @@ import java.nio.file.Paths;
  * para demostrar que usuarios, artistas, eventos y registros pueden quedar
  * disponibles fuera de la ejecucion del programa.
  */
-public class PersistenciaArchivos {
+public class PersistenciaArchivos implements Persistencia {
 
     // Carpeta datos del proyecto (ver resolverCarpetaDatos): no depende de
     // desde donde se lance el programa, siempre es la del proyecto.
@@ -97,7 +98,8 @@ public class PersistenciaArchivos {
             CARPETA_DATOS.resolve("registros_acceso.txt");
 
     // Guarda todos los datos relevantes del gestor en archivos TXT.
-    public static void guardarDatos(GestorEventosEnVivo gestor)
+    @Override
+    public void guardar(GestorEventosEnVivo gestor)
             throws IOException {
 
         // Si la carpeta datos no existe, Java la crea.
@@ -110,7 +112,8 @@ public class PersistenciaArchivos {
     }
 
     // Carga usuarios, artistas y eventos desde TXT al gestor.
-    public static void cargarDatos(GestorEventosEnVivo gestor)
+    @Override
+    public void cargar(GestorEventosEnVivo gestor)
             throws IOException {
 
         // Tambien la creo al cargar, para evitar error si todavia no existe.

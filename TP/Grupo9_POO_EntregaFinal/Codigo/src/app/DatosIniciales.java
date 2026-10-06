@@ -8,7 +8,6 @@ import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.TipoUsuario;
 import modelo.Usuario;
-import persistencia.PersistenciaArchivos;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -51,12 +50,12 @@ public final class  DatosIniciales {
      * Intenta cargar usuarios/artistas/eventos desde la carpeta datos.
      *
      * Devuelve true solo si habia usuarios guardados (si el archivo no
-     * existe o esta vacio, PersistenciaArchivos.cargarDatos no tira error
+     * existe o esta vacio, gestor.cargarDatos no tira error
      * pero tampoco carga nada util, y en ese caso hay que sembrar).
      */
     private static boolean cargarDesdeArchivos(GestorEventosEnVivo gestor) {
         try {
-            PersistenciaArchivos.cargarDatos(gestor);
+            gestor.cargarDatos();
             return !gestor.listarUsuarios().isEmpty();
         } catch (IOException e) {
             return false;

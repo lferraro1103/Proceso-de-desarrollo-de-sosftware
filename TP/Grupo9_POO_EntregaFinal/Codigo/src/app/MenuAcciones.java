@@ -10,7 +10,6 @@ import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
 import modelo.Usuario;
-import persistencia.PersistenciaArchivos;
 import ui.VentanaPrincipal;
 
 import java.io.IOException;
@@ -408,23 +407,6 @@ public final class MenuAcciones {
         }
     }
 
-    /*
-     * Busca un evento por ID y lo devuelve solo si es un RecitalEnVivo.
-     *
-     * Centraliza una validacion que antes estaba repetida igual en
-     * listarConectados, expulsarUsuario y mostrarCapacidad.
-     */
-    private static RecitalEnVivo buscarRecitalPorId(GestorEventosEnVivo gestor,
-                                                     int idEvento) {
-
-        Evento evento = gestor.buscarEventoPorId(idEvento);
-
-        if (!(evento instanceof RecitalEnVivo)) {
-            return null;
-        }
-
-        return (RecitalEnVivo) evento;
-    }
 
     // Lista usuarios conectados a un evento puntual.
     public static void listarConectados(Scanner scanner,
@@ -433,8 +415,8 @@ public final class MenuAcciones {
         // Pide ID del evento a consultar.
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
 
-        // Busca el evento y valida que sea del tipo RecitalEnVivo.
-        RecitalEnVivo recital = buscarRecitalPorId(gestor, idEvento);
+        // Busca el evento por ID.
+        Evento recital = gestor.buscarEventoPorId(idEvento);
 
         if (recital == null) {
             System.out.println("Evento inexistente o no compatible.");
@@ -469,7 +451,7 @@ public final class MenuAcciones {
         // Pide el evento sobre el que se quiere operar.
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
 
-        RecitalEnVivo recital = buscarRecitalPorId(gestor, idEvento);
+        Evento recital = gestor.buscarEventoPorId(idEvento);
 
         if (recital == null) {
             System.out.println("Evento inexistente o no compatible.");
@@ -511,7 +493,7 @@ public final class MenuAcciones {
 
     // Lista usuarios conectados al recital elegido para poder seleccionar uno.
     private static boolean listarUsuariosConectadosParaExpulsion(
-            RecitalEnVivo recital) {
+            Evento recital) {
 
         System.out.println("\nUsuarios conectados al evento:");
 
@@ -534,8 +516,8 @@ public final class MenuAcciones {
         // Pide ID del evento.
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
 
-        // Busca el evento y valida que sea del tipo RecitalEnVivo.
-        RecitalEnVivo recital = buscarRecitalPorId(gestor, idEvento);
+        // Busca el evento por ID.
+        Evento recital = gestor.buscarEventoPorId(idEvento);
 
         if (recital == null) {
             System.out.println("Evento inexistente o no compatible.");
@@ -717,7 +699,7 @@ public final class MenuAcciones {
     // Guarda usuarios, artistas, eventos y registros en archivos TXT.
     public static void guardarDatos(GestorEventosEnVivo gestor) {
         try {
-            PersistenciaArchivos.guardarDatos(gestor);
+            gestor.guardarDatos();
             System.out.println("Datos guardados correctamente en carpeta datos.");
         } catch (IOException e) {
             System.out.println("No se pudieron guardar los datos: "
@@ -728,7 +710,7 @@ public final class MenuAcciones {
     // Carga usuarios, artistas y eventos desde archivos TXT.
     public static void cargarDatos(GestorEventosEnVivo gestor) {
         try {
-            PersistenciaArchivos.cargarDatos(gestor);
+            gestor.cargarDatos();
             System.out.println("Datos cargados correctamente desde carpeta datos.");
         } catch (IOException | RuntimeException e) {
             System.out.println("No se pudieron cargar los datos: "
