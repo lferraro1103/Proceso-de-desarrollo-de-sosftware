@@ -1,98 +1,131 @@
-# Iteración 3: arquitectura Modelo Vista Controlador
+# Iteración 4: principios SOLID
 
 Módulo: UADE Beats, acceso a eventos en vivo
 
-## 1. Problema detectado
+## 1. Resumen
 
-Ambas vistas, la de consola (`MenuAcciones`) y la ventana Swing (`VentanaPrincipal`), construían directamente objetos del modelo con `new Usuario`, `new Artista` y `new RecitalEnVivo`, y calculaban por su cuenta el identificador de cada entidad. La consola lo resolvía con contadores estáticos que debía recalcular al cargar datos de archivo, y la ventana con tres métodos propios que recorrían las listas. La misma regla estaba implementada dos veces con mecanismos distintos, y las vistas dependían de los constructores del modelo.
-
-## 2. Distribución en MVC
-
-| Componente | Clases | Responsabilidad |
+| Principio | Problema detectado | Solución aplicada |
 |---|---|---|
-| Modelo | Paquete `modelo` | Datos y reglas de negocio. No conoce la consola ni la ventana. |
-| Vista | `MenuAcciones` y `VentanaPrincipal` | Reunir los datos que ingresa la persona, verificar que los campos requeridos estén completos, mostrar resultados y enviar cada acción al controlador. |
-| Controlador | `GestorEventosEnVivo` | Recibir los pedidos de la vista, crear los objetos del modelo, asignar identificadores y devolver el resultado. |
+| Responsabilidad única | `GestorEventosEnVivo` administraba usuarios, artistas y eventos, y además resolvía los ingresos y guardaba los registros de acceso | Nueva clase `ControlAcceso` con esa única responsabilidad |
+| Abierto y cerrado | El gestor y las vistas verificaban con `instanceof` que el evento fuera un `RecitalEnVivo` y lo convertían con un cast | `Evento` declara las operaciones de ingreso, expulsión y consulta de conectados, y los clientes trabajan con `Evento` |
+| Sustitución de Liskov | El gestor rechazaba cualquier evento que no fuera `RecitalEnVivo`, por lo que una subclase de `Evento` no podía reemplazar a un recital | Cualquier subclase de `Evento` puede usarse en el gestor y en las vistas sin modificarlos |
+| Segregación de interfaces | No había una interfaz con métodos que sus clientes no usaran | La nueva interfaz `Persistencia` tiene solo las dos operaciones que el gestor necesita |
+| Inversión de dependencias | El gestor y las vistas dependían de la clase concreta `PersistenciaArchivos` | El gestor depende de la interfaz `Persistencia`, que recibe por constructor |
+
+## 2. Responsabilidad única
+
+Antes, `GestorEventosEnVivo` concentraba dos responsabilidades distintas: administrar las colecciones de usuarios, artistas y eventos, y decidir si un usuario puede ingresar a un evento, dejando constancia de cada intento.
+
+`ControlAcceso` se encarga ahora de resolver cada solicitud de ingreso y de llevar la trazabilidad.
+
+| Clase | Responsabilidad |
+|---|---|
+| `GestorEventosEnVivo` | Altas, búsquedas, ciclo de vida de los eventos y expulsión. Delega la solicitud de ingreso. |
+| `ControlAcceso` | Validar el ingreso, crear el registro de cada intento, guardar los registros y registrar las expulsiones. |
+
+El gestor pasó de 521 a 385 líneas. La solicitud de ingreso en el gestor quedó reducida a buscar al usuario y al evento y delegar la decisión.
 
 ```mermaid
-%%{init: {'flowchart': {'curve': 'linear'}}}%%
-flowchart TB
-    V[Vista: MenuAcciones y VentanaPrincipal] --> C[Controlador: GestorEventosEnVivo]
-    C --> M[Modelo: Usuario, Artista, Evento, RecitalEnVivo]
+classDiagram
+    direction LR
+
+    class GestorEventosEnVivo {
+        +solicitarIngreso(idUsuario, idEvento) RegistroAcceso
+        +expulsarUsuario(idEvento, idUsuario) Usuario
+    }
+    class ControlAcceso {
+        +procesarIngreso(usuario, evento) RegistroAcceso
+        +registrarExpulsion(usuario, evento) void
+        +listar() List
+    }
+    class RegistroAcceso
+
+    GestorEventosEnVivo --> ControlAcceso : delega el ingreso
+    ControlAcceso --> RegistroAcceso : crea
 ```
 
-La vista conoce al controlador y muestra los objetos que este le devuelve. El controlador conoce al modelo. El modelo no depende de ninguna de las otras capas.
+## 3. Abierto y cerrado, y sustitución de Liskov
 
-## 3. Cambios aplicados
+Antes, para solicitar un ingreso o expulsar a un usuario, el gestor comprobaba el tipo concreto del evento:
 
-### Alta de entidades en el controlador
+```java
+if (!(evento instanceof RecitalEnVivo)) {
+    // rechaza: "Tipo de evento no soportado por este modulo."
+}
+RecitalEnVivo recital = (RecitalEnVivo) evento;
+```
 
-`GestorEventosEnVivo` incorpora tres operaciones de alta que reciben los datos ya reunidos por la vista y devuelven el objeto creado.
+Cada tipo nuevo de evento obligaba a modificar el gestor y las vistas, y ningún evento que no fuera un recital podía usarse. Ahora `Evento` declara las operaciones que sus clientes necesitan y cada subclase las implementa.
 
-| Operación | Datos que recibe | Resultado |
-|---|---|---|
-| `registrarUsuario` | Nombre de usuario, nombre, apellido, email, contraseña y plan | El usuario creado, o `null` si el nombre de usuario ya existe |
-| `registrarArtista` | Nombre artístico, género, biografía y verificación | El artista creado |
-| `crearEvento` | `DatosRecital` y artista asociado | El recital creado y asociado al artista |
-
-### Asignación de identificadores
-
-El identificador siguiente se calcula en el controlador como el mayor existente más uno. El controlador es quien conoce las colecciones de usuarios, artistas y eventos, por lo que el valor es correcto aunque los datos provengan de un archivo. Este cálculo reemplaza los contadores estáticos de la consola, el método que los recalculaba al cargar datos y los tres métodos equivalentes de la ventana.
-
-### Vistas
-
-| Vista | Antes | Después |
-|---|---|---|
-| `MenuAcciones` | Tres contadores estáticos, un método para recalcularlos y tres construcciones directas de objetos del modelo | Solicita el alta al controlador e informa el identificador del objeto devuelto |
-| `VentanaPrincipal` | Tres métodos de cálculo de identificador y tres construcciones directas | Solicita el alta al controlador y refresca las listas |
-
-### Flujo del alta de un usuario
+| Operación declarada en `Evento` | Uso |
+|---|---|
+| `getPlanMinimoRequerido()` | Determinar el plan que exige el evento |
+| `permitirIngreso(usuario)` | Conectar al usuario o rechazar el ingreso |
+| `expulsarUsuario(usuario)` | Desconectar al usuario |
+| `getUsuariosConectados()` | Listar los usuarios conectados |
+| `getCantidadConectados()` | Mostrar la ocupación del evento |
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Persona
-    participant V as Vista
-    participant G as GestorEventosEnVivo
-    participant U as Usuario
+classDiagram
+    direction TB
 
-    Persona->>V: ingresa los datos del alta
-    V->>V: verifica campos requeridos
-    V->>G: registrarUsuario(datos)
-    G->>G: siguienteIdUsuario()
-    G->>U: crea el usuario con el identificador
-    G->>G: verifica que el nombre de usuario no exista
-    alt nombre disponible
-        G-->>V: usuario creado
-        V-->>Persona: informa el identificador asignado
-    else nombre ya registrado
-        G-->>V: null
-        V-->>Persona: informa que el nombre ya existe
-    end
+    class Evento {
+        <<abstract>>
+        +getPlanMinimoRequerido() PlanSuscripcion
+        +permitirIngreso(usuario) void
+        +expulsarUsuario(usuario) void
+        +getUsuariosConectados() Set
+        +getCantidadConectados() int
+    }
+    class RecitalEnVivo
+    class GestorEventosEnVivo
+    class ControlAcceso
+
+    Evento <|-- RecitalEnVivo
+    GestorEventosEnVivo --> Evento : usa
+    ControlAcceso --> Evento : usa
 ```
 
-## 4. Reparto de validaciones
+El gestor, `ControlAcceso` y las vistas dependen solamente de `Evento`. Un tipo nuevo de evento se agrega creando una subclase, sin modificar ninguna de estas clases, y puede reemplazar a un recital en cualquier lugar donde se use un `Evento`.
 
-| Capa | Validación |
-|---|---|
-| Vista | Campos requeridos completos y valores numéricos bien formados |
-| Controlador | Unicidad del nombre de usuario |
-| Modelo | Reglas de negocio: estado y horario del evento, capacidad, plan mínimo y transiciones de estado |
+## 4. Segregación de interfaces
 
-## 5. Patrones y principios aplicados
+La única interfaz del módulo es `Persistencia`, con dos operaciones que el gestor utiliza ambas. Ninguna clase que la implementa debe definir métodos que no necesita.
 
-| Elemento | Aplicación |
-|---|---|
-| MVC | Separación de Modelo, Vista y Controlador. |
-| Controlador (GRASP) | El alta de entidades se suma a las operaciones que el gestor ya coordinaba. |
-| Creador (GRASP) | Quien administra las colecciones es quien crea sus elementos. |
-| Experto en información (GRASP) | El identificador se calcula donde está la información necesaria. |
-| Bajo acoplamiento (GRASP) | Las vistas dejan de depender de los constructores del modelo. |
-| Código duplicado | Desaparece la doble implementación del cálculo de identificadores. |
+## 5. Inversión de dependencias
 
-## 6. Decisión de diseño
+Antes, las vistas y el gestor invocaban directamente a la clase concreta `PersistenciaArchivos`. Ahora el gestor recibe por constructor una `Persistencia` y las vistas piden guardar o cargar al gestor.
 
-El cálculo del identificador se ubicó en el controlador y no en las vistas ni en el modelo, porque depende del conjunto de entidades existentes, información que solo conoce el controlador.
+```mermaid
+classDiagram
+    direction LR
+
+    class GestorEventosEnVivo {
+        +guardarDatos() void
+        +cargarDatos() void
+    }
+    class Persistencia {
+        <<interface>>
+        +guardar(gestor) void
+        +cargar(gestor) void
+    }
+    class PersistenciaArchivos
+
+    GestorEventosEnVivo --> Persistencia : depende de
+    PersistenciaArchivos ..|> Persistencia : implementa
+```
+
+| Elemento | Antes | Después |
+|---|---|---|
+| Creación del gestor | `new GestorEventosEnVivo()` | `new GestorEventosEnVivo(new PersistenciaArchivos())` |
+| Guardado desde las vistas | `PersistenciaArchivos.guardarDatos(gestor)` | `gestor.guardarDatos()` |
+| Carga desde las vistas | `PersistenciaArchivos.cargarDatos(gestor)` | `gestor.cargarDatos()` |
+
+La interfaz pertenece al paquete del gestor, que es el módulo de alto nivel. Para almacenar en otro medio alcanza con escribir una nueva clase que implemente `Persistencia` y pasarla al crear el gestor.
+
+## 6. Alcance
+
+`PersistenciaArchivos` conserva una comprobación de tipo al guardar un evento, porque el formato de archivo incluye campos propios del recital. Esa decisión depende del formato de almacenamiento y no del flujo de negocio.
 
 ## 7. Ejecución
 
@@ -103,5 +136,3 @@ javac -d ../out $(find . -name "*.java")
 java -cp ../out Main
 java -cp ../out app.AppSwing
 ```
-
-La primera ejecución usa la consola y la segunda abre la ventana gráfica.
