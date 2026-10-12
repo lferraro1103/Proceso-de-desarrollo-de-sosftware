@@ -13,19 +13,25 @@ import modelo.RegistroAcceso;
 import modelo.TipoUsuario;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,16 +47,19 @@ public class VentanaPrincipal extends JFrame {
     // Asi la ventana trabaja con los mismos usuarios, artistas y eventos.
     private GestorEventosEnVivo gestor;
 
-    // Los DefaultListModel guardan los textos que se ven en cada JList.
-    // Cuando se modifica el modelo, Swing actualiza la lista visual.
-    private DefaultListModel<String> modeloUsuarios;
-    private DefaultListModel<String> modeloArtistas;
-    private DefaultListModel<String> modeloEventos;
-    private DefaultListModel<String> modeloRegistros;
+    // Cada tabla muestra una entidad en columnas. Los modelos guardan las
+    // filas y Swing actualiza la tabla cuando se modifican.
+    private ModeloTabla modeloUsuarios;
+    private ModeloTabla modeloArtistas;
+    private ModeloTabla modeloEventos;
+    private ModeloTabla modeloRegistros;
 
-    // Guardo esta lista como atributo porque necesito saber que evento
-    // selecciono el usuario para iniciar, pausar, reanudar o finalizar.
-    private JList<String> listaEventos;
+    // Guardo esta tabla como atributo porque necesito saber que evento
+    // selecciono la persona para iniciar, pausar, reanudar o finalizar.
+    private JTable tablaEventos;
+
+    private static final DateTimeFormatter FORMATO_FECHA =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // Etiqueta inferior para mostrar el resultado de la ultima accion.
     private JLabel estado;
@@ -70,10 +79,23 @@ public class VentanaPrincipal extends JFrame {
         this.permiteCerrarSesion = permiteCerrarSesion;
 
         // Creo un modelo para cada lista de la ventana.
-        modeloUsuarios = new DefaultListModel<>();
-        modeloArtistas = new DefaultListModel<>();
-        modeloEventos = new DefaultListModel<>();
-        modeloRegistros = new DefaultListModel<>();
+        modeloUsuarios = new ModeloTabla(
+                new String[] {"ID", "Usuario", "Nombre", "Plan", "Activo"},
+                new Class<?>[] {Integer.class, String.class, String.class,
+                        String.class, String.class});
+        modeloArtistas = new ModeloTabla(
+                new String[] {"ID", "Cuenta", "Artista", "Genero", "Verificado"},
+                new Class<?>[] {Integer.class, String.class, String.class,
+                        String.class, String.class});
+        modeloEventos = new ModeloTabla(
+                new String[] {"ID", "Titulo", "Estado", "Inicio",
+                        "Conectados", "Plan minimo", "Artistas"},
+                new Class<?>[] {Integer.class, String.class, String.class,
+                        String.class, String.class, String.class, String.class});
+        modeloRegistros = new ModeloTabla(
+                new String[] {"Fecha", "Usuario", "Evento", "Resultado"},
+                new Class<?>[] {String.class, String.class, String.class,
+                        String.class});
 
         // Configuracion basica de la ventana.
         setTitle("Eventos en vivo - UADE Beats: "
@@ -139,9 +161,71 @@ public class VentanaPrincipal extends JFrame {
         add(inferior, BorderLayout.SOUTH);
     }
 
+    /*
+     * Crea una tabla de solo lectura con orden por columna y seleccion de
+     * una sola fila. Los anchos indican el ancho preferido de cada columna.
+     */
+    private JTable crearTabla(ModeloTabla modelo, int... anchos) {
+        JTable tabla = new JTable(modelo);
+        tabla.setAutoCreateRowSorter(true);
+        tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tabla.setFillsViewportHeight(true);
+        tabla.setRowHeight(22);
+
+        // Swing alinea a la derecha las columnas numericas; el ID se
+        // alinea a la izquierda como el resto del texto.
+        DefaultTableCellRenderer izquierda = new DefaultTableCellRenderer();
+        izquierda.setHorizontalAlignment(SwingConstants.LEFT);
+        tabla.setDefaultRenderer(Integer.class, izquierda);
+
+        for (int i = 0; i < anchos.length; i++) {
+            TableColumn columna = tabla.getColumnModel().getColumn(i);
+            columna.setPreferredWidth(anchos[i]);
+        }
+
+        return tabla;
+    }
+
+    // Pinta el estado del evento con un color segun su valor.
+    private static class RenderizadorEstado extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable tabla,
+                                                       Object valor,
+                                                       boolean seleccionada,
+                                                       boolean foco,
+                                                       int fila,
+                                                       int columna) {
+
+            Component celda = super.getTableCellRendererComponent(
+                    tabla, valor, seleccionada, foco, fila, columna);
+
+            if (!seleccionada) {
+                celda.setForeground(colorDeEstado(String.valueOf(valor)));
+            }
+
+            return celda;
+        }
+
+        private Color colorDeEstado(String estado) {
+            switch (estado) {
+                case "EN_CURSO":
+                    return new Color(31, 122, 61);
+                case "PAUSADO":
+                    return new Color(168, 114, 26);
+                case "CANCELADO":
+                    return new Color(176, 58, 46);
+                case "FINALIZADO":
+                    return Color.GRAY;
+                default:
+                    return Color.BLACK;
+            }
+        }
+    }
+
     private JPanel crearPanelUsuarios() {
         JPanel panel = new JPanel(new BorderLayout());
-        JList<String> lista = new JList<>(modeloUsuarios);
+        JTable lista = crearTabla(modeloUsuarios, 40, 120, 200, 110, 60);
 
         // Refresca la informacion visible.
         JButton actualizar = new JButton("Actualizar");
@@ -162,7 +246,7 @@ public class VentanaPrincipal extends JFrame {
 
     private JPanel crearPanelArtistas() {
         JPanel panel = new JPanel(new BorderLayout());
-        JList<String> lista = new JList<>(modeloArtistas);
+        JTable lista = crearTabla(modeloArtistas, 40, 130, 190, 120, 80);
 
         // Refresca la informacion visible.
         JButton actualizar = new JButton("Actualizar");
@@ -183,7 +267,9 @@ public class VentanaPrincipal extends JFrame {
 
     private JPanel crearPanelEventos() {
         JPanel panel = new JPanel(new BorderLayout());
-        listaEventos = new JList<>(modeloEventos);
+        tablaEventos = crearTabla(modeloEventos, 40, 190, 100, 130, 90, 100, 170);
+        tablaEventos.getColumnModel().getColumn(2)
+                .setCellRenderer(new RenderizadorEstado());
 
         // Panel de botones para operar sobre eventos.
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -225,7 +311,7 @@ public class VentanaPrincipal extends JFrame {
         agregarSiPermitido(acciones, Accion.VER_CONECTADOS, verConectados);
         acciones.add(actualizar);
 
-        panel.add(new JScrollPane(listaEventos), BorderLayout.CENTER);
+        panel.add(new JScrollPane(tablaEventos), BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
         return panel;
     }
@@ -253,13 +339,14 @@ public class VentanaPrincipal extends JFrame {
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT));
         acciones.add(actualizar);
 
-        panel.add(new JScrollPane(new JList<>(modeloRegistros)), BorderLayout.CENTER);
+        panel.add(new JScrollPane(crearTabla(modeloRegistros, 130, 110, 230, 330)),
+                BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
         return panel;
     }
 
     private void verConectados() {
-        Integer idEvento = obtenerIdSeleccionado(listaEventos);
+        Integer idEvento = obtenerIdSeleccionado(tablaEventos);
 
         if (idEvento == null) {
             mostrarMensaje("Seleccione un evento.");
@@ -672,7 +759,7 @@ public class VentanaPrincipal extends JFrame {
 
     private void cambiarEstadoSeleccionado(String accion) {
         // Primero necesito saber que evento esta seleccionado en la lista.
-        Integer idEvento = obtenerIdSeleccionado(listaEventos);
+        Integer idEvento = obtenerIdSeleccionado(tablaEventos);
 
         if (idEvento == null) {
             mostrarMensaje("Seleccione un evento.");
@@ -743,59 +830,83 @@ public class VentanaPrincipal extends JFrame {
     }
 
     private void actualizarListas() {
-        // Limpio primero para no repetir elementos visuales.
-        modeloUsuarios.clear();
-        modeloArtistas.clear();
-        modeloEventos.clear();
-        modeloRegistros.clear();
+        // Limpio primero las filas para no repetir elementos.
+        modeloUsuarios.setRowCount(0);
+        modeloArtistas.setRowCount(0);
+        modeloEventos.setRowCount(0);
+        modeloRegistros.setRowCount(0);
 
         if (gestor.puede(Accion.VER_USUARIOS)) {
             for (Usuario usuario : gestor.listarUsuarios()) {
-                // Uso toString() porque cada clase ya sabe como mostrarse.
-                modeloUsuarios.addElement(usuario.toString());
+                modeloUsuarios.addRow(new Object[] {
+                        usuario.getId(),
+                        usuario.getNombreUsuario(),
+                        usuario.getNombreCompleto(),
+                        usuario.getPlanSuscripcion(),
+                        usuario.isActivo() ? "Si" : "No"
+                });
             }
         }
 
         if (gestor.puede(Accion.VER_ARTISTAS)) {
             for (Artista artista : gestor.listarArtistas()) {
-                modeloArtistas.addElement(artista.toString());
+                modeloArtistas.addRow(new Object[] {
+                        artista.getId(),
+                        artista.getNombreUsuario(),
+                        artista.getNombreArtistico(),
+                        artista.getGeneroPrincipal(),
+                        artista.isVerificado() ? "Si" : "No"
+                });
             }
         }
 
         if (gestor.puede(Accion.VER_EVENTOS)) {
             for (Evento evento : gestor.listarEventosVisibles()) {
-                modeloEventos.addElement(evento.toString());
+                modeloEventos.addRow(new Object[] {
+                        evento.getId(),
+                        evento.getTitulo(),
+                        evento.getEstado(),
+                        evento.getFechaHoraInicio().format(FORMATO_FECHA),
+                        evento.getCantidadConectados() + "/"
+                                + evento.getCapacidadMaxima(),
+                        evento.getPlanMinimoRequerido(),
+                        evento.getNombresArtistas()
+                });
             }
         }
 
         // El administrador ve todos los registros; un usuario, los suyos.
         if (gestor.puede(Accion.VER_REGISTROS)) {
-            for (RegistroAcceso registro : gestor.listarRegistros()) {
-                modeloRegistros.addElement(registro.toString());
-            }
+            agregarRegistros(gestor.listarRegistros());
         } else if (gestor.puede(Accion.VER_MIS_REGISTROS)) {
-            for (RegistroAcceso registro : gestor.listarMisRegistros()) {
-                modeloRegistros.addElement(registro.toString());
-            }
+            agregarRegistros(gestor.listarMisRegistros());
         }
     }
 
-    private Integer obtenerIdSeleccionado(JList<String> lista) {
-        // Los textos empiezan con "ID: 100 | ...".
-        // Este metodo obtiene el numero para buscar el objeto real.
-        String seleccionado = lista.getSelectedValue();
+    private void agregarRegistros(List<RegistroAcceso> registros) {
+        for (RegistroAcceso registro : registros) {
+            modeloRegistros.addRow(new Object[] {
+                    registro.getFechaHoraIngreso().format(FORMATO_FECHA),
+                    registro.getUsuario().getNombreUsuario(),
+                    registro.getEvento().getTitulo(),
+                    registro.isExitoso()
+                            ? "AUTORIZADO"
+                            : "RECHAZADO: " + registro.getMotivoRechazo()
+            });
+        }
+    }
 
-        if (seleccionado == null || !seleccionado.startsWith("ID: ")) {
+    // El ID es la primera columna de la fila seleccionada.
+    private Integer obtenerIdSeleccionado(JTable tabla) {
+        int fila = tabla.getSelectedRow();
+
+        if (fila == -1) {
             return null;
         }
 
-        int finId = seleccionado.indexOf(" |");
-
-        if (finId == -1) {
-            return null;
-        }
-
-        return Integer.parseInt(seleccionado.substring(4, finId));
+        // La tabla puede estar ordenada: convierto al indice del modelo.
+        int filaModelo = tabla.convertRowIndexToModel(fila);
+        return (Integer) tabla.getModel().getValueAt(filaModelo, 0);
     }
 
     private int obtenerIdDesdeTexto(String texto) {
