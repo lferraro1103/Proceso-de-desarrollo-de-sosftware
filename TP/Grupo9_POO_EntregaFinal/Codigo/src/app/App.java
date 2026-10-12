@@ -1,7 +1,7 @@
 package app;
 
 import gestor.GestorEventosEnVivo;
-import notificacion.NotificadorNtfy;
+import notificacion.NotificadorInactivo;
 import persistencia.PersistenciaArchivos;
 
 import java.util.Scanner;
@@ -28,7 +28,7 @@ public class App {
 
         // Gestor central del modulo: administra eventos, usuarios y registros.
         GestorEventosEnVivo gestor = new GestorEventosEnVivo(
-                new PersistenciaArchivos(), new NotificadorNtfy());
+                new PersistenciaArchivos(), new NotificadorInactivo());
 
         // Carga usuarios, artistas y recitales iniciales para poder probar.
         DatosIniciales.cargar(gestor);

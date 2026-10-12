@@ -1,7 +1,7 @@
 package app;
 
 import gestor.GestorEventosEnVivo;
-import notificacion.NotificadorNtfy;
+import notificacion.NotificadorInactivo;
 import persistencia.PersistenciaArchivos;
 import ui.VentanaLogin;
 
@@ -22,7 +22,7 @@ public class AppSwing {
     // Crea el gestor igual que la consola y carga los datos iniciales.
     static GestorEventosEnVivo crearGestor() {
         GestorEventosEnVivo gestor = new GestorEventosEnVivo(
-                new PersistenciaArchivos(), new NotificadorNtfy());
+                new PersistenciaArchivos(), new NotificadorInactivo());
 
         DatosIniciales.cargar(gestor);
         return gestor;
