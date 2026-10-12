@@ -9,6 +9,7 @@ import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
+import modelo.TipoUsuario;
 import modelo.Usuario;
 
 import java.io.IOException;
@@ -224,6 +225,67 @@ public class GestorEventosEnVivo {
         }
 
         return disponibles;
+    }
+
+    /*
+     * Eventos que la cuenta actual puede consultar: el administrador y los
+     * usuarios ven todos; un artista ve solamente los suyos.
+     */
+    public List<Evento> listarEventosVisibles() {
+        List<Evento> visibles = new ArrayList<>();
+
+        for (Evento evento : eventos) {
+            if (esVisible(evento)) {
+                visibles.add(evento);
+            }
+        }
+
+        return visibles;
+    }
+
+    // Busca un evento por ID entre los visibles para la cuenta actual.
+    public Evento buscarEventoVisible(int id) {
+        Evento evento = buscarEventoPorId(id);
+        return (evento != null && esVisible(evento)) ? evento : null;
+    }
+
+    // Registros de acceso de la cuenta actual.
+    public List<RegistroAcceso> listarMisRegistros() {
+        List<RegistroAcceso> propios = new ArrayList<>();
+        Cuenta actual = sesion.getCuentaActual();
+
+        if (actual == null) {
+            return propios;
+        }
+
+        for (RegistroAcceso registro : controlAcceso.listar()) {
+            if (registro.getUsuario().getId() == actual.getId()) {
+                propios.add(registro);
+            }
+        }
+
+        return propios;
+    }
+
+    // Un artista solo ve los eventos en los que participa.
+    private boolean esVisible(Evento evento) {
+        Cuenta actual = sesion.getCuentaActual();
+
+        if (actual == null) {
+            return false;
+        }
+
+        if (actual.getTipoUsuario() != TipoUsuario.ARTISTA) {
+            return true;
+        }
+
+        for (Artista artista : evento.getArtistas()) {
+            if (artista.getId() == actual.getId()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     // Devuelve copia de todos los eventos administrados.
