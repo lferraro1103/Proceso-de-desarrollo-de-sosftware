@@ -2,8 +2,6 @@ package app;
 
 import excepciones.AccesoDenegadoException;
 import gestor.GestorEventosEnVivo;
-import modelo.Cuenta;
-import modelo.TipoUsuario;
 import notificacion.NotificadorNtfy;
 import persistencia.PersistenciaArchivos;
 import ui.VentanaPrincipal;
@@ -15,8 +13,8 @@ import javax.swing.SwingUtilities;
 /*
  * Lanzador opcional de la interfaz grafica Swing.
  *
- * La ventana ofrece todas las operaciones de gestion, por eso solo se abre
- * para una cuenta con rol Administrador.
+ * Pide las credenciales y abre la ventana con las pestanias y los botones
+ * que corresponden al rol de la cuenta.
  */
 public class AppSwing {
 
@@ -47,14 +45,8 @@ public class AppSwing {
         }
 
         try {
-            Cuenta cuenta = gestor.iniciarSesion(
+            gestor.iniciarSesion(
                     nombreUsuario, new String(campoContrasena.getPassword()));
-
-            if (cuenta.getTipoUsuario() != TipoUsuario.ADMINISTRADOR) {
-                JOptionPane.showMessageDialog(null,
-                        "La interfaz grafica es solo para administradores.");
-                return;
-            }
         } catch (AccesoDenegadoException e) {
             JOptionPane.showMessageDialog(null, e.getMessage());
             return;
