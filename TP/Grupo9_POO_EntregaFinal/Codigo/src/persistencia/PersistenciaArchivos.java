@@ -121,7 +121,7 @@ public class PersistenciaArchivos implements Persistencia {
 
         List<Usuario> usuarios = cargarUsuarios();
         List<Artista> artistas = cargarArtistas();
-        List<Evento> eventos = cargarEventos(artistas);
+        List<Evento> eventos = cargarEventos(artistas, usuarios);
         List<RegistroAcceso> registros = cargarRegistros(usuarios, eventos);
 
         // Reemplazo los datos en memoria por los datos leidos del TXT.
@@ -136,11 +136,11 @@ public class PersistenciaArchivos implements Persistencia {
         for (Usuario usuario : usuarios) {
             // Uso | como separador para despues poder separar cada campo.
             lineas.add(usuario.getId()
-                    + "|" + limpiar(usuario.getNombreUsuario())
-                    + "|" + limpiar(usuario.getNombre())
-                    + "|" + limpiar(usuario.getApellido())
-                    + "|" + limpiar(usuario.getEmail())
-                    + "|" + limpiar(usuario.getContrasena())
+                    + "|" + escapar(usuario.getNombreUsuario())
+                    + "|" + escapar(usuario.getNombre())
+                    + "|" + escapar(usuario.getApellido())
+                    + "|" + escapar(usuario.getEmail())
+                    + "|" + escapar(usuario.getContrasena())
                     + "|" + usuario.getPlanSuscripcion()
                     + "|" + usuario.isActivo()
                     + "|" + usuario.getTipoUsuario());
@@ -158,12 +158,12 @@ public class PersistenciaArchivos implements Persistencia {
         for (Artista artista : artistas) {
             // Cada artista queda en una linea del archivo artistas.txt.
             lineas.add(artista.getId()
-                    + "|" + limpiar(artista.getNombreArtistico())
-                    + "|" + limpiar(artista.getGeneroPrincipal())
-                    + "|" + limpiar(artista.getBiografia())
+                    + "|" + escapar(artista.getNombreArtistico())
+                    + "|" + escapar(artista.getGeneroPrincipal())
+                    + "|" + escapar(artista.getBiografia())
                     + "|" + artista.isVerificado()
-                    + "|" + limpiar(artista.getNombreUsuario())
-                    + "|" + limpiar(artista.getContrasena())
+                    + "|" + escapar(artista.getNombreUsuario())
+                    + "|" + escapar(artista.getContrasena())
                     + "|" + artista.getTipoUsuario());
         }
 
@@ -182,17 +182,18 @@ public class PersistenciaArchivos implements Persistencia {
 
                 // Tambien guardo los IDs de artistas asociados al evento.
                 lineas.add(recital.getId()
-                        + "|" + limpiar(recital.getTitulo())
-                        + "|" + limpiar(recital.getDescripcion())
+                        + "|" + escapar(recital.getTitulo())
+                        + "|" + escapar(recital.getDescripcion())
                         + "|" + recital.getFechaHoraInicio()
                         + "|" + recital.getFechaHoraFin()
                         + "|" + recital.getEstado()
                         + "|" + recital.getCapacidadMaxima()
                         + "|" + recital.getPlanMinimoRequerido()
-                        + "|" + limpiar(recital.getUbicacion())
+                        + "|" + escapar(recital.getUbicacion())
                         + "|" + recital.isStreaming()
                         + "|" + recital.isExclusivo()
-                        + "|" + obtenerIdsArtistas(recital));
+                        + "|" + obtenerIdsArtistas(recital)
+                        + "|" + obtenerIdsConectados(recital));
             }
         }
 
@@ -210,7 +211,7 @@ public class PersistenciaArchivos implements Persistencia {
                     + "|" + registro.getUsuario().getId()
                     + "|" + registro.getEvento().getId()
                     + "|" + registro.isExitoso()
-                    + "|" + limpiar(registro.getMotivoRechazo()));
+                    + "|" + escapar(registro.getMotivoRechazo()));
         }
 
         Files.write(ARCHIVO_REGISTROS, lineas);
@@ -238,11 +239,11 @@ public class PersistenciaArchivos implements Persistencia {
                 // Con los datos leidos reconstruyo el objeto Usuario.
                 usuarios.add(new Usuario(
                         Integer.parseInt(datos[0]),
-                        datos[1],
-                        datos[2],
-                        datos[3],
-                        datos[4],
-                        datos[5],
+                        desescapar(datos[1]),
+                        desescapar(datos[2]),
+                        desescapar(datos[3]),
+                        desescapar(datos[4]),
+                        desescapar(datos[5]),
                         PlanSuscripcion.valueOf(datos[6]),
                         Boolean.parseBoolean(datos[7]),
                         tipo
@@ -269,18 +270,19 @@ public class PersistenciaArchivos implements Persistencia {
                 // por lo que ese artista no puede iniciar sesion hasta que
                 // un administrador le asigne credenciales.
                 String nombreUsuario = datos.length >= 8
-                        ? datos[5]
+                        ? desescapar(datos[5])
                         : "artista" + datos[0];
-                String contrasena = datos.length >= 8 ? datos[6] : "";
+                String contrasena = datos.length >= 8
+                        ? desescapar(datos[6]) : "";
 
                 // Reconstruyo el artista con los datos del TXT.
                 artistas.add(new Artista(
                         Integer.parseInt(datos[0]),
                         nombreUsuario,
                         contrasena,
-                        datos[1],
-                        datos[2],
-                        datos[3],
+                        desescapar(datos[1]),
+                        desescapar(datos[2]),
+                        desescapar(datos[3]),
                         Boolean.parseBoolean(datos[4])
                 ));
             }
@@ -289,7 +291,8 @@ public class PersistenciaArchivos implements Persistencia {
         return artistas;
     }
 
-    private static List<Evento> cargarEventos(List<Artista> artistas)
+    private static List<Evento> cargarEventos(List<Artista> artistas,
+                                              List<Usuario> usuarios)
             throws IOException {
 
         List<Evento> eventos = new ArrayList<>();
@@ -306,14 +309,14 @@ public class PersistenciaArchivos implements Persistencia {
             if (datos.length >= 12) {
                 // Reconstruyo el recital leyendo los campos en el mismo orden.
                 DatosRecital datosRecital = new DatosRecital(
-                        datos[1],
-                        datos[2],
+                        desescapar(datos[1]),
+                        desescapar(datos[2]),
                         LocalDateTime.parse(datos[3]),
                         LocalDateTime.parse(datos[4]),
                         EstadoEvento.valueOf(datos[5]),
                         Integer.parseInt(datos[6]),
                         PlanSuscripcion.valueOf(datos[7]),
-                        datos[8],
+                        desescapar(datos[8]),
                         Boolean.parseBoolean(datos[9]),
                         Boolean.parseBoolean(datos[10])
                 );
@@ -325,6 +328,13 @@ public class PersistenciaArchivos implements Persistencia {
 
                 // Vuelvo a unir el evento con sus artistas guardados.
                 asociarArtistas(recital, datos[11], artistasPorId);
+
+                // Los usuarios conectados se guardan en el campo 13; los
+                // archivos viejos de 12 campos no lo tienen.
+                if (datos.length >= 13) {
+                    restaurarConectados(recital, datos[12], usuarios);
+                }
+
                 eventos.add(recital);
             }
         }
@@ -363,7 +373,7 @@ public class PersistenciaArchivos implements Persistencia {
                             evento,
                             LocalDateTime.parse(datos[0]),
                             Boolean.parseBoolean(datos[3]),
-                            datos[4]
+                            desescapar(datos[4])
                     ));
                 }
             }
@@ -440,16 +450,90 @@ public class PersistenciaArchivos implements Persistencia {
         return String.join(",", ids);
     }
 
-    private static String limpiar(String valor) {
+    private static String obtenerIdsConectados(Evento evento) {
+        List<String> ids = new ArrayList<>();
+
+        for (Usuario usuario : evento.getUsuariosConectados()) {
+            ids.add(String.valueOf(usuario.getId()));
+        }
+
+        // Une los IDs con coma: "1,4".
+        return String.join(",", ids);
+    }
+
+    // Vuelve a conectar al recital los usuarios guardados por ID.
+    private static void restaurarConectados(RecitalEnVivo recital,
+                                            String idsUsuarios,
+                                            List<Usuario> usuarios) {
+
+        if (idsUsuarios == null || idsUsuarios.isEmpty()) {
+            return;
+        }
+
+        for (String id : idsUsuarios.split(",")) {
+            Usuario usuario = buscarUsuarioPorId(usuarios, Integer.parseInt(id));
+
+            // Si el usuario ya no existe, no se conecta a nadie.
+            if (usuario != null) {
+                recital.restaurarConectado(usuario);
+            }
+        }
+    }
+
+    /*
+     * Prepara un texto para guardarlo en una linea del archivo.
+     *
+     * El separador | y los saltos de linea no pueden aparecer dentro de un
+     * campo, por eso se reemplazan por secuencias que desescapar() revierte
+     * al cargar. Asi el valor leido es siempre igual al guardado.
+     */
+    private static String escapar(String valor) {
         if (valor == null) {
             return "";
         }
 
-        // Evito que el usuario rompa el formato del archivo escribiendo |
-        // o saltos de linea dentro de un campo.
         return valor
-                .replace("|", " ")
-                .replace("\r", " ")
-                .replace("\n", " ");
+                .replace("\\", "\\\\")
+                .replace("|", "\\p")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n");
+    }
+
+    // Revierte escapar().
+    private static String desescapar(String valor) {
+        StringBuilder resultado = new StringBuilder();
+
+        for (int i = 0; i < valor.length(); i++) {
+            char c = valor.charAt(i);
+
+            if (c == '\\' && i + 1 < valor.length()) {
+                char siguiente = valor.charAt(i + 1);
+
+                if (siguiente == 'p') {
+                    resultado.append('|');
+                    i++;
+                    continue;
+                }
+                if (siguiente == 'n') {
+                    resultado.append('\n');
+                    i++;
+                    continue;
+                }
+                if (siguiente == 'r') {
+                    resultado.append('\r');
+                    i++;
+                    continue;
+                }
+                if (siguiente == '\\') {
+                    resultado.append('\\');
+                    i++;
+                    continue;
+                }
+            }
+
+            resultado.append(c);
+        }
+
+        return resultado.toString();
     }
 }
