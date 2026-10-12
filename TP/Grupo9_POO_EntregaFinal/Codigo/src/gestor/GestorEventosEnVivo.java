@@ -340,6 +340,30 @@ public class GestorEventosEnVivo {
         artistasRegistrados = new ArrayList<>(artistas);
         eventos = new ArrayList<>(eventosCargados);
         controlAcceso.reemplazar(registrosCargados);
+
+        reenlazarSesion();
+    }
+
+    /*
+     * Despues de cargar datos los objetos son nuevos: la sesion pasa a la
+     * cuenta equivalente recien cargada. Si esa cuenta ya no existe, esta
+     * inactiva o cambio de rol, la sesion se cierra.
+     */
+    private void reenlazarSesion() {
+        Cuenta actual = sesion.getCuentaActual();
+
+        if (actual == null) {
+            return;
+        }
+
+        Cuenta cargada = buscarCuentaPorNombreUsuario(actual.getNombreUsuario());
+
+        if (cargada == null || !cargada.isActivo()
+                || cargada.getTipoUsuario() != actual.getTipoUsuario()) {
+            sesion.cerrar();
+        } else {
+            sesion.iniciar(cargada);
+        }
     }
 
     // Busca un evento por ID. Si no existe, devuelve null.
@@ -526,6 +550,48 @@ public class GestorEventosEnVivo {
         return controlAcceso.procesarIngreso(
                 buscarUsuarioPorId(idUsuario),
                 buscarEventoPorId(idEvento));
+    }
+
+    /*
+     * Activa o desactiva un usuario segun su estado actual.
+     *
+     * Un usuario desactivado no puede iniciar sesion ni ingresar a eventos,
+     * y se lo desconecta de los eventos en los que estaba. Un administrador
+     * no puede desactivar su propia cuenta para no quedar sin acceso.
+     *
+     * Devuelve el usuario con su nuevo estado, o null si no existe.
+     */
+    public Usuario alternarActivo(int idUsuario) {
+        sesion.exigir(Accion.ACTIVAR_DESACTIVAR_USUARIO);
+
+        Usuario usuario = buscarUsuarioPorId(idUsuario);
+
+        if (usuario == null) {
+            return null;
+        }
+
+        if (!usuario.isActivo()) {
+            usuario.activar();
+            return usuario;
+        }
+
+        Cuenta actual = sesion.getCuentaActual();
+        if (actual.getId() == usuario.getId()
+                && actual.getTipoUsuario() == usuario.getTipoUsuario()) {
+            throw new PermisoDenegadoException(
+                    "No puede desactivar su propia cuenta.");
+        }
+
+        usuario.desactivar();
+
+        for (Evento evento : eventos) {
+            if (evento.getUsuariosConectados().contains(usuario)) {
+                evento.expulsarUsuario(usuario);
+                controlAcceso.registrarExpulsion(usuario, evento);
+            }
+        }
+
+        return usuario;
     }
 
     /*

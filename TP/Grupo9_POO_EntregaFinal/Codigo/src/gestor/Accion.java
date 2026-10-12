@@ -11,6 +11,7 @@ public enum Accion {
 
     REGISTRAR_USUARIO("Registrar usuario"),
     REGISTRAR_ARTISTA("Registrar artista"),
+    ACTIVAR_DESACTIVAR_USUARIO("Activar o desactivar usuario"),
     CREAR_EVENTO("Crear evento"),
     VER_USUARIOS("Ver usuarios registrados"),
     VER_ARTISTAS("Ver artistas registrados"),

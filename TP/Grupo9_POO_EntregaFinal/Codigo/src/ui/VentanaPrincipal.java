@@ -81,6 +81,10 @@ public class VentanaPrincipal extends JFrame {
     // selecciono la persona para iniciar, pausar, reanudar o finalizar.
     private JTable tablaEventos;
 
+    // Tabla de usuarios y el boton que activa o desactiva el seleccionado.
+    private JTable tablaUsuarios;
+    private final JButton alternarActivo = new JButton("Activar / Desactivar");
+
     // Botones que dependen del evento seleccionado y de su estado.
     private final JButton iniciar = new JButton("Iniciar");
     private final JButton pausar = new JButton("Pausar");
@@ -257,14 +261,23 @@ public class VentanaPrincipal extends JFrame {
 
     private JPanel crearPanelUsuarios() {
         JPanel panel = new JPanel(new BorderLayout());
-        JTable lista = crearTabla(modeloUsuarios, 40, 120, 200, 110, 60);
+        tablaUsuarios = crearTabla(modeloUsuarios, 40, 120, 200, 110, 60);
+
+        // El boton cambia segun el usuario seleccionado.
+        tablaUsuarios.getSelectionModel().addListSelectionListener(
+                e -> actualizarBotonUsuario());
+        alternarActivo.addActionListener(e -> alternarActivoSeleccionado());
 
         JPanel acciones = crearFila("Usuarios");
         agregarSiPermitido(acciones, Accion.REGISTRAR_USUARIO,
                 crearBoton("Registrar usuario", this::registrarUsuario));
+        agregarSiPermitido(acciones, Accion.ACTIVAR_DESACTIVAR_USUARIO,
+                alternarActivo);
         acciones.add(crearBoton("Actualizar", this::actualizarListas));
 
-        panel.add(new JScrollPane(lista), BorderLayout.CENTER);
+        actualizarBotonUsuario();
+
+        panel.add(new JScrollPane(tablaUsuarios), BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
         return panel;
     }
@@ -433,6 +446,47 @@ public class VentanaPrincipal extends JFrame {
 
         Integer id = obtenerIdSeleccionado(tablaEventos);
         return (id == null) ? null : gestor.buscarEventoVisible(id);
+    }
+
+    // Usuario de la fila seleccionada en la tabla de usuarios, o null.
+    private Usuario usuarioSeleccionado() {
+        if (tablaUsuarios == null) {
+            return null;
+        }
+
+        Integer id = obtenerIdSeleccionado(tablaUsuarios);
+        return (id == null) ? null : gestor.buscarUsuarioPorId(id);
+    }
+
+    // El boton dice "Desactivar" o "Activar" segun el usuario elegido.
+    private void actualizarBotonUsuario() {
+        Usuario usuario = usuarioSeleccionado();
+
+        alternarActivo.setEnabled(usuario != null);
+        alternarActivo.setText(usuario == null
+                ? "Activar / Desactivar"
+                : (usuario.isActivo() ? "Desactivar" : "Activar"));
+        alternarActivo.setToolTipText(usuario == null
+                ? "Seleccione un usuario de la tabla." : null);
+    }
+
+    private void alternarActivoSeleccionado() {
+        Usuario seleccionado = usuarioSeleccionado();
+
+        if (seleccionado == null) {
+            mostrarError("Seleccione un usuario.");
+            return;
+        }
+
+        try {
+            Usuario usuario = gestor.alternarActivo(seleccionado.getId());
+            mostrarExito("Usuario " + usuario.getNombreUsuario()
+                    + (usuario.isActivo() ? " activado." : " desactivado."));
+            actualizarListas();
+            guardarSilencioso();
+        } catch (PermisoDenegadoException e) {
+            mostrarError(e.getMessage());
+        }
     }
 
     private void verConectados() {
@@ -723,6 +777,7 @@ public class VentanaPrincipal extends JFrame {
         mostrarExito("Evento creado: " + evento.getTitulo()
                 + " (ID " + evento.getId() + ").");
         actualizarListas();
+        guardarSilencioso();
     }
 
     // ---------------- acciones sobre eventos y usuarios ----------------
@@ -754,6 +809,9 @@ public class VentanaPrincipal extends JFrame {
         );
 
         actualizarListas();
+
+        // El intento, exitoso o no, queda registrado: se guarda.
+        guardarSilencioso();
 
         if (registro.isExitoso()) {
             mostrarExito("Ingreso autorizado a \"" + evento.getTitulo() + "\".");
@@ -791,6 +849,7 @@ public class VentanaPrincipal extends JFrame {
             mostrarExito("Usuario expulsado: "
                     + usuarioExpulsado.getNombreCompleto() + ".");
             actualizarListas();
+            guardarSilencioso();
         } else {
             mostrarError("No se pudo expulsar al usuario.");
         }
@@ -824,6 +883,7 @@ public class VentanaPrincipal extends JFrame {
             mostrarExito("Evento \"" + evento.getTitulo() + "\": " + accion
                     + " realizado. Estado actual: " + evento.getEstado() + ".");
             actualizarListas();
+            guardarSilencioso();
         } catch (AccesoDenegadoException | PermisoDenegadoException e) {
             mostrarError(e.getMessage());
         }
@@ -953,9 +1013,11 @@ public class VentanaPrincipal extends JFrame {
     // ---------------- tablas ----------------
 
     private void actualizarListas() {
-        // Recuerdo el evento seleccionado para volver a seleccionarlo.
+        // Recuerdo las filas seleccionadas para volver a seleccionarlas.
         Integer idSeleccionado = (tablaEventos == null)
                 ? null : obtenerIdSeleccionado(tablaEventos);
+        Integer idUsuarioSeleccionado = (tablaUsuarios == null)
+                ? null : obtenerIdSeleccionado(tablaUsuarios);
 
         // Limpio primero las filas para no repetir elementos.
         modeloUsuarios.setRowCount(0);
@@ -1009,8 +1071,10 @@ public class VentanaPrincipal extends JFrame {
             agregarRegistros(gestor.listarMisRegistros());
         }
 
-        reseleccionarEvento(idSeleccionado);
+        reseleccionar(tablaEventos, modeloEventos, idSeleccionado);
+        reseleccionar(tablaUsuarios, modeloUsuarios, idUsuarioSeleccionado);
         actualizarBotones();
+        actualizarBotonUsuario();
     }
 
     private void agregarRegistros(List<RegistroAcceso> registros) {
@@ -1026,16 +1090,16 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    // Vuelve a seleccionar el evento que estaba elegido antes de refrescar.
-    private void reseleccionarEvento(Integer id) {
-        if (tablaEventos == null || id == null) {
+    // Vuelve a seleccionar la fila que estaba elegida antes de refrescar.
+    private void reseleccionar(JTable tabla, ModeloTabla modelo, Integer id) {
+        if (tabla == null || id == null) {
             return;
         }
 
-        for (int fila = 0; fila < modeloEventos.getRowCount(); fila++) {
-            if (id.equals(modeloEventos.getValueAt(fila, 0))) {
-                int filaVista = tablaEventos.convertRowIndexToView(fila);
-                tablaEventos.setRowSelectionInterval(filaVista, filaVista);
+        for (int fila = 0; fila < modelo.getRowCount(); fila++) {
+            if (id.equals(modelo.getValueAt(fila, 0))) {
+                int filaVista = tabla.convertRowIndexToView(fila);
+                tabla.setRowSelectionInterval(filaVista, filaVista);
                 return;
             }
         }

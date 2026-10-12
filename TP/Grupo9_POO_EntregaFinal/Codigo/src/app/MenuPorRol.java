@@ -24,6 +24,13 @@ public final class MenuPorRol {
     public static void ejecutar(Scanner scanner, GestorEventosEnVivo gestor) {
 
         while (true) {
+            // Si los datos se recargaron y la cuenta ya no existe o no esta
+            // activa, el gestor cierra la sesion.
+            if (gestor.getCuentaActual() == null) {
+                System.out.println("La sesion se cerro.");
+                return;
+            }
+
             List<Accion> acciones = gestor.accionesPermitidas();
 
             mostrarMenu(gestor, acciones);
@@ -84,6 +91,9 @@ public final class MenuPorRol {
                 break;
             case REGISTRAR_ARTISTA:
                 MenuAcciones.registrarArtista(scanner, gestor);
+                break;
+            case ACTIVAR_DESACTIVAR_USUARIO:
+                MenuAcciones.cambiarEstadoUsuario(scanner, gestor);
                 break;
             case CREAR_EVENTO:
                 MenuAcciones.crearEventoManual(scanner, gestor);

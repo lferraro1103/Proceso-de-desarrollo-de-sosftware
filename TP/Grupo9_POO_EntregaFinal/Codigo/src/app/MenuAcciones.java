@@ -112,7 +112,7 @@ public final class MenuAcciones {
         System.out.println("ID asignado: " + nuevoUsuario.getId());
 
         // Persiste de una para no perder el alta si se cierra sin guardar.
-        guardarDatos(gestor);
+        guardarSilencioso(gestor);
     }
 
     /*
@@ -201,7 +201,7 @@ public final class MenuAcciones {
         System.out.println("ID asignado: " + artista.getId());
 
         // Persiste de una para no perder el alta si se cierra sin guardar.
-        guardarDatos(gestor);
+        guardarSilencioso(gestor);
     }
 
     /*
@@ -280,6 +280,7 @@ public final class MenuAcciones {
         System.out.println("ID asignado: " + recital.getId());
         System.out.println("Artista asociado: "
                 + artista.getNombreArtistico());
+        guardarSilencioso(gestor);
     }
 
     /*
@@ -423,6 +424,9 @@ public final class MenuAcciones {
             System.out.println("Ingreso rechazado: "
                     + registro.getMotivoRechazo());
         }
+
+        // El intento, exitoso o no, queda registrado: se guarda.
+        guardarSilencioso(gestor);
     }
 
 
@@ -504,6 +508,7 @@ public final class MenuAcciones {
             System.out.println("Se notifico a "
                     + usuarioExpulsado.getNombreCompleto()
                     + " que fue expulsado del evento.");
+            guardarSilencioso(gestor);
         } else {
             System.out.println("Usuario no encontrado en el evento.");
         }
@@ -581,6 +586,7 @@ public final class MenuAcciones {
 
         try {
             ejecutarCambioDeEstado(gestor, idEvento, accion);
+            guardarSilencioso(gestor);
         } catch (AccesoDenegadoException e) {
             System.out.println("No se pudo cambiar el estado: "
                     + e.getMessage());
@@ -707,6 +713,38 @@ public final class MenuAcciones {
         }
 
         return "modificar";
+    }
+
+    /*
+     * Guarda sin mensaje de confirmacion. Se usa despues de cada cambio para
+     * que los datos no se pierdan si se cierra el programa sin guardar.
+     */
+    private static void guardarSilencioso(GestorEventosEnVivo gestor) {
+        try {
+            gestor.guardarDatos();
+        } catch (IOException e) {
+            System.out.println("No se pudieron guardar los datos: "
+                    + e.getMessage());
+        }
+    }
+
+    // Activa o desactiva un usuario elegido por ID.
+    public static void cambiarEstadoUsuario(Scanner scanner,
+                                            GestorEventosEnVivo gestor) {
+
+        listarUsuarios(gestor);
+        int idUsuario = ConsoleIO.leerEntero(scanner, "Ingrese ID de usuario: ");
+
+        Usuario usuario = gestor.alternarActivo(idUsuario);
+
+        if (usuario == null) {
+            System.out.println("Usuario inexistente.");
+            return;
+        }
+
+        System.out.println("Usuario " + usuario.getNombreUsuario()
+                + (usuario.isActivo() ? " activado." : " desactivado."));
+        guardarSilencioso(gestor);
     }
 
     // Guarda usuarios, artistas, eventos y registros en archivos TXT.
