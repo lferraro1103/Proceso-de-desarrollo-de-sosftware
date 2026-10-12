@@ -140,14 +140,27 @@ public class GestorEventosEnVivo {
         return registrarUsuario(usuario) ? usuario : null;
     }
 
-    // Da de alta un artista nuevo y devuelve el objeto creado.
-    public Artista registrarArtista(String nombreArtistico,
+    /*
+     * Da de alta un artista nuevo con sus credenciales de acceso.
+     *
+     * Devuelve el artista creado o null si el nombre de cuenta ya existe
+     * (los nombres de cuenta son unicos entre usuarios y artistas).
+     */
+    public Artista registrarArtista(String nombreUsuario,
+                                    String contrasena,
+                                    String nombreArtistico,
                                     String generoPrincipal,
                                     String biografia,
                                     boolean verificado) {
 
+        if (existeNombreUsuario(nombreUsuario)) {
+            return null;
+        }
+
         Artista artista = new Artista(
                 siguienteIdArtista(),
+                nombreUsuario.trim(),
+                contrasena,
                 nombreArtistico,
                 generoPrincipal,
                 biografia,

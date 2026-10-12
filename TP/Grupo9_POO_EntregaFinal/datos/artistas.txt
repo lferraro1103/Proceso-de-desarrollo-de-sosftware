@@ -1,2 +1,2 @@
-1|Banda Horizonte|Rock|Banda argentina de rock alternativo.|true|artista1||ARTISTA
-2|DJ Prisma|Electronica|Productora de shows audiovisuales.|true|artista2||ARTISTA
+1|Banda Horizonte|Rock|Banda argentina de rock alternativo.|true|bandahorizonte|horizonte2024|ARTISTA
+2|DJ Prisma|Electronica|Productora de shows audiovisuales.|true|djprisma|prisma2024|ARTISTA

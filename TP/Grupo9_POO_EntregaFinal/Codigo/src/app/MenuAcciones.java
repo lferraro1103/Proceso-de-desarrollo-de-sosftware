@@ -160,6 +160,19 @@ public final class MenuAcciones {
     public static void registrarArtista(Scanner scanner,
                                         GestorEventosEnVivo gestor) {
 
+        System.out.print("Ingrese nombre de cuenta del artista: ");
+        String nombreUsuario = scanner.nextLine().trim();
+
+        if (nombreUsuario.isEmpty() || gestor.existeNombreUsuario(nombreUsuario)) {
+            System.out.println("Ese nombre de cuenta no es valido o ya esta registrado.");
+            return;
+        }
+
+        String contrasena = leerContrasenaNueva(scanner);
+        if (contrasena == null) {
+            return;
+        }
+
         System.out.print("Ingrese nombre artistico: ");
         String nombreArtistico = scanner.nextLine();
 
@@ -175,6 +188,8 @@ public final class MenuAcciones {
         );
 
         Artista artista = gestor.registrarArtista(
+                nombreUsuario,
+                contrasena,
                 nombreArtistico,
                 generoPrincipal,
                 biografia,

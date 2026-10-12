@@ -56,7 +56,9 @@ public abstract class Cuenta {
      * se hace adentro de Cuenta para mantener encapsulado ese dato.
      */
     public boolean validarContrasena(String contrasenaIngresada) {
-        return contrasena.equals(contrasenaIngresada);
+        // Una cuenta sin contrasena (datos guardados antes de pedir
+        // credenciales) no puede iniciar sesion hasta que se le asignen.
+        return !contrasena.isEmpty() && contrasena.equals(contrasenaIngresada);
     }
 
     // Cierra la sesion de la cuenta.

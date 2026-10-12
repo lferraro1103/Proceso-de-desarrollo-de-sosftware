@@ -132,6 +132,8 @@ public final class  DatosIniciales {
 
         Artista artista1 = new Artista(
                 1,
+                "bandahorizonte",
+                "horizonte2024",
                 "Banda Horizonte",
                 "Rock",
                 "Banda argentina de rock alternativo.",
@@ -140,6 +142,8 @@ public final class  DatosIniciales {
 
         Artista artista2 = new Artista(
                 2,
+                "djprisma",
+                "prisma2024",
                 "DJ Prisma",
                 "Electronica",
                 "Productora de shows audiovisuales.",
