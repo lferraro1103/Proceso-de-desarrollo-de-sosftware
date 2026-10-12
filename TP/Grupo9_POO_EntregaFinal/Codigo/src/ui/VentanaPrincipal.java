@@ -266,7 +266,8 @@ public class VentanaPrincipal extends JFrame {
         // El boton cambia segun el usuario seleccionado.
         tablaUsuarios.getSelectionModel().addListSelectionListener(
                 e -> actualizarBotonUsuario());
-        alternarActivo.addActionListener(e -> alternarActivoSeleccionado());
+        alternarActivo.addActionListener(
+                e -> ejecutar(this::alternarActivoSeleccionado));
 
         JPanel acciones = crearFila("Usuarios");
         agregarSiPermitido(acciones, Accion.REGISTRAR_USUARIO,
@@ -312,17 +313,22 @@ public class VentanaPrincipal extends JFrame {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 && verConectados.isEnabled()) {
-                    verConectados();
+                    ejecutar(VentanaPrincipal.this::verConectados);
                 }
             }
         });
 
-        iniciar.addActionListener(e -> cambiarEstadoSeleccionado("iniciar"));
-        pausar.addActionListener(e -> cambiarEstadoSeleccionado("pausar"));
-        reanudar.addActionListener(e -> cambiarEstadoSeleccionado("reanudar"));
-        finalizar.addActionListener(e -> cambiarEstadoSeleccionado("finalizar"));
-        cancelar.addActionListener(e -> cambiarEstadoSeleccionado("cancelar"));
-        verConectados.addActionListener(e -> verConectados());
+        iniciar.addActionListener(
+                e -> ejecutar(() -> cambiarEstadoSeleccionado("iniciar")));
+        pausar.addActionListener(
+                e -> ejecutar(() -> cambiarEstadoSeleccionado("pausar")));
+        reanudar.addActionListener(
+                e -> ejecutar(() -> cambiarEstadoSeleccionado("reanudar")));
+        finalizar.addActionListener(
+                e -> ejecutar(() -> cambiarEstadoSeleccionado("finalizar")));
+        cancelar.addActionListener(
+                e -> ejecutar(() -> cambiarEstadoSeleccionado("cancelar")));
+        verConectados.addActionListener(e -> ejecutar(this::verConectados));
 
         // Primera fila: ciclo de vida del evento.
         JPanel filaEvento = crearFila("Evento");
@@ -394,8 +400,35 @@ public class VentanaPrincipal extends JFrame {
 
     private JButton crearBoton(String texto, Runnable accion) {
         JButton boton = new JButton(texto);
-        boton.addActionListener(e -> accion.run());
+        boton.addActionListener(e -> ejecutar(accion));
         return boton;
+    }
+
+    /*
+     * Ejecuta una accion de un boton verificando antes que haya sesion.
+     *
+     * La sesion puede cerrarse mientras la ventana esta abierta, por
+     * ejemplo si al cargar los datos la cuenta ya no existe. En ese caso
+     * se cierra la ventana en lugar de fallar. Si el gestor rechaza la
+     * accion por permisos, se informa el motivo.
+     */
+    private void ejecutar(Runnable accion) {
+        if (gestor.getCuentaActual() == null) {
+            mostrarError("La sesion se cerro. Vuelva a iniciar sesion.");
+            dispose();
+
+            if (permiteCerrarSesion) {
+                new VentanaLogin(gestor).setVisible(true);
+            }
+
+            return;
+        }
+
+        try {
+            accion.run();
+        } catch (PermisoDenegadoException e) {
+            mostrarError(e.getMessage());
+        }
     }
 
     // Agrega el boton al panel solo si el rol permite la accion.

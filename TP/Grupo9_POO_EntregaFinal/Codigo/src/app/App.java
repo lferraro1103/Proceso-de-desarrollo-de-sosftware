@@ -4,6 +4,7 @@ import gestor.GestorEventosEnVivo;
 import notificacion.NotificadorInactivo;
 import persistencia.PersistenciaArchivos;
 
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 /*
@@ -33,24 +34,30 @@ public class App {
         // Carga usuarios, artistas y recitales iniciales para poder probar.
         DatosIniciales.cargar(gestor);
 
-        int modo = elegirModo(scanner);
+        try {
+            int modo = elegirModo(scanner);
 
-        if (modo == MODO_GRAFICO) {
-            // La ventana de login se encarga del resto.
-            AppSwing.abrir(gestor);
-            return;
-        }
-
-        if (modo == MODO_CONSOLA) {
-            // La primera pantalla es el login: sin sesion no hay menu.
-            while (iniciarSesion(scanner, gestor)) {
-                // El menu que se muestra depende del rol de la cuenta.
-                MenuPorRol.ejecutar(scanner, gestor);
-                gestor.cerrarSesion();
+            if (modo == MODO_GRAFICO) {
+                // La ventana de login se encarga del resto.
+                AppSwing.abrir(gestor);
+                return;
             }
+
+            if (modo == MODO_CONSOLA) {
+                // La primera pantalla es el login: sin sesion no hay menu.
+                while (iniciarSesion(scanner, gestor)) {
+                    // El menu que se muestra depende del rol de la cuenta.
+                    MenuPorRol.ejecutar(scanner, gestor);
+                    gestor.cerrarSesion();
+                }
+            }
+
+            System.out.println("Programa finalizado.");
+        } catch (NoSuchElementException e) {
+            // La entrada se cerro (por ejemplo, Ctrl+D): termina sin error.
+            System.out.println("\nEntrada finalizada.");
         }
 
-        System.out.println("Programa finalizado.");
         scanner.close();
     }
 
