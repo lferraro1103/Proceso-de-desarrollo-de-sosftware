@@ -233,17 +233,28 @@ public class VentanaPrincipal extends JFrame {
 
     private void registrarArtista() {
         // Carga manual de artista para despues poder crear eventos asociados.
+        String nombreUsuario = leerTexto("Nombre de cuenta del artista:");
+        String contrasena = leerTexto("Contrasena del artista:");
         String nombreArtistico = leerTexto("Nombre artistico:");
         String genero = leerTexto("Genero principal:");
         String biografia = leerTexto("Biografia:");
 
-        if (nombreArtistico == null || genero == null || biografia == null) {
+        if (nombreUsuario == null || contrasena == null
+                || contrasena.isEmpty() || nombreArtistico == null
+                || genero == null || biografia == null) {
+            return;
+        }
+
+        if (gestor.existeNombreUsuario(nombreUsuario)) {
+            mostrarMensaje("Ese nombre de usuario ya esta registrado.");
             return;
         }
 
         boolean verificado = leerBooleano("El artista esta verificado?");
 
         gestor.registrarArtista(
+                nombreUsuario,
+                contrasena,
                 nombreArtistico,
                 genero,
                 biografia,

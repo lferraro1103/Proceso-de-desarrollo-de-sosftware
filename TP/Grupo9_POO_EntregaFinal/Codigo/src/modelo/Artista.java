@@ -58,23 +58,6 @@ public class Artista extends Cuenta {
         this.redesSociales = new HashMap<>();
     }
 
-    /*
-     * Constructor de compatibilidad con la firma actual de 5 parametros,
-     * usada hoy por MenuAcciones.registrarArtista y
-     * VentanaPrincipal.registrarArtista (que todavia no piden credenciales
-     * en esta fase; eso es CU04-02, fuera de alcance de la Fase 1). Genera
-     * un nombre de cuenta a partir del ID y deja la contrasena vacia.
-     */
-    public Artista(int id,
-                   String nombreArtistico,
-                   String generoPrincipal,
-                   String biografia,
-                   boolean verificado) {
-
-        this(id, "artista" + id, "", nombreArtistico, generoPrincipal,
-                biografia, verificado);
-    }
-
     // Asocia un evento al artista.
     public void crearEvento(Evento evento) {
         if (!eventosCreados.contains(evento)) {

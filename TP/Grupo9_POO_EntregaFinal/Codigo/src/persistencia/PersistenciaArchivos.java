@@ -264,9 +264,10 @@ public class PersistenciaArchivos implements Persistencia {
             String[] datos = linea.split("\\|", -1);
 
             if (datos.length >= 5) {
-                // Archivos viejos (5 campos) no tienen credenciales: genero
-                // el mismo default que el constructor de compatibilidad de
-                // Artista, para no duplicar esa regla en dos lugares.
+                // Archivos viejos (5 campos) no tienen credenciales: se
+                // genera un nombre de cuenta y la contrasena queda vacia,
+                // por lo que ese artista no puede iniciar sesion hasta que
+                // un administrador le asigne credenciales.
                 String nombreUsuario = datos.length >= 8
                         ? datos[5]
                         : "artista" + datos[0];
