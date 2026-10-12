@@ -55,9 +55,19 @@ public class VentanaPrincipal extends JFrame {
     // Etiqueta inferior para mostrar el resultado de la ultima accion.
     private JLabel estado;
 
-    public VentanaPrincipal(GestorEventosEnVivo gestor) {
+    // Indica si la ventana puede cerrar la sesion y volver al login.
+    private boolean permiteCerrarSesion;
+
+    /*
+     * Si la ventana se abre desde el login, puede cerrar la sesion y volver
+     * a esa pantalla. Si se abre desde el menu de consola, la sesion es la
+     * del menu y no la cierra.
+     */
+    public VentanaPrincipal(GestorEventosEnVivo gestor,
+                            boolean permiteCerrarSesion) {
         // Recibo el gestor desde afuera para no crear datos separados.
         this.gestor = gestor;
+        this.permiteCerrarSesion = permiteCerrarSesion;
 
         // Creo un modelo para cada lista de la ventana.
         modeloUsuarios = new DefaultListModel<>();
@@ -113,8 +123,19 @@ public class VentanaPrincipal extends JFrame {
         estado = new JLabel("Sistema iniciado.");
         estado.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
+        JPanel inferior = new JPanel(new BorderLayout());
+        inferior.add(estado, BorderLayout.CENTER);
+
+        if (permiteCerrarSesion) {
+            JButton cerrarSesion = new JButton("Cerrar sesion");
+            cerrarSesion.addActionListener(e -> cerrarSesion());
+            JPanel lado = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            lado.add(cerrarSesion);
+            inferior.add(lado, BorderLayout.EAST);
+        }
+
         add(pestanias, BorderLayout.CENTER);
-        add(estado, BorderLayout.SOUTH);
+        add(inferior, BorderLayout.SOUTH);
     }
 
     private JPanel crearPanelUsuarios() {
@@ -206,6 +227,13 @@ public class VentanaPrincipal extends JFrame {
         panel.add(new JScrollPane(listaEventos), BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
         return panel;
+    }
+
+    // Cierra la sesion y vuelve a la ventana de login.
+    private void cerrarSesion() {
+        gestor.cerrarSesion();
+        dispose();
+        new VentanaLogin(gestor).setVisible(true);
     }
 
     // Agrega el boton al panel solo si el rol permite la accion.
