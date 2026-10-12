@@ -191,7 +191,8 @@ Cada cuenta tiene un rol (`TipoUsuario`): usuario, artista o administrador. Al i
 | Ver los usuarios conectados | No | Solo los propios | Sí |
 | Registrar usuarios y artistas | No | No | Sí |
 | Expulsar a un usuario | No | No | Sí |
-| Ver todos los registros, guardar y cargar datos, abrir la ventana gráfica | No | No | Sí |
+| Ver todos los registros, guardar y cargar datos | No | No | Sí |
+| Abrir la ventana gráfica | Sí | Sí | Sí |
 
 ```mermaid
 classDiagram
@@ -233,7 +234,7 @@ El gestor verifica el permiso en cada operación, de modo que una acción no per
 
 ### Cuentas
 
-El login funciona igual para los tres roles. Los nombres de cuenta son únicos entre usuarios y artistas, y una cuenta sin contraseña no puede iniciar sesión. El administrador da de alta a los artistas con nombre de cuenta y contraseña. La ventana gráfica solo se abre para una cuenta administradora.
+El login funciona igual para los tres roles. Los nombres de cuenta son únicos entre usuarios y artistas, y una cuenta sin contraseña no puede iniciar sesión. El administrador da de alta a los artistas con nombre de cuenta y contraseña. La ventana gráfica se abre para cualquier cuenta y muestra solo las pestañas y los botones que permite su rol: el usuario ve los eventos, solicita ingresos a su nombre y consulta sus registros; el artista ve y gestiona únicamente sus eventos; el administrador accede a todas las pestañas.
 
 | Rol | Cuenta | Contraseña |
 |---|---|---|
@@ -264,3 +265,5 @@ javac -d ../out $(find . -name "*.java")
 java -cp ../out Main
 java -cp ../out app.AppSwing
 ```
+
+La primera ejecución usa la consola y la segunda abre la ventana gráfica, que pide las credenciales y se adapta al rol de la cuenta.
