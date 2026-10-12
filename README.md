@@ -253,6 +253,17 @@ Al iniciar, el programa pregunta con qué interfaz se usa: interfaz gráfica (Sw
 
 Las ventanas usan un logo propio, que reemplaza el ícono por defecto de Java en la ventana y en el Dock. Se dibuja por código en la clase `Logo`, por lo que no hay archivos que empaquetar.
 
+### Uso de la ventana
+
+| Aspecto | Comportamiento |
+|---|---|
+| Tablas | Los datos se muestran en tablas ordenables por columna. El estado de cada evento se colorea según su valor y un doble clic sobre un evento muestra sus usuarios conectados. |
+| Botones | Los botones están agrupados en dos filas, una para el ciclo de vida del evento y otra para la gestión. Cada botón se habilita solo cuando la acción es posible: hace falta un evento seleccionado y que su estado la permita. |
+| Mensajes | Los resultados correctos se informan en la barra de estado, en verde, sin ventana emergente. Los errores se muestran también en una ventana para que no pasen desapercibidos. |
+| Formularios | Registrar un usuario, registrar un artista y crear un evento se hacen en una sola ventana con todos los campos. Si un dato no es válido se informa el motivo y el formulario vuelve a abrirse con lo ya cargado. |
+
+Las reglas de qué transición permite cada estado están en `EstadoEvento`. Las usan el propio evento, el gestor, el menú de consola y la ventana, de modo que no se repiten en cada interfaz.
+
 ## 9. Avisos a los usuarios
 
 El gestor recibe un `Notificador`, una interfaz con una sola operación, y `ControlAcceso` la invoca cuando un usuario es expulsado de un evento o se rechaza su solicitud de ingreso. Solo se avisa a las cuentas de rol usuario.
