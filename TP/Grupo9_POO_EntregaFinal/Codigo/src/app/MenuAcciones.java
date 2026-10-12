@@ -739,7 +739,7 @@ public final class MenuAcciones {
     // Abre la ventana Swing reutilizando el mismo gestor del menu consola.
     public static void abrirInterfazGrafica(GestorEventosEnVivo gestor) {
         SwingUtilities.invokeLater(() ->
-                new VentanaPrincipal(gestor).setVisible(true)
+                new VentanaPrincipal(gestor, false).setVisible(true)
         );
 
         System.out.println("Interfaz grafica abierta.");

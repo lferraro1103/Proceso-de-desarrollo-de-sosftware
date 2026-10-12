@@ -33,15 +33,46 @@ public class App {
         // Carga usuarios, artistas y recitales iniciales para poder probar.
         DatosIniciales.cargar(gestor);
 
-        // La primera pantalla es el login: sin sesion no hay menu de accion.
-        while (iniciarSesion(scanner, gestor)) {
-            // El menu que se muestra depende del rol de la cuenta.
-            MenuPorRol.ejecutar(scanner, gestor);
-            gestor.cerrarSesion();
+        int modo = elegirModo(scanner);
+
+        if (modo == MODO_GRAFICO) {
+            // La ventana de login se encarga del resto.
+            AppSwing.abrir(gestor);
+            return;
+        }
+
+        if (modo == MODO_CONSOLA) {
+            // La primera pantalla es el login: sin sesion no hay menu.
+            while (iniciarSesion(scanner, gestor)) {
+                // El menu que se muestra depende del rol de la cuenta.
+                MenuPorRol.ejecutar(scanner, gestor);
+                gestor.cerrarSesion();
+            }
         }
 
         System.out.println("Programa finalizado.");
         scanner.close();
+    }
+
+    private static final int MODO_GRAFICO = 1;
+    private static final int MODO_CONSOLA = 2;
+
+    // Pregunta con que interfaz se usa el programa. Devuelve 0 para salir.
+    private static int elegirModo(Scanner scanner) {
+        while (true) {
+            System.out.println("\n===== UADE BEATS: EVENTOS EN VIVO =====");
+            System.out.println("1. Interfaz grafica (Swing)");
+            System.out.println("2. Consola (CLI)");
+            System.out.println("0. Salir");
+
+            int opcion = ConsoleIO.leerEntero(scanner, "Seleccione una opcion: ");
+
+            if (opcion == 0 || opcion == MODO_GRAFICO || opcion == MODO_CONSOLA) {
+                return opcion;
+            }
+
+            System.out.println("Opcion invalida.");
+        }
     }
 
     /*
@@ -54,7 +85,7 @@ public class App {
                                          GestorEventosEnVivo gestor) {
 
         while (true) {
-            System.out.println("\n===== UADE BEATS: EVENTOS EN VIVO =====");
+            System.out.println("\n===== INICIAR SESION =====");
             System.out.println("1. Iniciar sesion");
             System.out.println("0. Salir");
 
