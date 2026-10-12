@@ -43,9 +43,7 @@ public class Usuario extends Cuenta {
 
     /*
      * Constructor de compatibilidad (mismo orden que el original de 8
-     * parametros). Delega con TipoUsuario.USUARIO por defecto para no
-     * romper a los call sites existentes (DatosIniciales, MenuAcciones,
-     * VentanaPrincipal, GestorEventosEnVivo.registrarFalloSinUsuario).
+     * parametros). Delega con TipoUsuario.USUARIO por defecto.
      */
     public Usuario(int id,
                    String nombreUsuario,
