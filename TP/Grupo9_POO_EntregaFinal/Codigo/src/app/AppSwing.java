@@ -4,6 +4,7 @@ import excepciones.AccesoDenegadoException;
 import gestor.GestorEventosEnVivo;
 import modelo.Cuenta;
 import modelo.TipoUsuario;
+import notificacion.NotificadorNtfy;
 import persistencia.PersistenciaArchivos;
 import ui.VentanaPrincipal;
 
@@ -21,7 +22,8 @@ public class AppSwing {
 
     public static void main(String[] args) {
         // Creo el gestor igual que en la consola.
-        GestorEventosEnVivo gestor = new GestorEventosEnVivo(new PersistenciaArchivos());
+        GestorEventosEnVivo gestor = new GestorEventosEnVivo(
+                new PersistenciaArchivos(), new NotificadorNtfy());
 
         // Cargo los datos iniciales para que la ventana no arranque vacia.
         DatosIniciales.cargar(gestor);
