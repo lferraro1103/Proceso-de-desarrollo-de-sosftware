@@ -1,6 +1,8 @@
 package ui;
 
 import excepciones.AccesoDenegadoException;
+import excepciones.PermisoDenegadoException;
+import gestor.Accion;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
 import modelo.DatosRecital;
@@ -8,6 +10,7 @@ import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.Usuario;
 import modelo.RegistroAcceso;
+import modelo.TipoUsuario;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -43,6 +46,7 @@ public class VentanaPrincipal extends JFrame {
     private DefaultListModel<String> modeloUsuarios;
     private DefaultListModel<String> modeloArtistas;
     private DefaultListModel<String> modeloEventos;
+    private DefaultListModel<String> modeloRegistros;
 
     // Guardo esta lista como atributo porque necesito saber que evento
     // selecciono el usuario para iniciar, pausar, reanudar o finalizar.
@@ -59,9 +63,12 @@ public class VentanaPrincipal extends JFrame {
         modeloUsuarios = new DefaultListModel<>();
         modeloArtistas = new DefaultListModel<>();
         modeloEventos = new DefaultListModel<>();
+        modeloRegistros = new DefaultListModel<>();
 
         // Configuracion basica de la ventana.
-        setTitle("Eventos en vivo - UADE Beats");
+        setTitle("Eventos en vivo - UADE Beats: "
+                + gestor.getCuentaActual().getNombreUsuario()
+                + " (" + gestor.getCuentaActual().getTipoUsuario() + ")");
         setSize(850, 520);
         setLocationRelativeTo(null);
 
@@ -77,12 +84,31 @@ public class VentanaPrincipal extends JFrame {
         // y una barra de estado abajo.
         setLayout(new BorderLayout());
 
-        // JTabbedPane arma las pestanias: Usuarios, Artistas, Eventos, etc.
+        // JTabbedPane arma las pestanias. Cada una aparece solo si el rol de
+        // la cuenta tiene permitida la accion que la habilita.
         JTabbedPane pestanias = new JTabbedPane();
-        pestanias.addTab("Usuarios", crearPanelUsuarios());
-        pestanias.addTab("Artistas", crearPanelArtistas());
-        pestanias.addTab("Eventos", crearPanelEventos());
-        pestanias.addTab("Persistencia", crearPanelPersistencia());
+
+        if (gestor.puede(Accion.VER_USUARIOS)) {
+            pestanias.addTab("Usuarios", crearPanelUsuarios());
+        }
+
+        if (gestor.puede(Accion.VER_ARTISTAS)) {
+            pestanias.addTab("Artistas", crearPanelArtistas());
+        }
+
+        if (gestor.puede(Accion.VER_EVENTOS)) {
+            pestanias.addTab("Eventos", crearPanelEventos());
+        }
+
+        if (gestor.puede(Accion.VER_REGISTROS)
+                || gestor.puede(Accion.VER_MIS_REGISTROS)) {
+            pestanias.addTab("Registros", crearPanelRegistros());
+        }
+
+        if (gestor.puede(Accion.GUARDAR_DATOS)
+                || gestor.puede(Accion.CARGAR_DATOS)) {
+            pestanias.addTab("Persistencia", crearPanelPersistencia());
+        }
 
         estado = new JLabel("Sistema iniciado.");
         estado.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -145,7 +171,9 @@ public class VentanaPrincipal extends JFrame {
         JButton finalizar = new JButton("Finalizar");
         JButton cancelar = new JButton("Cancelar");
         JButton crear = new JButton("Crear evento");
-        JButton ingresar = new JButton("Dar acceso");
+        JButton ingresar = new JButton(
+                gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO
+                        ? "Solicitar ingreso" : "Dar acceso");
         JButton expulsar = new JButton("Expulsar usuario");
         JButton actualizar = new JButton("Actualizar");
 
@@ -160,19 +188,73 @@ public class VentanaPrincipal extends JFrame {
         expulsar.addActionListener(e -> expulsarUsuario());
         actualizar.addActionListener(e -> actualizarListas());
 
-        acciones.add(crear);
-        acciones.add(ingresar);
-        acciones.add(expulsar);
-        acciones.add(iniciar);
-        acciones.add(pausar);
-        acciones.add(reanudar);
-        acciones.add(finalizar);
-        acciones.add(cancelar);
+        JButton verConectados = new JButton("Ver conectados");
+        verConectados.addActionListener(e -> verConectados());
+
+        // Cada boton se agrega solo si el rol permite su accion.
+        agregarSiPermitido(acciones, Accion.CREAR_EVENTO, crear);
+        agregarSiPermitido(acciones, Accion.SOLICITAR_INGRESO, ingresar);
+        agregarSiPermitido(acciones, Accion.EXPULSAR_USUARIO, expulsar);
+        agregarSiPermitido(acciones, Accion.INICIAR_EVENTO, iniciar);
+        agregarSiPermitido(acciones, Accion.PAUSAR_EVENTO, pausar);
+        agregarSiPermitido(acciones, Accion.REANUDAR_EVENTO, reanudar);
+        agregarSiPermitido(acciones, Accion.FINALIZAR_EVENTO, finalizar);
+        agregarSiPermitido(acciones, Accion.CANCELAR_EVENTO, cancelar);
+        agregarSiPermitido(acciones, Accion.VER_CONECTADOS, verConectados);
         acciones.add(actualizar);
 
         panel.add(new JScrollPane(listaEventos), BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
         return panel;
+    }
+
+    // Agrega el boton al panel solo si el rol permite la accion.
+    private void agregarSiPermitido(JPanel panel, Accion accion, JButton boton) {
+        if (gestor.puede(accion)) {
+            panel.add(boton);
+        }
+    }
+
+    private JPanel crearPanelRegistros() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JButton actualizar = new JButton("Actualizar");
+        actualizar.addActionListener(e -> actualizarListas());
+
+        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        acciones.add(actualizar);
+
+        panel.add(new JScrollPane(new JList<>(modeloRegistros)), BorderLayout.CENTER);
+        panel.add(acciones, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private void verConectados() {
+        Integer idEvento = obtenerIdSeleccionado(listaEventos);
+
+        if (idEvento == null) {
+            mostrarMensaje("Seleccione un evento.");
+            return;
+        }
+
+        Evento evento = gestor.buscarEventoVisible(idEvento);
+
+        if (evento == null) {
+            mostrarMensaje("Evento inexistente.");
+            return;
+        }
+
+        if (evento.getUsuariosConectados().isEmpty()) {
+            mostrarMensaje("No hay usuarios conectados.");
+            return;
+        }
+
+        StringBuilder texto = new StringBuilder("Usuarios conectados:\n");
+        for (Usuario usuario : evento.getUsuariosConectados()) {
+            texto.append(usuario).append("\n");
+        }
+
+        JOptionPane.showMessageDialog(this, texto.toString());
     }
 
     private void registrarUsuario() {
@@ -268,8 +350,14 @@ public class VentanaPrincipal extends JFrame {
     }
 
     private void crearEvento() {
-        // El evento necesita un artista asociado, por eso se elige primero.
-        Artista artista = seleccionarArtista();
+        // Un artista crea el evento a su nombre; el administrador elige el
+        // artista que va a estar asociado.
+        Artista artista;
+        if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.ARTISTA) {
+            artista = gestor.buscarArtistaPorId(gestor.getCuentaActual().getId());
+        } else {
+            artista = seleccionarArtista();
+        }
 
         if (artista == null) {
             return;
@@ -327,7 +415,14 @@ public class VentanaPrincipal extends JFrame {
 
     private void solicitarIngreso() {
         // Equivale a la opcion "Solicitar ingreso a evento" del menu.
-        Usuario usuario = seleccionarUsuario();
+        // Un usuario solicita el ingreso con su propia cuenta; el
+        // administrador elige a nombre de quien lo hace.
+        Usuario usuario;
+        if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO) {
+            usuario = gestor.buscarUsuarioPorId(gestor.getCuentaActual().getId());
+        } else {
+            usuario = seleccionarUsuario();
+        }
         Evento evento = seleccionarEvento();
 
         if (usuario == null || evento == null) {
@@ -449,7 +544,7 @@ public class VentanaPrincipal extends JFrame {
         // Lista de eventos administrados por el gestor.
         List<String> opciones = new ArrayList<>();
 
-        for (Evento evento : gestor.listarEventos()) {
+        for (Evento evento : gestor.listarEventosVisibles()) {
             opciones.add(evento.toString());
         }
 
@@ -462,7 +557,7 @@ public class VentanaPrincipal extends JFrame {
             return null;
         }
 
-        return gestor.buscarEventoPorId(obtenerIdDesdeTexto(seleccionado));
+        return gestor.buscarEventoVisible(obtenerIdDesdeTexto(seleccionado));
     }
 
     private String seleccionarOpcion(String titulo, List<String> opciones) {
@@ -572,7 +667,7 @@ public class VentanaPrincipal extends JFrame {
 
             mostrarMensaje("Estado actualizado.");
             actualizarListas();
-        } catch (AccesoDenegadoException e) {
+        } catch (AccesoDenegadoException | PermisoDenegadoException e) {
             mostrarMensaje(e.getMessage());
         }
     }
@@ -623,18 +718,36 @@ public class VentanaPrincipal extends JFrame {
         modeloUsuarios.clear();
         modeloArtistas.clear();
         modeloEventos.clear();
+        modeloRegistros.clear();
 
-        for (Usuario usuario : gestor.listarUsuarios()) {
-            // Uso toString() porque cada clase ya sabe como mostrarse.
-            modeloUsuarios.addElement(usuario.toString());
+        if (gestor.puede(Accion.VER_USUARIOS)) {
+            for (Usuario usuario : gestor.listarUsuarios()) {
+                // Uso toString() porque cada clase ya sabe como mostrarse.
+                modeloUsuarios.addElement(usuario.toString());
+            }
         }
 
-        for (Artista artista : gestor.listarArtistas()) {
-            modeloArtistas.addElement(artista.toString());
+        if (gestor.puede(Accion.VER_ARTISTAS)) {
+            for (Artista artista : gestor.listarArtistas()) {
+                modeloArtistas.addElement(artista.toString());
+            }
         }
 
-        for (Evento evento : gestor.listarEventos()) {
-            modeloEventos.addElement(evento.toString());
+        if (gestor.puede(Accion.VER_EVENTOS)) {
+            for (Evento evento : gestor.listarEventosVisibles()) {
+                modeloEventos.addElement(evento.toString());
+            }
+        }
+
+        // El administrador ve todos los registros; un usuario, los suyos.
+        if (gestor.puede(Accion.VER_REGISTROS)) {
+            for (RegistroAcceso registro : gestor.listarRegistros()) {
+                modeloRegistros.addElement(registro.toString());
+            }
+        } else if (gestor.puede(Accion.VER_MIS_REGISTROS)) {
+            for (RegistroAcceso registro : gestor.listarMisRegistros()) {
+                modeloRegistros.addElement(registro.toString());
+            }
         }
     }
 
