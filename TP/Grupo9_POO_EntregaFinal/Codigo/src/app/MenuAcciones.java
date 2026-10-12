@@ -10,6 +10,7 @@ import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
+import modelo.TipoUsuario;
 import modelo.Usuario;
 import ui.VentanaPrincipal;
 
@@ -212,8 +213,14 @@ public final class MenuAcciones {
     public static void crearEventoManual(Scanner scanner,
                                          GestorEventosEnVivo gestor) {
 
-        // Paso 1: elegir el artista que va a estar asociado al evento.
-        Artista artista = seleccionarArtistaParaEvento(scanner, gestor);
+        // Paso 1: un artista crea el evento a su nombre; el administrador
+        // elige el artista que va a estar asociado.
+        Artista artista;
+        if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.ARTISTA) {
+            artista = gestor.buscarArtistaPorId(gestor.getCuentaActual().getId());
+        } else {
+            artista = seleccionarArtistaParaEvento(scanner, gestor);
+        }
         if (artista == null) {
             return;
         }
@@ -375,10 +382,10 @@ public final class MenuAcciones {
 
     // Lista todos los eventos administrados por el gestor.
     public static void listarEventos(GestorEventosEnVivo gestor) {
-        System.out.println("\nEventos administrados:");
+        System.out.println("\nEventos:");
 
         // El toString() de Evento/RecitalEnVivo define el formato de salida.
-        for (Evento evento : gestor.listarEventos()) {
+        for (Evento evento : gestor.listarEventosVisibles()) {
             System.out.println(evento);
         }
     }
@@ -392,9 +399,15 @@ public final class MenuAcciones {
     public static void solicitarIngreso(Scanner scanner,
                                         GestorEventosEnVivo gestor) {
 
-        // Muestra usuarios para que el operador elija uno.
-        listarUsuarios(gestor);
-        int idUsuario = ConsoleIO.leerEntero(scanner, "Ingrese ID de usuario: ");
+        // Un usuario solicita el ingreso con su propia cuenta; el
+        // administrador elige a nombre de quien lo hace.
+        int idUsuario;
+        if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO) {
+            idUsuario = gestor.getCuentaActual().getId();
+        } else {
+            listarUsuarios(gestor);
+            idUsuario = ConsoleIO.leerEntero(scanner, "Ingrese ID de usuario: ");
+        }
 
         // Muestra eventos para que el operador elija uno.
         listarEventos(gestor);
@@ -421,7 +434,7 @@ public final class MenuAcciones {
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
 
         // Busca el evento por ID.
-        Evento recital = gestor.buscarEventoPorId(idEvento);
+        Evento recital = gestor.buscarEventoVisible(idEvento);
 
         if (recital == null) {
             System.out.println("Evento inexistente o no compatible.");
@@ -456,7 +469,7 @@ public final class MenuAcciones {
         // Pide el evento sobre el que se quiere operar.
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
 
-        Evento recital = gestor.buscarEventoPorId(idEvento);
+        Evento recital = gestor.buscarEventoVisible(idEvento);
 
         if (recital == null) {
             System.out.println("Evento inexistente o no compatible.");
@@ -522,7 +535,7 @@ public final class MenuAcciones {
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
 
         // Busca el evento por ID.
-        Evento recital = gestor.buscarEventoPorId(idEvento);
+        Evento recital = gestor.buscarEventoVisible(idEvento);
 
         if (recital == null) {
             System.out.println("Evento inexistente o no compatible.");
@@ -557,8 +570,8 @@ public final class MenuAcciones {
         // Pide ID del evento a modificar.
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
 
-        // Busca el evento en el gestor.
-        Evento evento = gestor.buscarEventoPorId(idEvento);
+        // Busca el evento entre los que la cuenta puede gestionar.
+        Evento evento = gestor.buscarEventoVisible(idEvento);
 
         // Si no existe, se informa y se corta.
         if (evento == null) {
@@ -619,7 +632,7 @@ public final class MenuAcciones {
 
         boolean hayEventos = false;
 
-        for (Evento evento : gestor.listarEventos()) {
+        for (Evento evento : gestor.listarEventosVisibles()) {
             if (puedeAplicarAccion(evento, accion)) {
                 System.out.println(evento);
                 hayEventos = true;
@@ -730,6 +743,21 @@ public final class MenuAcciones {
         );
 
         System.out.println("Interfaz grafica abierta.");
+    }
+
+    // Lista los registros de acceso de la cuenta que inicio sesion.
+    public static void listarMisRegistros(GestorEventosEnVivo gestor) {
+        List<RegistroAcceso> registros = gestor.listarMisRegistros();
+
+        if (registros.isEmpty()) {
+            System.out.println("No tiene registros de acceso.");
+            return;
+        }
+
+        System.out.println("\nMis registros de acceso:");
+        for (RegistroAcceso registro : registros) {
+            System.out.println(registro);
+        }
     }
 
     // Lista todos los registros de acceso guardados por el gestor.
