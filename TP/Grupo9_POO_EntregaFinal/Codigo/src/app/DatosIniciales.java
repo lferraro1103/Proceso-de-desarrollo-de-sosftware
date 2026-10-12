@@ -33,33 +33,57 @@ public final class  DatosIniciales {
      * los datos fijos si todavia no hay nada guardado (primera corrida).
      */
     public static void cargar(GestorEventosEnVivo gestor) {
-        if (cargarDesdeArchivos(gestor)) {
-            return;
+        cargarDesdeArchivos(gestor);
+
+        // Solo se siembra lo que falta, para no duplicar datos cuando los
+        // archivos guardados estan incompletos.
+        if (gestor.listarUsuarios().isEmpty()) {
+            cargarUsuariosIniciales(gestor);
         }
 
-        cargarUsuariosIniciales(gestor);
-        cargarAdministradorInicial(gestor);
+        // Sin un administrador nadie podria dar de alta cuentas, por eso
+        // se garantiza que siempre exista uno (por ejemplo, con archivos
+        // guardados antes de que existieran los roles).
+        asegurarAdministrador(gestor);
 
-        // Cada artista queda asociado a "su" recital dentro del arreglo,
-        // en el mismo orden en que se crean.
-        Artista[] artistas = cargarArtistasIniciales(gestor);
-        cargarEventosIniciales(gestor, artistas[0], artistas[1]);
+        if (gestor.listarArtistas().isEmpty()) {
+            // Cada artista queda asociado a "su" recital dentro del arreglo,
+            // en el mismo orden en que se crean.
+            Artista[] artistas = cargarArtistasIniciales(gestor);
+
+            if (gestor.listarEventos().isEmpty()) {
+                cargarEventosIniciales(gestor, artistas[0], artistas[1]);
+            }
+        }
     }
 
     /*
      * Intenta cargar usuarios/artistas/eventos desde la carpeta datos.
      *
-     * Devuelve true solo si habia usuarios guardados (si el archivo no
-     * existe o esta vacio, gestor.cargarDatos no tira error
-     * pero tampoco carga nada util, y en ese caso hay que sembrar).
+     * Si un archivo no existe o esta vacio no hay error: simplemente no
+     * se carga nada y se siembran los datos de prueba. Si un archivo esta
+     * danado, se informa y se usan los datos de prueba en su lugar.
      */
-    private static boolean cargarDesdeArchivos(GestorEventosEnVivo gestor) {
+    private static void cargarDesdeArchivos(GestorEventosEnVivo gestor) {
         try {
             gestor.cargarDatos();
-            return !gestor.listarUsuarios().isEmpty();
         } catch (IOException e) {
-            return false;
+            // Sin carpeta de datos legible se arranca con los datos de prueba.
+        } catch (RuntimeException e) {
+            System.out.println("No se pudieron leer los datos guardados ("
+                    + e.getMessage() + "). Se usan los datos de prueba.");
         }
+    }
+
+    // Crea el administrador de arranque si todavia no hay ninguno.
+    private static void asegurarAdministrador(GestorEventosEnVivo gestor) {
+        for (Usuario usuario : gestor.listarUsuarios()) {
+            if (usuario.getTipoUsuario() == TipoUsuario.ADMINISTRADOR) {
+                return;
+            }
+        }
+
+        cargarAdministradorInicial(gestor);
     }
 
     // Crea y registra los 3 usuarios de prueba, uno por cada plan.
