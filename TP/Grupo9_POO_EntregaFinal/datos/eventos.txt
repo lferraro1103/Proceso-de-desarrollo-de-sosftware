@@ -1,2 +1,6 @@
-100|Rock en Vivo|Recital exclusivo online|2026-06-12T21:05:33.789675600|2026-06-12T23:15:33.789675600|PROGRAMADO|5|PREMIUM|Buenos Aires|true|true|1
-101|Backstage Prisma Live|Presentacion en vivo para usuarios Artist Pass|2026-06-12T21:10:33.790676200|2026-06-12T22:15:33.790676200|EN_ESPERA|2|ARTIST_PASS|Streaming|true|true|2
+100|Rock en Vivo|Recital exclusivo online|2026-10-10T20:00:00|2026-12-31T23:00:00|EN_CURSO|5|PREMIUM|Buenos Aires|true|true|1|1,4,2
+101|Backstage Prisma Live|Presentacion en vivo para usuarios Artist Pass|2026-10-20T21:00:00|2026-10-20T23:30:00|EN_ESPERA|2|ARTIST_PASS|Streaming|true|true|2|
+102|Noche de Folklore|Pena con el conjunto Los del Sur|2026-10-11T19:00:00|2026-12-31T23:30:00|PAUSADO|20|FREE|Sala Principal|false|false|4|3
+103|Luna en Vivo (Acustico)|Show acustico de Luna Nocturna|2026-11-05T20:30:00|2026-11-05T22:30:00|PROGRAMADO|30|FREE|Teatro UADE|true|false|3|
+104|Festival de Verano 2025|Evento de la temporada pasada|2025-12-20T18:00:00|2025-12-20T23:59:00|FINALIZADO|100|FREE|Costanera|true|false|1,2|
+105|Fiesta Electronica Cancelada|Cancelado por clima|2026-09-30T22:00:00|2026-10-01T04:00:00|CANCELADO|50|PREMIUM|Club Prisma|false|true|2|
