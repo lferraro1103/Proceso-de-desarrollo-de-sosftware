@@ -29,7 +29,8 @@ public class Permisos {
                 Accion.SOLICITAR_INGRESO,
                 Accion.VER_EVENTOS,
                 Accion.VER_CAPACIDAD,
-                Accion.VER_MIS_REGISTROS
+                Accion.VER_MIS_REGISTROS,
+                Accion.ABRIR_INTERFAZ_GRAFICA
         ));
 
         // Artista: crea y gestiona sus propios eventos y los ve en lectura.
@@ -42,7 +43,8 @@ public class Permisos {
                 Accion.FINALIZAR_EVENTO,
                 Accion.CANCELAR_EVENTO,
                 Accion.VER_CONECTADOS,
-                Accion.VER_CAPACIDAD
+                Accion.VER_CAPACIDAD,
+                Accion.ABRIR_INTERFAZ_GRAFICA
         ));
 
         // Administrador: gestion total (todo salvo "mis registros", que es
