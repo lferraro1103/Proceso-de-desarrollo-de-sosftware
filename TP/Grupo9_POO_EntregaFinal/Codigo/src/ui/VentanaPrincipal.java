@@ -202,7 +202,22 @@ public class VentanaPrincipal extends JFrame {
      * una sola fila. Los anchos indican el ancho preferido de cada columna.
      */
     private JTable crearTabla(ModeloTabla modelo, int... anchos) {
-        JTable tabla = new JTable(modelo);
+        // El tooltip muestra el contenido completo de la celda, por si el
+        // texto no entra en el ancho de la columna.
+        JTable tabla = new JTable(modelo) {
+            @Override
+            public String getToolTipText(MouseEvent evento) {
+                int fila = rowAtPoint(evento.getPoint());
+                int columna = columnAtPoint(evento.getPoint());
+
+                if (fila < 0 || columna < 0) {
+                    return null;
+                }
+
+                Object valor = getValueAt(fila, columna);
+                return (valor == null) ? null : valor.toString();
+            }
+        };
         tabla.setAutoCreateRowSorter(true);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabla.setFillsViewportHeight(true);
@@ -374,7 +389,7 @@ public class VentanaPrincipal extends JFrame {
         JPanel acciones = crearFila("Registros");
         acciones.add(crearBoton("Actualizar", this::actualizarListas));
 
-        panel.add(new JScrollPane(crearTabla(modeloRegistros, 130, 110, 230, 330)),
+        panel.add(new JScrollPane(crearTabla(modeloRegistros, 130, 90, 190, 520)),
                 BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
         return panel;
