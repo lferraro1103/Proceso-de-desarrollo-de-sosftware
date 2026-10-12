@@ -36,6 +36,7 @@ public class VentanaLogin extends JFrame {
 
         setTitle("UADE Beats: iniciar sesion");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        Logo.aplicar(this);
 
         construirInterfaz();
 
@@ -51,7 +52,9 @@ public class VentanaLogin extends JFrame {
         c.insets = new Insets(4, 4, 4, 4);
         c.anchor = GridBagConstraints.WEST;
 
-        JLabel titulo = new JLabel("Eventos en vivo - UADE Beats");
+        JLabel titulo = new JLabel("Eventos en vivo - UADE Beats",
+                Logo.icono(56), JLabel.LEFT);
+        titulo.setIconTextGap(12);
         titulo.setFont(titulo.getFont().deriveFont(java.awt.Font.BOLD, 15f));
         c.gridx = 0;
         c.gridy = 0;

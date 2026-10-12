@@ -84,6 +84,7 @@ public class VentanaPrincipal extends JFrame {
 
         // Cierra solo esta ventana, no corta toda la aplicacion.
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        Logo.aplicar(this);
 
         construirInterfaz();
         actualizarListas();
