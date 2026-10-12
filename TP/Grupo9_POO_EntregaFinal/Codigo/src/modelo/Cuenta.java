@@ -61,6 +61,17 @@ public abstract class Cuenta {
         return !contrasena.isEmpty() && contrasena.equals(contrasenaIngresada);
     }
 
+    // Deshabilita la cuenta: no puede iniciar sesion hasta que se la active.
+    public void desactivar() {
+        activo = false;
+        sesionIniciada = false;
+    }
+
+    // Vuelve a habilitar la cuenta.
+    public void activar() {
+        activo = true;
+    }
+
     // Cierra la sesion de la cuenta.
     public void cerrarSesion() {
         sesionIniciada = false;
