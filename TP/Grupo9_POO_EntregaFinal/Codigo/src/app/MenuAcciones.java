@@ -3,6 +3,7 @@ package app;
 import excepciones.AccesoDenegadoException;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
+import modelo.Cuenta;
 import modelo.DatosRecital;
 import modelo.EstadoEvento;
 import modelo.Evento;
@@ -30,39 +31,28 @@ public final class MenuAcciones {
     }
 
     /*
-     * Login simple por consola.
+     * Login por consola para cualquier tipo de cuenta.
      *
-     * Pide nombre de usuario y contrasena, busca el usuario y valida
-     * la contrasena. Si es correcta, inicia sesion (Usuario.iniciarSesion
-     * ya contempla que el usuario este activo).
+     * Pide nombre de cuenta y contrasena y deja la validacion al gestor.
+     * Devuelve la cuenta autenticada, o null si no pudo iniciar sesion.
      */
-    public static void login(Scanner scanner, GestorEventosEnVivo gestor) {
+    public static Cuenta login(Scanner scanner, GestorEventosEnVivo gestor) {
         System.out.print("Ingrese nombre de usuario: ");
         String nombreUsuario = scanner.nextLine().trim();
-
-        Usuario usuario = gestor.buscarUsuarioPorNombreUsuario(nombreUsuario);
-
-        if (usuario == null) {
-            System.out.println("Usuario inexistente.");
-            return;
-        }
 
         System.out.print("Ingrese contrasena: ");
         String contrasena = scanner.nextLine();
 
-        if (!usuario.validarContrasena(contrasena)) {
-            System.out.println("Contrasena incorrecta.");
-            return;
+        try {
+            Cuenta cuenta = gestor.iniciarSesion(nombreUsuario, contrasena);
+            System.out.println("Sesion iniciada. Bienvenido, "
+                    + cuenta.getNombreUsuario() + " ("
+                    + cuenta.getTipoUsuario() + ").");
+            return cuenta;
+        } catch (AccesoDenegadoException e) {
+            System.out.println(e.getMessage());
+            return null;
         }
-
-        if (!usuario.isActivo()) {
-            System.out.println("El usuario no esta activo.");
-            return;
-        }
-
-        usuario.iniciarSesion();
-        System.out.println("Sesion iniciada. Bienvenido, "
-                + usuario.getNombreCompleto() + ".");
     }
 
     /*

@@ -2,6 +2,7 @@ package gestor;
 
 import excepciones.AccesoDenegadoException;
 import modelo.Artista;
+import modelo.Cuenta;
 import modelo.DatosRecital;
 import modelo.EstadoEvento;
 import modelo.Evento;
@@ -43,6 +44,9 @@ public class GestorEventosEnVivo {
     // Persistencia usada para guardar y cargar los datos.
     private Persistencia persistencia;
 
+    // Sesion actual y permisos de la cuenta.
+    private ControlSesion sesion;
+
     // Constructor: inicializa las colecciones y recibe la persistencia.
     public GestorEventosEnVivo(Persistencia persistencia) {
 
@@ -51,6 +55,7 @@ public class GestorEventosEnVivo {
         usuariosRegistrados = new ArrayList<>();
         artistasRegistrados = new ArrayList<>();
         controlAcceso = new ControlAcceso();
+        sesion = new ControlSesion();
     }
 
     // Guarda los datos usando la persistencia recibida.
@@ -268,19 +273,76 @@ public class GestorEventosEnVivo {
 
     // Verifica si ya existe un usuario con ese nombre de cuenta.
     public boolean existeNombreUsuario(String nombreUsuario) {
-        return buscarUsuarioPorNombreUsuario(nombreUsuario) != null;
+        return buscarCuentaPorNombreUsuario(nombreUsuario) != null;
     }
 
-    // Busca un usuario por nombre de cuenta. Si no existe, devuelve null.
-    public Usuario buscarUsuarioPorNombreUsuario(String nombreUsuario) {
+    /*
+     * Busca una cuenta por nombre de cuenta entre usuarios y artistas.
+     * Si no existe, devuelve null.
+     */
+    public Cuenta buscarCuentaPorNombreUsuario(String nombreUsuario) {
+        String buscado = nombreUsuario.trim();
+
         for (Usuario usuario : usuariosRegistrados) {
-            if (usuario.getNombreUsuario().equalsIgnoreCase(
-                    nombreUsuario.trim())) {
+            if (usuario.getNombreUsuario().equalsIgnoreCase(buscado)) {
                 return usuario;
             }
         }
 
+        for (Artista artista : artistasRegistrados) {
+            if (artista.getNombreUsuario().equalsIgnoreCase(buscado)) {
+                return artista;
+            }
+        }
+
         return null;
+    }
+
+    /*
+     * Inicia sesion con nombre de cuenta y contrasena. Sirve para cualquier
+     * tipo de cuenta: usuario, administrador o artista.
+     *
+     * Devuelve la cuenta autenticada o lanza la excepcion con el motivo.
+     */
+    public Cuenta iniciarSesion(String nombreUsuario, String contrasena)
+            throws AccesoDenegadoException {
+
+        Cuenta cuenta = buscarCuentaPorNombreUsuario(nombreUsuario);
+
+        if (cuenta == null) {
+            throw new AccesoDenegadoException("Cuenta inexistente.");
+        }
+
+        if (!cuenta.validarContrasena(contrasena)) {
+            throw new AccesoDenegadoException("Contrasena incorrecta.");
+        }
+
+        if (!cuenta.isActivo()) {
+            throw new AccesoDenegadoException("La cuenta no esta activa.");
+        }
+
+        sesion.iniciar(cuenta);
+        return cuenta;
+    }
+
+    // Cierra la sesion actual.
+    public void cerrarSesion() {
+        sesion.cerrar();
+    }
+
+    // Cuenta con sesion iniciada, o null.
+    public Cuenta getCuentaActual() {
+        return sesion.getCuentaActual();
+    }
+
+    // Indica si la cuenta actual puede ejecutar la accion.
+    public boolean puede(Accion accion) {
+        return sesion.permite(accion);
+    }
+
+    // Acciones que puede ejecutar la cuenta actual.
+    public List<Accion> accionesPermitidas() {
+        return sesion.accionesPermitidas();
     }
 
     // Busca un artista por ID. Si no existe, devuelve null.
