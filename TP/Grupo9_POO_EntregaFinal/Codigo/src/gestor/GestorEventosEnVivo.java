@@ -1,6 +1,7 @@
 package gestor;
 
 import excepciones.AccesoDenegadoException;
+import excepciones.PermisoDenegadoException;
 import modelo.Artista;
 import modelo.Cuenta;
 import modelo.DatosRecital;
@@ -127,6 +128,8 @@ public class GestorEventosEnVivo {
                                     String contrasena,
                                     PlanSuscripcion plan) {
 
+        sesion.exigir(Accion.REGISTRAR_USUARIO);
+
         Usuario usuario = new Usuario(
                 siguienteIdUsuario(),
                 nombreUsuario,
@@ -154,6 +157,8 @@ public class GestorEventosEnVivo {
                                     String biografia,
                                     boolean verificado) {
 
+        sesion.exigir(Accion.REGISTRAR_ARTISTA);
+
         if (existeNombreUsuario(nombreUsuario)) {
             return null;
         }
@@ -174,6 +179,16 @@ public class GestorEventosEnVivo {
 
     // Da de alta un recital nuevo asociado a un artista y lo devuelve.
     public RecitalEnVivo crearEvento(DatosRecital datos, Artista artista) {
+        sesion.exigir(Accion.CREAR_EVENTO);
+
+        // Un artista solo puede crear eventos a su propio nombre.
+        Cuenta actual = sesion.getCuentaActual();
+        if (actual.getTipoUsuario() == TipoUsuario.ARTISTA
+                && artista.getId() != actual.getId()) {
+            throw new PermisoDenegadoException(
+                    "Un artista solo puede crear eventos propios.");
+        }
+
         RecitalEnVivo recital = new RecitalEnVivo(siguienteIdEvento(), datos);
         crearEvento(recital, artista);
         return recital;
@@ -251,6 +266,8 @@ public class GestorEventosEnVivo {
 
     // Registros de acceso de la cuenta actual.
     public List<RegistroAcceso> listarMisRegistros() {
+        sesion.exigir(Accion.VER_MIS_REGISTROS);
+
         List<RegistroAcceso> propios = new ArrayList<>();
         Cuenta actual = sesion.getCuentaActual();
 
@@ -439,23 +456,23 @@ public class GestorEventosEnVivo {
      * gestor es quien recibe el pedido, busca el evento y coordina.
      */
     public void iniciarEvento(int idEvento) throws AccesoDenegadoException {
-        buscarEventoParaCambio(idEvento).iniciarEvento();
+        buscarEventoParaCambio(idEvento, Accion.INICIAR_EVENTO).iniciarEvento();
     }
 
     public void pausarEvento(int idEvento) throws AccesoDenegadoException {
-        buscarEventoParaCambio(idEvento).pausarEvento();
+        buscarEventoParaCambio(idEvento, Accion.PAUSAR_EVENTO).pausarEvento();
     }
 
     public void reanudarEvento(int idEvento) throws AccesoDenegadoException {
-        buscarEventoParaCambio(idEvento).reanudarEvento();
+        buscarEventoParaCambio(idEvento, Accion.REANUDAR_EVENTO).reanudarEvento();
     }
 
     public void finalizarEvento(int idEvento) throws AccesoDenegadoException {
-        buscarEventoParaCambio(idEvento).finalizarEvento();
+        buscarEventoParaCambio(idEvento, Accion.FINALIZAR_EVENTO).finalizarEvento();
     }
 
     public void cancelarEvento(int idEvento) throws AccesoDenegadoException {
-        Evento evento = buscarEventoParaCambio(idEvento);
+        Evento evento = buscarEventoParaCambio(idEvento, Accion.CANCELAR_EVENTO);
 
         if (evento.getEstado() == EstadoEvento.FINALIZADO
                 || evento.getEstado() == EstadoEvento.CANCELADO) {
@@ -468,13 +485,22 @@ public class GestorEventosEnVivo {
         evento.cancelarEvento();
     }
 
-    private Evento buscarEventoParaCambio(int idEvento)
+    private Evento buscarEventoParaCambio(int idEvento, Accion accion)
             throws AccesoDenegadoException {
+
+        // El rol debe permitir la accion y, para un artista, el evento
+        // debe ser uno de los suyos.
+        sesion.exigir(accion);
 
         Evento evento = buscarEventoPorId(idEvento);
 
         if (evento == null) {
             throw new AccesoDenegadoException("Evento inexistente.");
+        }
+
+        if (!esVisible(evento)) {
+            throw new PermisoDenegadoException(
+                    "El evento no pertenece a su cuenta.");
         }
 
         return evento;
@@ -487,6 +513,16 @@ public class GestorEventosEnVivo {
 
     // Caso de uso principal: solicitar ingreso a un evento.
     public RegistroAcceso solicitarIngreso(int idUsuario, int idEvento) {
+        sesion.exigir(Accion.SOLICITAR_INGRESO);
+
+        // Un usuario solo puede solicitar el ingreso a su propio nombre.
+        Cuenta actual = sesion.getCuentaActual();
+        if (actual.getTipoUsuario() == TipoUsuario.USUARIO
+                && idUsuario != actual.getId()) {
+            throw new PermisoDenegadoException(
+                    "Un usuario solo puede solicitar ingreso a su nombre.");
+        }
+
         return controlAcceso.procesarIngreso(
                 buscarUsuarioPorId(idUsuario),
                 buscarEventoPorId(idEvento));
@@ -503,6 +539,8 @@ public class GestorEventosEnVivo {
      * que se hace con los intentos de ingreso.
      */
     public Usuario expulsarUsuario(int idEvento, int idUsuario) {
+        sesion.exigir(Accion.EXPULSAR_USUARIO);
+
         Evento evento = buscarEventoPorId(idEvento);
         Usuario usuario = buscarUsuarioPorId(idUsuario);
 

@@ -1,6 +1,7 @@
 package app;
 
 import gestor.Accion;
+import excepciones.PermisoDenegadoException;
 import gestor.GestorEventosEnVivo;
 
 import java.util.List;
@@ -39,7 +40,20 @@ public final class MenuPorRol {
                 continue;
             }
 
-            ejecutarAccion(acciones.get(opcion - 1), scanner, gestor);
+            Accion accion = acciones.get(opcion - 1);
+
+            // El gestor vuelve a verificar el permiso aunque la opcion
+            // haya salido del menu: la autorizacion no depende de la vista.
+            try {
+                if (!gestor.puede(accion)) {
+                    throw new PermisoDenegadoException(
+                            "Su rol no permite: " + accion.getEtiqueta() + ".");
+                }
+
+                ejecutarAccion(accion, scanner, gestor);
+            } catch (PermisoDenegadoException e) {
+                System.out.println("Accion no permitida: " + e.getMessage());
+            }
         }
     }
 
