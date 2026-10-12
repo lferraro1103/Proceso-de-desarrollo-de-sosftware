@@ -1,5 +1,8 @@
 1|lgabian|Lucia|Gabian|lucia.gabian@uadebeats.com|lgabian2024|PREMIUM|true|USUARIO
 2|lferraro|Leandro|Ferraro|leandro.ferraro@uadebeats.com|lferraro2024|ARTIST_PASS|true|USUARIO
 3|ncaggia|Nicolas|Caggia|nicolas.caggia@uadebeats.com|ncaggia2024|FREE|true|USUARIO
+4|mrossi|Martina|Rossi|martina.rossi@uadebeats.com|mrossi2024|PREMIUM|true|USUARIO
+5|jperez|Juan|Perez|juan.perez@uadebeats.com|jperez2024|FREE|true|USUARIO
+6|sdiaz|Sofia|Diaz|sofia.diaz@uadebeats.com|sdiaz2024|ARTIST_PASS|true|USUARIO
+7|tgomez|Tomas|Gomez|tomas.gomez@uadebeats.com|tgomez2024|FREE|false|USUARIO
 99|admin|Administrador|UADE Beats|admin@uadebeats.com|admin123|PREMIUM|true|ADMINISTRADOR
-100|1|1|1|1|1|FREE|true|USUARIO
