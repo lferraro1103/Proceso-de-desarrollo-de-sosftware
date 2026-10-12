@@ -144,6 +144,16 @@ public class RecitalEnVivo extends Evento {
         }
     }
 
+    /*
+     * Vuelve a conectar un usuario al cargar datos guardados.
+     *
+     * No repite las validaciones de ingreso (estado, horario, capacidad)
+     * porque la conexion ya fue validada cuando ocurrio.
+     */
+    public void restaurarConectado(Usuario usuario) {
+        usuariosConectados.add(usuario);
+    }
+
     // Expulsa o desconecta un usuario del recital.
     @Override
     public void expulsarUsuario(Usuario usuario) {
