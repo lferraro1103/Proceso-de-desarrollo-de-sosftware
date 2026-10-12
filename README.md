@@ -125,7 +125,7 @@ classDiagram
 | Guardado desde las vistas | `PersistenciaArchivos.guardarDatos(gestor)` | `gestor.guardarDatos()` |
 | Carga desde las vistas | `PersistenciaArchivos.cargarDatos(gestor)` | `gestor.cargarDatos()` |
 
-La interfaz pertenece al paquete del gestor, que es el módulo de alto nivel. Para almacenar en otro medio alcanza con escribir una nueva clase que implemente `Persistencia` y pasarla al crear el gestor. El gestor recibe de la misma forma un `Notificador` para los avisos a los usuarios (sección 9).
+La interfaz pertenece al paquete del gestor, que es el módulo de alto nivel. Para almacenar en otro medio alcanza con escribir una nueva clase que implemente `Persistencia` y pasarla al crear el gestor. El gestor recibe de la misma forma un `Notificador` para los avisos a los usuarios (sección 10).
 
 ## 6. Alcance
 
@@ -192,6 +192,7 @@ Cada cuenta tiene un rol (`TipoUsuario`): usuario, artista o administrador. Al i
 | Iniciar, pausar, reanudar, finalizar y cancelar un evento | No | Solo los propios | Cualquiera |
 | Ver los usuarios conectados | No | Solo los propios | Sí |
 | Registrar usuarios y artistas | No | No | Sí |
+| Activar o desactivar usuarios | No | No | Sí |
 | Expulsar a un usuario | No | No | Sí |
 | Ver todos los registros, guardar y cargar datos | No | No | Sí |
 | Abrir la ventana gráfica | Sí | Sí | Sí |
@@ -238,14 +239,22 @@ El gestor verifica el permiso en cada operación, de modo que una acción no per
 
 El login funciona igual para los tres roles. Los nombres de cuenta son únicos entre usuarios y artistas, y una cuenta sin contraseña no puede iniciar sesión. El administrador da de alta a los artistas con nombre de cuenta y contraseña. La ventana gráfica se abre para cualquier cuenta y muestra solo las pestañas y los botones que permite su rol: el usuario ve los eventos, solicita ingresos a su nombre y consulta sus registros; el artista ve y gestiona únicamente sus eventos; el administrador accede a todas las pestañas.
 
-| Rol | Cuenta | Contraseña |
-|---|---|---|
-| Administrador | `admin` | `admin123` |
-| Artista | `bandahorizonte` | `horizonte2024` |
-| Artista | `djprisma` | `prisma2024` |
-| Usuario | `lgabian` | `lgabian2024` |
-| Usuario | `lferraro` | `lferraro2024` |
-| Usuario | `ncaggia` | `ncaggia2024` |
+| Rol | Cuenta | Contraseña | Plan |
+|---|---|---|---|
+| Administrador | `admin` | `admin123` | Premium |
+| Artista | `bandahorizonte` | `horizonte2024` | |
+| Artista | `djprisma` | `prisma2024` | |
+| Artista | `lunanocturna` | `luna2024` | |
+| Artista | `losdelsur` | `sur2024` | |
+| Usuario | `lgabian` | `lgabian2024` | Premium |
+| Usuario | `lferraro` | `lferraro2024` | Artist Pass |
+| Usuario | `ncaggia` | `ncaggia2024` | Free |
+| Usuario | `mrossi` | `mrossi2024` | Premium |
+| Usuario | `jperez` | `jperez2024` | Free |
+| Usuario | `sdiaz` | `sdiaz2024` | Artist Pass |
+| Usuario | `tgomez` | `tgomez2024` | Free, cuenta inactiva |
+
+El administrador puede activar o desactivar usuarios. Una cuenta inactiva no puede iniciar sesión ni ingresar a eventos, y al desactivarla se la desconecta de los eventos en los que estaba. Un administrador no puede desactivar su propia cuenta.
 
 ### Inicio del programa y ventana de login
 
@@ -264,7 +273,40 @@ Las ventanas usan un logo propio, que reemplaza el ícono por defecto de Java en
 
 Las reglas de qué transición permite cada estado están en `EstadoEvento`. Las usan el propio evento, el gestor, el menú de consola y la ventana, de modo que no se repiten en cada interfaz.
 
-## 9. Avisos a los usuarios
+## 9. Persistencia y datos de prueba
+
+Los datos se guardan en cuatro archivos de texto de la carpeta `datos`, con un registro por línea y campos separados por `|`.
+
+| Archivo | Contenido de cada línea |
+|---|---|
+| `usuarios.txt` | Identificador, cuenta, nombre, apellido, email, contraseña, plan, activo y rol |
+| `artistas.txt` | Identificador, nombre artístico, género, biografía, verificado, cuenta, contraseña y rol |
+| `eventos.txt` | Identificador, título, descripción, inicio, fin, estado, capacidad, plan mínimo, ubicación, streaming, exclusivo, artistas y usuarios conectados |
+| `registros_acceso.txt` | Fecha, usuario, evento, resultado y motivo del rechazo |
+
+| Aspecto | Comportamiento |
+|---|---|
+| Guardado | Después de cada cambio (altas, ingresos, expulsiones, cambios de estado y activación de usuarios) los datos se guardan solos. Las opciones de guardar y cargar manualmente siguen disponibles para el administrador. |
+| Textos | Un `|` o un salto de línea dentro de un nombre, una contraseña o una biografía se guarda codificado y se lee tal como fue escrito. |
+| Conectados | Los usuarios conectados a cada evento se guardan y se restauran. Un evento finalizado o cancelado desconecta a todos. |
+| Archivos viejos | Los formatos anteriores, con menos campos, siguen cargando. |
+| Arranque | Si un archivo está dañado se informa y se usan los datos de prueba. Si no hay ningún administrador, se agrega uno para que siempre se pueda iniciar sesión. |
+| Registros sin entidad | Los intentos de ingreso de un usuario o un evento inexistente se informan al momento pero no se guardan, porque no refieren a ninguna entidad real. |
+
+Los archivos entregados traen datos de prueba coherentes entre sí: ocho usuarios, cuatro artistas, seis eventos en distintos estados y dieciséis accesos vinculados a los usuarios.
+
+| Evento | Estado | Plan mínimo | Conectados |
+|---|---|---|---|
+| 100 Rock en Vivo | En curso | Premium | `lgabian`, `mrossi` y `lferraro` (3 de 5) |
+| 101 Backstage Prisma Live | En espera | Artist Pass | Ninguno |
+| 102 Noche de Folklore | Pausado | Free | `ncaggia` (1 de 20) |
+| 103 Luna en Vivo (Acústico) | Programado | Free | Ninguno |
+| 104 Festival de Verano 2025 | Finalizado | Free | Ninguno |
+| 105 Fiesta Electrónica Cancelada | Cancelado | Premium | Ninguno |
+
+Los accesos incluyen ingresos autorizados, rechazos por plan insuficiente, por usuario ya conectado, por evento no disponible y por cuenta inactiva, y dos expulsiones. Con ellos se pueden probar todos los casos del ingreso a un evento.
+
+## 10. Avisos a los usuarios
 
 El gestor recibe un `Notificador`, una interfaz con una sola operación, y `ControlAcceso` la invoca cuando un usuario es expulsado de un evento o se rechaza su solicitud de ingreso. Solo se avisa a las cuentas de rol usuario.
 
@@ -275,7 +317,7 @@ El gestor recibe un `Notificador`, una interfaz con una sola operación, y `Cont
 
 Por ahora el programa usa `NotificadorInactivo`, que no envía nada. `NotificadorNtfy` ya está escrita para entregar los avisos como notificaciones push mediante ntfy.sh, en un tema propio de cada usuario, pero todavía no se utiliza. Activarla requiere solo crear el gestor con esa implementación en `App` y en `AppSwing`, sin modificar el gestor ni `ControlAcceso`.
 
-## 10. Ejecución
+## 11. Ejecución
 
 Desde `TP/Grupo9_POO_EntregaFinal/Codigo/src`:
 
