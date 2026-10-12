@@ -653,21 +653,19 @@ public final class MenuAcciones {
         EstadoEvento estado = evento.getEstado();
 
         if ("iniciar".equals(accion)) {
-            return estado == EstadoEvento.PROGRAMADO
-                    || estado == EstadoEvento.EN_ESPERA;
+            return estado.permiteIniciar();
         }
 
         if ("pausar".equals(accion)) {
-            return estado == EstadoEvento.EN_CURSO;
+            return estado.permitePausar();
         }
 
         if ("reanudar".equals(accion)) {
-            return estado == EstadoEvento.PAUSADO;
+            return estado.permiteReanudar();
         }
 
         if ("finalizar".equals(accion)) {
-            return estado == EstadoEvento.EN_CURSO
-                    || estado == EstadoEvento.PAUSADO;
+            return estado.permiteFinalizar();
         }
 
         // Solo se puede expulsar usuarios de eventos en curso.
@@ -675,11 +673,8 @@ public final class MenuAcciones {
             return estado == EstadoEvento.EN_CURSO;
         }
 
-        // Se puede cancelar cualquier evento que no haya terminado su
-        // ciclo de vida (ya finalizado o ya cancelado).
         if ("cancelar".equals(accion)) {
-            return estado != EstadoEvento.FINALIZADO
-                    && estado != EstadoEvento.CANCELADO;
+            return estado.permiteCancelar();
         }
 
         return false;

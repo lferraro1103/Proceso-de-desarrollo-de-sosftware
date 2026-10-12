@@ -62,8 +62,7 @@ public abstract class Evento {
 
     // Inicia el evento solamente si todavia no esta en curso.
     public void iniciarEvento() throws AccesoDenegadoException {
-        if (estado == EstadoEvento.PROGRAMADO
-                || estado == EstadoEvento.EN_ESPERA) {
+        if (estado.permiteIniciar()) {
             estado = EstadoEvento.EN_CURSO;
             return;
         }
@@ -75,8 +74,7 @@ public abstract class Evento {
 
     // Finaliza el evento solamente si ya fue iniciado.
     public void finalizarEvento() throws AccesoDenegadoException {
-        if (estado == EstadoEvento.EN_CURSO
-                || estado == EstadoEvento.PAUSADO) {
+        if (estado.permiteFinalizar()) {
             estado = EstadoEvento.FINALIZADO;
             return;
         }
@@ -93,7 +91,7 @@ public abstract class Evento {
 
     // Pausa el evento solamente si esta en curso.
     public void pausarEvento() throws AccesoDenegadoException {
-        if (estado == EstadoEvento.EN_CURSO) {
+        if (estado.permitePausar()) {
             estado = EstadoEvento.PAUSADO;
             return;
         }
@@ -106,7 +104,7 @@ public abstract class Evento {
 
     // Reanuda el evento solamente si esta pausado.
     public void reanudarEvento() throws AccesoDenegadoException {
-        if (estado == EstadoEvento.PAUSADO) {
+        if (estado.permiteReanudar()) {
             estado = EstadoEvento.EN_CURSO;
             return;
         }
