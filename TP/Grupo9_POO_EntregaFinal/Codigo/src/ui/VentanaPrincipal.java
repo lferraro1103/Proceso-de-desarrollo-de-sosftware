@@ -6,22 +6,32 @@ import gestor.Accion;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
 import modelo.DatosRecital;
+import modelo.EstadoEvento;
 import modelo.Evento;
 import modelo.PlanSuscripcion;
-import modelo.Usuario;
 import modelo.RegistroAcceso;
 import modelo.TipoUsuario;
+import modelo.Usuario;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -29,19 +39,32 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /*
- * Interfaz grafica minima con Swing.
+ * Interfaz grafica con Swing.
  *
- * Complementa el menu de consola y demuestra la estructura recomendada
- * de Clase 12: separar la interfaz grafica en un paquete ui.
+ * Complementa el menu de consola: muestra solo las pestanias y los botones
+ * que permite el rol de la cuenta, y trabaja con el mismo gestor.
  */
 public class VentanaPrincipal extends JFrame {
+
+    // Colores de la barra de estado.
+    private static final Color COLOR_EXITO = new Color(31, 122, 61);
+    private static final Color COLOR_ERROR = new Color(176, 58, 46);
+
+    private static final DateTimeFormatter FORMATO_FECHA =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     // Uso el mismo gestor que usa el menu por consola.
     // Asi la ventana trabaja con los mismos usuarios, artistas y eventos.
@@ -58,8 +81,13 @@ public class VentanaPrincipal extends JFrame {
     // selecciono la persona para iniciar, pausar, reanudar o finalizar.
     private JTable tablaEventos;
 
-    private static final DateTimeFormatter FORMATO_FECHA =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+    // Botones que dependen del evento seleccionado y de su estado.
+    private final JButton iniciar = new JButton("Iniciar");
+    private final JButton pausar = new JButton("Pausar");
+    private final JButton reanudar = new JButton("Reanudar");
+    private final JButton finalizar = new JButton("Finalizar");
+    private final JButton cancelar = new JButton("Cancelar");
+    private final JButton verConectados = new JButton("Ver conectados");
 
     // Etiqueta inferior para mostrar el resultado de la ultima accion.
     private JLabel estado;
@@ -78,7 +106,7 @@ public class VentanaPrincipal extends JFrame {
         this.gestor = gestor;
         this.permiteCerrarSesion = permiteCerrarSesion;
 
-        // Creo un modelo para cada lista de la ventana.
+        // Creo un modelo para cada tabla de la ventana.
         modeloUsuarios = new ModeloTabla(
                 new String[] {"ID", "Usuario", "Nombre", "Plan", "Activo"},
                 new Class<?>[] {Integer.class, String.class, String.class,
@@ -101,7 +129,7 @@ public class VentanaPrincipal extends JFrame {
         setTitle("Eventos en vivo - UADE Beats: "
                 + gestor.getCuentaActual().getNombreUsuario()
                 + " (" + gestor.getCuentaActual().getTipoUsuario() + ")");
-        setSize(850, 520);
+        setSize(950, 540);
         setLocationRelativeTo(null);
 
         // Cierra solo esta ventana, no corta toda la aplicacion.
@@ -110,6 +138,10 @@ public class VentanaPrincipal extends JFrame {
 
         construirInterfaz();
         actualizarListas();
+
+        mostrarInfo("Sesion iniciada como "
+                + gestor.getCuentaActual().getNombreUsuario()
+                + " (" + gestor.getCuentaActual().getTipoUsuario() + ").");
     }
 
     private void construirInterfaz() {
@@ -143,7 +175,7 @@ public class VentanaPrincipal extends JFrame {
             pestanias.addTab("Persistencia", crearPanelPersistencia());
         }
 
-        estado = new JLabel("Sistema iniciado.");
+        estado = new JLabel(" ");
         estado.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
         JPanel inferior = new JPanel(new BorderLayout());
@@ -210,11 +242,11 @@ public class VentanaPrincipal extends JFrame {
         private Color colorDeEstado(String estado) {
             switch (estado) {
                 case "EN_CURSO":
-                    return new Color(31, 122, 61);
+                    return COLOR_EXITO;
                 case "PAUSADO":
                     return new Color(168, 114, 26);
                 case "CANCELADO":
-                    return new Color(176, 58, 46);
+                    return COLOR_ERROR;
                 case "FINALIZADO":
                     return Color.GRAY;
                 default:
@@ -227,17 +259,10 @@ public class VentanaPrincipal extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         JTable lista = crearTabla(modeloUsuarios, 40, 120, 200, 110, 60);
 
-        // Refresca la informacion visible.
-        JButton actualizar = new JButton("Actualizar");
-        actualizar.addActionListener(e -> actualizarListas());
-
-        // Abre ventanas para cargar los datos del usuario.
-        JButton registrar = new JButton("Registrar usuario");
-        registrar.addActionListener(e -> registrarUsuario());
-
-        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        acciones.add(registrar);
-        acciones.add(actualizar);
+        JPanel acciones = crearFila("Usuarios");
+        agregarSiPermitido(acciones, Accion.REGISTRAR_USUARIO,
+                crearBoton("Registrar usuario", this::registrarUsuario));
+        acciones.add(crearBoton("Actualizar", this::actualizarListas));
 
         panel.add(new JScrollPane(lista), BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
@@ -248,17 +273,10 @@ public class VentanaPrincipal extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         JTable lista = crearTabla(modeloArtistas, 40, 130, 190, 120, 80);
 
-        // Refresca la informacion visible.
-        JButton actualizar = new JButton("Actualizar");
-        actualizar.addActionListener(e -> actualizarListas());
-
-        // Abre ventanas para cargar un artista nuevo.
-        JButton registrar = new JButton("Registrar artista");
-        registrar.addActionListener(e -> registrarArtista());
-
-        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        acciones.add(registrar);
-        acciones.add(actualizar);
+        JPanel acciones = crearFila("Artistas");
+        agregarSiPermitido(acciones, Accion.REGISTRAR_ARTISTA,
+                crearBoton("Registrar artista", this::registrarArtista));
+        acciones.add(crearBoton("Actualizar", this::actualizarListas));
 
         panel.add(new JScrollPane(lista), BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
@@ -267,60 +285,104 @@ public class VentanaPrincipal extends JFrame {
 
     private JPanel crearPanelEventos() {
         JPanel panel = new JPanel(new BorderLayout());
+
         tablaEventos = crearTabla(modeloEventos, 40, 190, 100, 130, 90, 100, 170);
         tablaEventos.getColumnModel().getColumn(2)
                 .setCellRenderer(new RenderizadorEstado());
 
-        // Panel de botones para operar sobre eventos.
-        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton iniciar = new JButton("Iniciar");
-        JButton pausar = new JButton("Pausar");
-        JButton reanudar = new JButton("Reanudar");
-        JButton finalizar = new JButton("Finalizar");
-        JButton cancelar = new JButton("Cancelar");
-        JButton crear = new JButton("Crear evento");
-        JButton ingresar = new JButton(
-                gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO
-                        ? "Solicitar ingreso" : "Dar acceso");
-        JButton expulsar = new JButton("Expulsar usuario");
-        JButton actualizar = new JButton("Actualizar");
+        // Los botones se habilitan segun el evento seleccionado.
+        tablaEventos.getSelectionModel().addListSelectionListener(
+                e -> actualizarBotones());
 
-        // Cada boton ejecuta una accion cuando se hace click.
+        // Doble clic sobre un evento muestra sus usuarios conectados.
+        tablaEventos.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && verConectados.isEnabled()) {
+                    verConectados();
+                }
+            }
+        });
+
         iniciar.addActionListener(e -> cambiarEstadoSeleccionado("iniciar"));
         pausar.addActionListener(e -> cambiarEstadoSeleccionado("pausar"));
         reanudar.addActionListener(e -> cambiarEstadoSeleccionado("reanudar"));
         finalizar.addActionListener(e -> cambiarEstadoSeleccionado("finalizar"));
         cancelar.addActionListener(e -> cambiarEstadoSeleccionado("cancelar"));
-        crear.addActionListener(e -> crearEvento());
-        ingresar.addActionListener(e -> solicitarIngreso());
-        expulsar.addActionListener(e -> expulsarUsuario());
-        actualizar.addActionListener(e -> actualizarListas());
-
-        JButton verConectados = new JButton("Ver conectados");
         verConectados.addActionListener(e -> verConectados());
 
-        // Cada boton se agrega solo si el rol permite su accion.
-        agregarSiPermitido(acciones, Accion.CREAR_EVENTO, crear);
-        agregarSiPermitido(acciones, Accion.SOLICITAR_INGRESO, ingresar);
-        agregarSiPermitido(acciones, Accion.EXPULSAR_USUARIO, expulsar);
-        agregarSiPermitido(acciones, Accion.INICIAR_EVENTO, iniciar);
-        agregarSiPermitido(acciones, Accion.PAUSAR_EVENTO, pausar);
-        agregarSiPermitido(acciones, Accion.REANUDAR_EVENTO, reanudar);
-        agregarSiPermitido(acciones, Accion.FINALIZAR_EVENTO, finalizar);
-        agregarSiPermitido(acciones, Accion.CANCELAR_EVENTO, cancelar);
-        agregarSiPermitido(acciones, Accion.VER_CONECTADOS, verConectados);
-        acciones.add(actualizar);
+        // Primera fila: ciclo de vida del evento.
+        JPanel filaEvento = crearFila("Evento");
+        agregarSiPermitido(filaEvento, Accion.CREAR_EVENTO,
+                crearBoton("Crear evento", this::crearEvento));
+        agregarSiPermitido(filaEvento, Accion.INICIAR_EVENTO, iniciar);
+        agregarSiPermitido(filaEvento, Accion.PAUSAR_EVENTO, pausar);
+        agregarSiPermitido(filaEvento, Accion.REANUDAR_EVENTO, reanudar);
+        agregarSiPermitido(filaEvento, Accion.FINALIZAR_EVENTO, finalizar);
+        agregarSiPermitido(filaEvento, Accion.CANCELAR_EVENTO, cancelar);
+
+        // Segunda fila: gestion de usuarios en el evento.
+        JPanel filaGestion = crearFila("Gestion");
+        agregarSiPermitido(filaGestion, Accion.SOLICITAR_INGRESO, crearBoton(
+                gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO
+                        ? "Solicitar ingreso" : "Dar acceso",
+                this::solicitarIngreso));
+        agregarSiPermitido(filaGestion, Accion.EXPULSAR_USUARIO,
+                crearBoton("Expulsar usuario", this::expulsarUsuario));
+        agregarSiPermitido(filaGestion, Accion.VER_CONECTADOS, verConectados);
+        filaGestion.add(crearBoton("Actualizar", this::actualizarListas));
+
+        JPanel acciones = new JPanel();
+        acciones.setLayout(new BoxLayout(acciones, BoxLayout.Y_AXIS));
+
+        // Una fila solo se muestra si el rol tiene algun boton en ella.
+        if (filaEvento.getComponentCount() > 0) {
+            acciones.add(filaEvento);
+        }
+        acciones.add(filaGestion);
+
+        // Hasta que se elija un evento, los botones de estado quedan apagados.
+        actualizarBotones();
 
         panel.add(new JScrollPane(tablaEventos), BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
         return panel;
     }
 
-    // Cierra la sesion y vuelve a la ventana de login.
-    private void cerrarSesion() {
-        gestor.cerrarSesion();
-        dispose();
-        new VentanaLogin(gestor).setVisible(true);
+    private JPanel crearPanelRegistros() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        JPanel acciones = crearFila("Registros");
+        acciones.add(crearBoton("Actualizar", this::actualizarListas));
+
+        panel.add(new JScrollPane(crearTabla(modeloRegistros, 130, 110, 230, 330)),
+                BorderLayout.CENTER);
+        panel.add(acciones, BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private JPanel crearPanelPersistencia() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        // Botones que llaman a la clase de persistencia con archivos TXT.
+        agregarSiPermitido(panel, Accion.GUARDAR_DATOS,
+                crearBoton("Guardar TXT", this::guardarDatos));
+        agregarSiPermitido(panel, Accion.CARGAR_DATOS,
+                crearBoton("Cargar TXT", this::cargarDatos));
+        return panel;
+    }
+
+    // Fila de botones con un borde que indica a que grupo pertenecen.
+    private JPanel crearFila(String titulo) {
+        JPanel fila = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        fila.setBorder(BorderFactory.createTitledBorder(titulo));
+        return fila;
+    }
+
+    private JButton crearBoton(String texto, Runnable accion) {
+        JButton boton = new JButton(texto);
+        boton.addActionListener(e -> accion.run());
+        return boton;
     }
 
     // Agrega el boton al panel solo si el rol permite la accion.
@@ -330,135 +392,249 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    private JPanel crearPanelRegistros() {
-        JPanel panel = new JPanel(new BorderLayout());
+    // Cierra la sesion y vuelve a la ventana de login.
+    private void cerrarSesion() {
+        gestor.cerrarSesion();
+        dispose();
+        new VentanaLogin(gestor).setVisible(true);
+    }
 
-        JButton actualizar = new JButton("Actualizar");
-        actualizar.addActionListener(e -> actualizarListas());
+    /*
+     * Habilita cada boton solo cuando la accion es posible: hace falta un
+     * evento seleccionado y que su estado permita la transicion. Las reglas
+     * son las del propio EstadoEvento, no se repiten aca.
+     */
+    private void actualizarBotones() {
+        Evento evento = eventoSeleccionado();
+        EstadoEvento estadoEvento = (evento == null) ? null : evento.getEstado();
 
-        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        acciones.add(actualizar);
+        iniciar.setEnabled(estadoEvento != null && estadoEvento.permiteIniciar());
+        pausar.setEnabled(estadoEvento != null && estadoEvento.permitePausar());
+        reanudar.setEnabled(estadoEvento != null && estadoEvento.permiteReanudar());
+        finalizar.setEnabled(estadoEvento != null && estadoEvento.permiteFinalizar());
+        cancelar.setEnabled(estadoEvento != null && estadoEvento.permiteCancelar());
+        verConectados.setEnabled(evento != null);
 
-        panel.add(new JScrollPane(crearTabla(modeloRegistros, 130, 110, 230, 330)),
-                BorderLayout.CENTER);
-        panel.add(acciones, BorderLayout.SOUTH);
-        return panel;
+        String ayuda = (evento == null)
+                ? "Seleccione un evento de la tabla."
+                : "No disponible para el estado " + evento.getEstado() + ".";
+
+        for (JButton boton : new JButton[] {iniciar, pausar, reanudar,
+                finalizar, cancelar, verConectados}) {
+            boton.setToolTipText(boton.isEnabled() ? null : ayuda);
+        }
+    }
+
+    // Evento de la fila seleccionada, o null si no hay ninguna.
+    private Evento eventoSeleccionado() {
+        if (tablaEventos == null) {
+            return null;
+        }
+
+        Integer id = obtenerIdSeleccionado(tablaEventos);
+        return (id == null) ? null : gestor.buscarEventoVisible(id);
     }
 
     private void verConectados() {
-        Integer idEvento = obtenerIdSeleccionado(tablaEventos);
-
-        if (idEvento == null) {
-            mostrarMensaje("Seleccione un evento.");
-            return;
-        }
-
-        Evento evento = gestor.buscarEventoVisible(idEvento);
+        Evento evento = eventoSeleccionado();
 
         if (evento == null) {
-            mostrarMensaje("Evento inexistente.");
+            mostrarError("Seleccione un evento.");
             return;
         }
 
         if (evento.getUsuariosConectados().isEmpty()) {
-            mostrarMensaje("No hay usuarios conectados.");
+            mostrarInfo("No hay usuarios conectados en \"" + evento.getTitulo() + "\".");
             return;
         }
 
         StringBuilder texto = new StringBuilder("Usuarios conectados:\n");
         for (Usuario usuario : evento.getUsuariosConectados()) {
-            texto.append(usuario).append("\n");
+            texto.append(usuario.getNombreUsuario()).append(" - ")
+                    .append(usuario.getNombreCompleto()).append("\n");
         }
 
-        JOptionPane.showMessageDialog(this, texto.toString());
+        JOptionPane.showMessageDialog(this, texto.toString(),
+                evento.getTitulo(), JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // ---------------- formularios ----------------
+
+    /*
+     * Formulario de una sola ventana: etiquetas a la izquierda y campos a
+     * la derecha. Reemplaza la cadena de ventanitas que pedia cada dato.
+     */
+    private static class Formulario {
+
+        private final JPanel panel = new JPanel(new GridBagLayout());
+        private int fila = 0;
+
+        JPanel panel() {
+            return panel;
+        }
+
+        private <T extends Component> T agregar(String etiqueta, T campo) {
+            GridBagConstraints c = new GridBagConstraints();
+            c.insets = new Insets(4, 4, 4, 4);
+            c.gridy = fila++;
+            c.gridx = 0;
+            c.anchor = GridBagConstraints.WEST;
+            panel.add(new JLabel(etiqueta), c);
+            c.gridx = 1;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1;
+            panel.add(campo, c);
+            return campo;
+        }
+
+        JTextField texto(String etiqueta) {
+            return agregar(etiqueta, new JTextField(22));
+        }
+
+        JPasswordField clave(String etiqueta) {
+            return agregar(etiqueta, new JPasswordField(22));
+        }
+
+        <T> JComboBox<T> combo(String etiqueta, T[] valores) {
+            return agregar(etiqueta, new JComboBox<>(valores));
+        }
+
+        JSpinner numero(String etiqueta, int inicial, int minimo, int maximo) {
+            return agregar(etiqueta, new JSpinner(
+                    new SpinnerNumberModel(inicial, minimo, maximo, 1)));
+        }
+
+        JCheckBox marca(String etiqueta) {
+            return agregar(etiqueta, new JCheckBox());
+        }
+    }
+
+    /*
+     * Muestra el formulario hasta que el validador no devuelva errores o la
+     * persona cancele. Si hay un error, lo informa y vuelve a mostrar el
+     * formulario con lo que ya se habia cargado.
+     */
+    private boolean pedir(String titulo, Formulario formulario,
+                          Supplier<String> validador) {
+
+        while (true) {
+            int respuesta = JOptionPane.showConfirmDialog(this,
+                    formulario.panel(), titulo,
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            if (respuesta != JOptionPane.OK_OPTION) {
+                return false;
+            }
+
+            String error = validador.get();
+
+            if (error == null) {
+                return true;
+            }
+
+            mostrarError(error);
+        }
+    }
+
+    private static boolean vacio(JTextField campo) {
+        return campo.getText().trim().isEmpty();
     }
 
     private void registrarUsuario() {
-        // Primero pido el nombre de usuario porque no puede repetirse.
-        String nombreUsuario = leerTexto("Nombre de usuario:");
+        Formulario f = new Formulario();
+        JTextField cuenta = f.texto("Nombre de usuario:");
+        JTextField nombre = f.texto("Nombre:");
+        JTextField apellido = f.texto("Apellido:");
+        JTextField email = f.texto("Email:");
+        JPasswordField clave = f.clave("Contrasena:");
+        JComboBox<PlanSuscripcion> plan = f.combo("Plan:", PlanSuscripcion.values());
 
-        if (nombreUsuario == null) {
-            return;
-        }
+        boolean aceptado = pedir("Registrar usuario", f, () -> {
+            if (vacio(cuenta)) {
+                return "El nombre de usuario no puede estar vacio.";
+            }
+            if (gestor.existeNombreUsuario(cuenta.getText())) {
+                return "Ese nombre de usuario ya esta registrado.";
+            }
+            if (vacio(nombre) || vacio(apellido) || vacio(email)) {
+                return "Nombre, apellido y email son obligatorios.";
+            }
+            if (clave.getPassword().length == 0) {
+                return "La contrasena no puede estar vacia.";
+            }
+            return null;
+        });
 
-        nombreUsuario = nombreUsuario.trim();
-
-        if (nombreUsuario.isEmpty()) {
-            mostrarMensaje("El nombre de usuario no puede estar vacio.");
-            return;
-        }
-
-        if (gestor.existeNombreUsuario(nombreUsuario)) {
-            mostrarMensaje("Ese nombre de usuario ya esta registrado.");
-            return;
-        }
-
-        // Si el nombre de usuario es valido, pido el resto de los datos.
-        String nombre = leerTexto("Nombre:");
-        String apellido = leerTexto("Apellido:");
-        String email = leerTexto("Email:");
-        String contrasena = leerTexto("Contrasena:");
-        PlanSuscripcion plan = seleccionarPlan();
-
-        if (nombre == null || apellido == null || email == null
-                || contrasena == null || contrasena.isEmpty()
-                || plan == null) {
+        if (!aceptado) {
             return;
         }
 
         // El gestor asigna el ID y construye el usuario.
         Usuario usuario = gestor.registrarUsuario(
-                nombreUsuario,
-                nombre,
-                apellido,
-                email,
-                contrasena,
-                plan
-        );
+                cuenta.getText().trim(),
+                nombre.getText().trim(),
+                apellido.getText().trim(),
+                email.getText().trim(),
+                new String(clave.getPassword()),
+                (PlanSuscripcion) plan.getSelectedItem());
 
-        if (usuario != null) {
-            mostrarMensaje("Usuario registrado correctamente.");
-
-            // Refresco para que aparezca en la lista de la ventana.
-            actualizarListas();
-
-            // Persiste de una para no perder el alta si se cierra sin guardar.
-            guardarSilencioso();
-        } else {
-            mostrarMensaje("Ese nombre de usuario ya esta registrado.");
+        if (usuario == null) {
+            mostrarError("Ese nombre de usuario ya esta registrado.");
+            return;
         }
+
+        mostrarExito("Usuario registrado: " + usuario.getNombreUsuario()
+                + " (ID " + usuario.getId() + ").");
+        actualizarListas();
+
+        // Persiste de una para no perder el alta si se cierra sin guardar.
+        guardarSilencioso();
     }
 
     private void registrarArtista() {
-        // Carga manual de artista para despues poder crear eventos asociados.
-        String nombreUsuario = leerTexto("Nombre de cuenta del artista:");
-        String contrasena = leerTexto("Contrasena del artista:");
-        String nombreArtistico = leerTexto("Nombre artistico:");
-        String genero = leerTexto("Genero principal:");
-        String biografia = leerTexto("Biografia:");
+        Formulario f = new Formulario();
+        JTextField cuenta = f.texto("Nombre de cuenta:");
+        JPasswordField clave = f.clave("Contrasena:");
+        JTextField nombreArtistico = f.texto("Nombre artistico:");
+        JTextField genero = f.texto("Genero principal:");
+        JTextField biografia = f.texto("Biografia:");
+        JCheckBox verificado = f.marca("Verificado:");
 
-        if (nombreUsuario == null || contrasena == null
-                || contrasena.isEmpty() || nombreArtistico == null
-                || genero == null || biografia == null) {
+        boolean aceptado = pedir("Registrar artista", f, () -> {
+            if (vacio(cuenta)) {
+                return "El nombre de cuenta no puede estar vacio.";
+            }
+            if (gestor.existeNombreUsuario(cuenta.getText())) {
+                return "Ese nombre de cuenta ya esta registrado.";
+            }
+            if (clave.getPassword().length == 0) {
+                return "La contrasena no puede estar vacia.";
+            }
+            if (vacio(nombreArtistico) || vacio(genero)) {
+                return "El nombre artistico y el genero son obligatorios.";
+            }
+            return null;
+        });
+
+        if (!aceptado) {
             return;
         }
 
-        if (gestor.existeNombreUsuario(nombreUsuario)) {
-            mostrarMensaje("Ese nombre de usuario ya esta registrado.");
+        Artista artista = gestor.registrarArtista(
+                cuenta.getText().trim(),
+                new String(clave.getPassword()),
+                nombreArtistico.getText().trim(),
+                genero.getText().trim(),
+                biografia.getText().trim(),
+                verificado.isSelected());
+
+        if (artista == null) {
+            mostrarError("Ese nombre de cuenta ya esta registrado.");
             return;
         }
 
-        boolean verificado = leerBooleano("El artista esta verificado?");
-
-        gestor.registrarArtista(
-                nombreUsuario,
-                contrasena,
-                nombreArtistico,
-                genero,
-                biografia,
-                verificado
-        );
-        mostrarMensaje("Artista registrado correctamente.");
+        mostrarExito("Artista registrado: " + artista.getNombreArtistico()
+                + " (ID " + artista.getId() + ").");
         actualizarListas();
 
         // Persiste de una para no perder el alta si se cierra sin guardar.
@@ -468,69 +644,90 @@ public class VentanaPrincipal extends JFrame {
     private void crearEvento() {
         // Un artista crea el evento a su nombre; el administrador elige el
         // artista que va a estar asociado.
-        Artista artista;
-        if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.ARTISTA) {
-            artista = gestor.buscarArtistaPorId(gestor.getCuentaActual().getId());
-        } else {
-            artista = seleccionarArtista();
+        boolean esArtista = gestor.getCuentaActual().getTipoUsuario()
+                == TipoUsuario.ARTISTA;
+
+        Formulario f = new Formulario();
+        JComboBox<Artista> artistas = null;
+
+        if (!esArtista) {
+            List<Artista> disponibles = gestor.listarArtistas();
+
+            if (disponibles.isEmpty()) {
+                mostrarError("No hay artistas registrados.");
+                return;
+            }
+
+            artistas = f.combo("Artista:", disponibles.toArray(new Artista[0]));
+            artistas.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(
+                        JList<?> lista, Object valor, int indice,
+                        boolean seleccionado, boolean foco) {
+
+                    String texto = (valor instanceof Artista)
+                            ? ((Artista) valor).getNombreArtistico()
+                            : String.valueOf(valor);
+                    return super.getListCellRendererComponent(
+                            lista, texto, indice, seleccionado, foco);
+                }
+            });
         }
 
-        if (artista == null) {
+        JTextField titulo = f.texto("Titulo:");
+        JTextField descripcion = f.texto("Descripcion:");
+        JSpinner minutosInicio = f.numero("Minutos hasta el inicio:", 0, 0, 100000);
+        JSpinner duracion = f.numero("Duracion (minutos):", 60, 1, 10000);
+        JSpinner capacidad = f.numero("Capacidad maxima:", 50, 1, 1000000);
+        JComboBox<PlanSuscripcion> plan = f.combo("Plan minimo:", PlanSuscripcion.values());
+        JTextField ubicacion = f.texto("Ubicacion o canal:");
+        JCheckBox streaming = f.marca("Por streaming:");
+        JCheckBox exclusivo = f.marca("Exclusivo:");
+
+        boolean aceptado = pedir("Crear evento", f, () -> {
+            if (vacio(titulo)) {
+                return "El titulo no puede estar vacio.";
+            }
+            if (vacio(ubicacion)) {
+                return "La ubicacion o el canal no pueden estar vacios.";
+            }
+            return null;
+        });
+
+        if (!aceptado) {
             return;
         }
 
-        String titulo = leerTexto("Titulo del evento:");
-        String descripcion = leerTexto("Descripcion:");
-        Integer minutosInicio = leerEntero("Minutos hasta inicio:");
-        Integer duracion = leerEntero("Duracion en minutos:");
-        Integer capacidad = leerEntero("Capacidad maxima:");
-        PlanSuscripcion plan = seleccionarPlan();
-        String ubicacion = leerTexto("Ubicacion o canal:");
-
-        if (titulo == null || descripcion == null || minutosInicio == null
-                || duracion == null || capacidad == null || plan == null
-                || ubicacion == null) {
-            return;
-        }
-
-        if (duracion <= 0) {
-            // Si ingresan una duracion invalida, uso un valor por defecto.
-            duracion = 60;
-        }
-
-        if (capacidad <= 0) {
-            // Evito crear eventos con capacidad cero o negativa.
-            capacidad = 1;
-        }
-
-        boolean streaming = leerBooleano("El evento es por streaming?");
-        boolean exclusivo = leerBooleano("El evento es exclusivo?");
+        Artista artista = esArtista
+                ? gestor.buscarArtistaPorId(gestor.getCuentaActual().getId())
+                : (Artista) artistas.getSelectedItem();
 
         // El inicio se calcula desde la hora actual.
         LocalDateTime inicio = LocalDateTime.now()
-                .plusMinutes(minutosInicio);
-        LocalDateTime fin = inicio.plusMinutes(duracion);
+                .plusMinutes((Integer) minutosInicio.getValue());
+        LocalDateTime fin = inicio.plusMinutes((Integer) duracion.getValue());
 
         DatosRecital datosRecital = new DatosRecital(
-                titulo,
-                descripcion,
+                titulo.getText().trim(),
+                descripcion.getText().trim(),
                 inicio,
                 fin,
-                modelo.EstadoEvento.PROGRAMADO,
-                capacidad,
-                plan,
-                ubicacion,
-                streaming,
-                exclusivo
-        );
+                EstadoEvento.PROGRAMADO,
+                (Integer) capacidad.getValue(),
+                (PlanSuscripcion) plan.getSelectedItem(),
+                ubicacion.getText().trim(),
+                streaming.isSelected(),
+                exclusivo.isSelected());
 
-        gestor.crearEvento(datosRecital, artista);
-        mostrarMensaje("Evento creado correctamente.");
+        Evento evento = gestor.crearEvento(datosRecital, artista);
+        mostrarExito("Evento creado: " + evento.getTitulo()
+                + " (ID " + evento.getId() + ").");
         actualizarListas();
     }
 
+    // ---------------- acciones sobre eventos y usuarios ----------------
+
     private void solicitarIngreso() {
-        // Equivale a la opcion "Solicitar ingreso a evento" del menu.
         // Un usuario solicita el ingreso con su propia cuenta; el
         // administrador elige a nombre de quien lo hace.
         Usuario usuario;
@@ -539,7 +736,12 @@ public class VentanaPrincipal extends JFrame {
         } else {
             usuario = seleccionarUsuario();
         }
-        Evento evento = seleccionarEvento();
+
+        // Si hay un evento seleccionado en la tabla se usa ese.
+        Evento evento = eventoSeleccionado();
+        if (evento == null) {
+            evento = seleccionarEvento();
+        }
 
         if (usuario == null || evento == null) {
             return;
@@ -554,30 +756,29 @@ public class VentanaPrincipal extends JFrame {
         actualizarListas();
 
         if (registro.isExitoso()) {
-            mostrarMensaje("Ingreso autorizado.");
+            mostrarExito("Ingreso autorizado a \"" + evento.getTitulo() + "\".");
         } else {
-            mostrarMensaje("Ingreso rechazado: "
-                    + registro.getMotivoRechazo());
+            mostrarError("Ingreso rechazado: " + registro.getMotivoRechazo());
         }
     }
 
     private void expulsarUsuario() {
-        // Primero elijo el evento y despues un usuario conectado a ese evento.
-        Evento evento = seleccionarEvento();
+        // Si hay un evento seleccionado en la tabla se usa ese.
+        Evento evento = eventoSeleccionado();
+        if (evento == null) {
+            evento = seleccionarEvento();
+        }
 
         if (evento == null) {
-            mostrarMensaje("Seleccione un evento valido.");
             return;
         }
 
-        Evento recital = evento;
-
-        if (recital.getUsuariosConectados().isEmpty()) {
-            mostrarMensaje("No hay usuarios conectados en este evento.");
+        if (evento.getUsuariosConectados().isEmpty()) {
+            mostrarError("No hay usuarios conectados en este evento.");
             return;
         }
 
-        Usuario usuario = seleccionarUsuarioConectado(recital);
+        Usuario usuario = seleccionarUsuarioConectado(evento);
 
         if (usuario == null) {
             return;
@@ -587,16 +788,51 @@ public class VentanaPrincipal extends JFrame {
                 evento.getId(), usuario.getId());
 
         if (usuarioExpulsado != null) {
-            mostrarMensaje("Usuario expulsado. Se notifico a "
+            mostrarExito("Usuario expulsado: "
                     + usuarioExpulsado.getNombreCompleto() + ".");
             actualizarListas();
         } else {
-            mostrarMensaje("No se pudo expulsar al usuario.");
+            mostrarError("No se pudo expulsar al usuario.");
         }
     }
 
+    private void cambiarEstadoSeleccionado(String accion) {
+        Evento evento = eventoSeleccionado();
+
+        if (evento == null) {
+            mostrarError("Seleccione un evento.");
+            return;
+        }
+
+        int idEvento = evento.getId();
+
+        try {
+            // El gestor centraliza las transiciones de estado (patron
+            // Controlador): esta clase no llama a los metodos de Evento.
+            if ("iniciar".equals(accion)) {
+                gestor.iniciarEvento(idEvento);
+            } else if ("pausar".equals(accion)) {
+                gestor.pausarEvento(idEvento);
+            } else if ("reanudar".equals(accion)) {
+                gestor.reanudarEvento(idEvento);
+            } else if ("finalizar".equals(accion)) {
+                gestor.finalizarEvento(idEvento);
+            } else if ("cancelar".equals(accion)) {
+                gestor.cancelarEvento(idEvento);
+            }
+
+            mostrarExito("Evento \"" + evento.getTitulo() + "\": " + accion
+                    + " realizado. Estado actual: " + evento.getEstado() + ".");
+            actualizarListas();
+        } catch (AccesoDenegadoException | PermisoDenegadoException e) {
+            mostrarError(e.getMessage());
+        }
+    }
+
+    // ---------------- selectores ----------------
+
     private Usuario seleccionarUsuario() {
-        // Armo una lista de textos para que el usuario elija desde un combo.
+        // Armo una lista de textos para que la persona elija desde un combo.
         List<String> opciones = new ArrayList<>();
 
         for (Usuario usuario : gestor.listarUsuarios()) {
@@ -616,11 +852,11 @@ public class VentanaPrincipal extends JFrame {
         return gestor.buscarUsuarioPorId(obtenerIdDesdeTexto(seleccionado));
     }
 
-    private Usuario seleccionarUsuarioConectado(Evento recital) {
-        // Solo muestro los usuarios conectados a este recital.
+    private Usuario seleccionarUsuarioConectado(Evento evento) {
+        // Solo muestro los usuarios conectados a este evento.
         List<String> opciones = new ArrayList<>();
 
-        for (Usuario usuario : recital.getUsuariosConectados()) {
+        for (Usuario usuario : evento.getUsuariosConectados()) {
             opciones.add(usuario.toString());
         }
 
@@ -636,28 +872,8 @@ public class VentanaPrincipal extends JFrame {
         return gestor.buscarUsuarioPorId(obtenerIdDesdeTexto(seleccionado));
     }
 
-    private Artista seleccionarArtista() {
-        // Lista de artistas disponibles para asociar a un evento.
-        List<String> opciones = new ArrayList<>();
-
-        for (Artista artista : gestor.listarArtistas()) {
-            opciones.add(artista.toString());
-        }
-
-        String seleccionado = seleccionarOpcion(
-                "Seleccione artista",
-                opciones
-        );
-
-        if (seleccionado == null) {
-            return null;
-        }
-
-        return gestor.buscarArtistaPorId(obtenerIdDesdeTexto(seleccionado));
-    }
-
     private Evento seleccionarEvento() {
-        // Lista de eventos administrados por el gestor.
+        // Lista de eventos visibles para la cuenta.
         List<String> opciones = new ArrayList<>();
 
         for (Evento evento : gestor.listarEventosVisibles()) {
@@ -678,7 +894,7 @@ public class VentanaPrincipal extends JFrame {
 
     private String seleccionarOpcion(String titulo, List<String> opciones) {
         if (opciones.isEmpty()) {
-            mostrarMensaje("No hay datos disponibles para seleccionar.");
+            mostrarError("No hay datos disponibles para seleccionar.");
             return null;
         }
 
@@ -694,124 +910,30 @@ public class VentanaPrincipal extends JFrame {
         );
     }
 
-    private PlanSuscripcion seleccionarPlan() {
-        // Uso los valores del enum para no escribir planes a mano.
-        Object seleccion = JOptionPane.showInputDialog(
-                this,
-                "Seleccione plan",
-                "Plan",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                PlanSuscripcion.values(),
-                PlanSuscripcion.FREE
-        );
-
-        return (PlanSuscripcion) seleccion;
-    }
-
-    private String leerTexto(String mensaje) {
-        // Ventana simple para ingresar texto.
-        return JOptionPane.showInputDialog(this, mensaje);
-    }
-
-    private Integer leerEntero(String mensaje) {
-        // JOptionPane devuelve texto, por eso lo convierto a Integer.
-        String valor = JOptionPane.showInputDialog(this, mensaje);
-
-        if (valor == null) {
-            return null;
-        }
-
-        try {
-            return Integer.parseInt(valor.trim());
-        } catch (NumberFormatException e) {
-            mostrarMensaje("Debe ingresar un numero entero.");
-            return null;
-        }
-    }
-
-    private boolean leerBooleano(String mensaje) {
-        // Confirm dialog devuelve si el usuario eligio Si o No.
-        int respuesta = JOptionPane.showConfirmDialog(
-                this,
-                mensaje,
-                "Confirmar",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        return respuesta == JOptionPane.YES_OPTION;
-    }
-
-    private JPanel crearPanelPersistencia() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-        // Botones que llaman a la clase de persistencia con archivos TXT.
-        JButton guardar = new JButton("Guardar TXT");
-        JButton cargar = new JButton("Cargar TXT");
-
-        guardar.addActionListener(e -> guardarDatos());
-        cargar.addActionListener(e -> cargarDatos());
-
-        panel.add(guardar);
-        panel.add(cargar);
-        return panel;
-    }
-
-    private void cambiarEstadoSeleccionado(String accion) {
-        // Primero necesito saber que evento esta seleccionado en la lista.
-        Integer idEvento = obtenerIdSeleccionado(tablaEventos);
-
-        if (idEvento == null) {
-            mostrarMensaje("Seleccione un evento.");
-            return;
-        }
-
-        try {
-            // El gestor centraliza las transiciones de estado (patron
-            // Controlador): esta clase no llama a los metodos de Evento.
-            if ("iniciar".equals(accion)) {
-                gestor.iniciarEvento(idEvento);
-            } else if ("pausar".equals(accion)) {
-                gestor.pausarEvento(idEvento);
-            } else if ("reanudar".equals(accion)) {
-                gestor.reanudarEvento(idEvento);
-            } else if ("finalizar".equals(accion)) {
-                gestor.finalizarEvento(idEvento);
-            } else if ("cancelar".equals(accion)) {
-                gestor.cancelarEvento(idEvento);
-            }
-
-            mostrarMensaje("Estado actualizado.");
-            actualizarListas();
-        } catch (AccesoDenegadoException | PermisoDenegadoException e) {
-            mostrarMensaje(e.getMessage());
-        }
-    }
+    // ---------------- persistencia ----------------
 
     private void guardarDatos() {
         try {
             // Guarda usuarios, artistas, eventos y registros en archivos TXT.
             gestor.guardarDatos();
-            mostrarMensaje("Datos guardados en carpeta datos.");
+            mostrarExito("Datos guardados en la carpeta datos.");
         } catch (IOException e) {
-            mostrarMensaje("No se pudieron guardar los datos: "
-                    + e.getMessage());
+            mostrarError("No se pudieron guardar los datos: " + e.getMessage());
         }
     }
 
     /*
-     * Igual que guardarDatos(), pero sin popup de confirmacion.
+     * Igual que guardarDatos(), pero sin mensaje de confirmacion.
      *
      * Se usa despues de un alta (usuario/artista) para no perder el dato
-     * si se cierra la ventana sin apretar "Guardar TXT", sin interrumpir
-     * al operador con un segundo mensaje encima del de "registrado".
+     * si se cierra la ventana sin apretar "Guardar TXT", sin pisar el
+     * mensaje de "registrado".
      */
     private void guardarSilencioso() {
         try {
             gestor.guardarDatos();
         } catch (IOException e) {
-            mostrarMensaje("No se pudieron guardar los datos: "
-                    + e.getMessage());
+            mostrarError("No se pudieron guardar los datos: " + e.getMessage());
         }
     }
 
@@ -822,14 +944,19 @@ public class VentanaPrincipal extends JFrame {
 
             // Despues de cargar, refresco lo que se ve en pantalla.
             actualizarListas();
-            mostrarMensaje("Datos cargados desde carpeta datos.");
+            mostrarExito("Datos cargados desde la carpeta datos.");
         } catch (IOException | RuntimeException e) {
-            mostrarMensaje("No se pudieron cargar los datos: "
-                    + e.getMessage());
+            mostrarError("No se pudieron cargar los datos: " + e.getMessage());
         }
     }
 
+    // ---------------- tablas ----------------
+
     private void actualizarListas() {
+        // Recuerdo el evento seleccionado para volver a seleccionarlo.
+        Integer idSeleccionado = (tablaEventos == null)
+                ? null : obtenerIdSeleccionado(tablaEventos);
+
         // Limpio primero las filas para no repetir elementos.
         modeloUsuarios.setRowCount(0);
         modeloArtistas.setRowCount(0);
@@ -881,6 +1008,9 @@ public class VentanaPrincipal extends JFrame {
         } else if (gestor.puede(Accion.VER_MIS_REGISTROS)) {
             agregarRegistros(gestor.listarMisRegistros());
         }
+
+        reseleccionarEvento(idSeleccionado);
+        actualizarBotones();
     }
 
     private void agregarRegistros(List<RegistroAcceso> registros) {
@@ -893,6 +1023,21 @@ public class VentanaPrincipal extends JFrame {
                             ? "AUTORIZADO"
                             : "RECHAZADO: " + registro.getMotivoRechazo()
             });
+        }
+    }
+
+    // Vuelve a seleccionar el evento que estaba elegido antes de refrescar.
+    private void reseleccionarEvento(Integer id) {
+        if (tablaEventos == null || id == null) {
+            return;
+        }
+
+        for (int fila = 0; fila < modeloEventos.getRowCount(); fila++) {
+            if (id.equals(modeloEventos.getValueAt(fila, 0))) {
+                int filaVista = tablaEventos.convertRowIndexToView(fila);
+                tablaEventos.setRowSelectionInterval(filaVista, filaVista);
+                return;
+            }
         }
     }
 
@@ -910,14 +1055,31 @@ public class VentanaPrincipal extends JFrame {
     }
 
     private int obtenerIdDesdeTexto(String texto) {
-        // Mismo formato que arriba, pero cuando el texto viene de un combo.
+        // Los textos de los combos empiezan con "ID: 100 | ...".
         int finId = texto.indexOf(" |");
         return Integer.parseInt(texto.substring(4, finId));
     }
 
-    private void mostrarMensaje(String mensaje) {
-        // Muestro el mensaje abajo y tambien en una ventana emergente.
+    // ---------------- mensajes ----------------
+
+    // Resultado correcto: se ve en la barra de estado, sin ventana emergente.
+    private void mostrarExito(String mensaje) {
+        estado.setForeground(COLOR_EXITO);
         estado.setText(mensaje);
-        JOptionPane.showMessageDialog(this, mensaje);
+    }
+
+    // Informacion neutra en la barra de estado.
+    private void mostrarInfo(String mensaje) {
+        estado.setForeground(Color.DARK_GRAY);
+        estado.setText(mensaje);
+    }
+
+    // Los errores se muestran tambien en una ventana para que no pasen
+    // desapercibidos.
+    private void mostrarError(String mensaje) {
+        estado.setForeground(COLOR_ERROR);
+        estado.setText(mensaje);
+        JOptionPane.showMessageDialog(this, mensaje, "Atencion",
+                JOptionPane.WARNING_MESSAGE);
     }
 }
