@@ -1,5 +1,7 @@
 # Iteración 3: principios SOLID
 
+![Logo de UADE Beats](logo.png)
+
 Módulo: UADE Beats, acceso a eventos en vivo
 
 ## 1. Resumen
@@ -245,6 +247,12 @@ El login funciona igual para los tres roles. Los nombres de cuenta son únicos e
 | Usuario | `lferraro` | `lferraro2024` |
 | Usuario | `ncaggia` | `ncaggia2024` |
 
+### Inicio del programa y ventana de login
+
+Al iniciar, el programa pregunta con qué interfaz se usa: interfaz gráfica (Swing) o consola. La interfaz gráfica empieza con una ventana de login simple, con usuario y contraseña. Si los datos son correctos se abre la ventana del rol de la cuenta, y el botón de cerrar sesión devuelve a la ventana de login. Si la ventana se abre desde el menú de consola, usa la sesión de ese menú.
+
+Las ventanas usan un logo propio, que reemplaza el ícono por defecto de Java en la ventana y en el Dock. Se dibuja por código en la clase `Logo`, por lo que no hay archivos que empaquetar.
+
 ## 9. Avisos a los usuarios
 
 El gestor recibe un `Notificador`, una interfaz con una sola operación. `NotificadorNtfy` la implementa enviando una notificación push al servicio ntfy.sh, en un tema propio de cada usuario: `uadebeats-` seguido de su nombre de cuenta. Para recibirlas, el usuario se suscribe a ese tema desde la aplicación o la página de ntfy.
@@ -266,4 +274,4 @@ java -cp ../out Main
 java -cp ../out app.AppSwing
 ```
 
-La primera ejecución usa la consola y la segunda abre la ventana gráfica, que pide las credenciales y se adapta al rol de la cuenta.
+`Main` pregunta qué interfaz usar. `AppSwing` abre directamente la ventana gráfica con su login, que se adapta al rol de la cuenta.
