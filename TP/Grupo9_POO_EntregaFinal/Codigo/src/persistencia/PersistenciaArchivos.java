@@ -331,7 +331,8 @@ public class PersistenciaArchivos implements Persistencia {
 
                 // Los usuarios conectados se guardan en el campo 13; los
                 // archivos viejos de 12 campos no lo tienen.
-                if (datos.length >= 13) {
+                // Un evento cerrado no tiene usuarios conectados.
+                if (datos.length >= 13 && !recital.getEstado().estaCerrado()) {
                     restaurarConectados(recital, datos[12], usuarios);
                 }
 

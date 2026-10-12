@@ -51,8 +51,13 @@ public enum EstadoEvento {
         return this == EN_CURSO || this == PAUSADO;
     }
 
+    // Un evento finalizado o cancelado ya cerro su ciclo de vida.
+    public boolean estaCerrado() {
+        return this == FINALIZADO || this == CANCELADO;
+    }
+
     // Se cancela cualquier evento que no haya terminado su ciclo de vida.
     public boolean permiteCancelar() {
-        return this != FINALIZADO && this != CANCELADO;
+        return !estaCerrado();
     }
 }

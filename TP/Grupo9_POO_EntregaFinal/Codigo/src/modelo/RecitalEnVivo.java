@@ -166,6 +166,11 @@ public class RecitalEnVivo extends Evento {
         return Collections.unmodifiableSet(usuariosConectados);
     }
 
+    @Override
+    protected void desconectarTodos() {
+        usuariosConectados.clear();
+    }
+
     // Devuelve la cantidad actual de conectados.
     @Override
     public int getCantidadConectados() {

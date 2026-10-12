@@ -76,6 +76,7 @@ public abstract class Evento {
     public void finalizarEvento() throws AccesoDenegadoException {
         if (estado.permiteFinalizar()) {
             estado = EstadoEvento.FINALIZADO;
+            desconectarTodos();
             return;
         }
 
@@ -87,6 +88,7 @@ public abstract class Evento {
     // Cambia el estado del evento a cancelado.
     public void cancelarEvento() {
         estado = EstadoEvento.CANCELADO;
+        desconectarTodos();
     }
 
     // Pausa el evento solamente si esta en curso.
@@ -131,6 +133,9 @@ public abstract class Evento {
     // Cantidad actual de usuarios conectados.
     public abstract int getCantidadConectados();
 
+    // Desconecta a todos los usuarios cuando el evento termina o se cancela.
+    protected abstract void desconectarTodos();
+
     // Devuelve el estado como texto.
     public String mostrarEstado() {
         return estado.toString();
@@ -174,10 +179,6 @@ public abstract class Evento {
 
     public EstadoEvento getEstado() {
         return estado;
-    }
-
-    public void setEstado(EstadoEvento estado) {
-        this.estado = estado;
     }
 
     public int getCapacidadMaxima() {
