@@ -6,7 +6,7 @@ Módulo: UADE Beats, acceso a eventos en vivo
 
 ## 1. Resumen
 
-La iteración aplica los cinco principios SOLID. A partir de la sección 7 se documentan los cambios complementarios incluidos en la entrega: la arquitectura Modelo Vista Controlador, el sistema de roles y permisos y los avisos a los usuarios.
+La iteración aplica los cinco principios SOLID. A partir de la sección 7 se documentan los cambios complementarios incluidos en la entrega: la arquitectura Modelo Vista Controlador, el sistema de roles y permisos y la preparación de los avisos a los usuarios.
 
 | Principio | Problema detectado | Solución aplicada |
 |---|---|---|
@@ -255,14 +255,14 @@ Las ventanas usan un logo propio, que reemplaza el ícono por defecto de Java en
 
 ## 9. Avisos a los usuarios
 
-El gestor recibe un `Notificador`, una interfaz con una sola operación. `NotificadorNtfy` la implementa enviando una notificación push al servicio ntfy.sh, en un tema propio de cada usuario: `uadebeats-` seguido de su nombre de cuenta. Para recibirlas, el usuario se suscribe a ese tema desde la aplicación o la página de ntfy.
+El gestor recibe un `Notificador`, una interfaz con una sola operación, y `ControlAcceso` la invoca cuando un usuario es expulsado de un evento o se rechaza su solicitud de ingreso. Solo se avisa a las cuentas de rol usuario.
 
 | Hecho | Aviso |
 |---|---|
 | El usuario es expulsado de un evento | Expulsado del evento, con el título del evento |
 | Se rechaza su solicitud de ingreso | Ingreso rechazado, con el motivo |
 
-Solo se avisa a las cuentas de rol usuario. Los administradores y los artistas no reciben avisos. El envío es asincrónico y con tiempo máximo de espera, por lo que una falla de red no interrumpe ninguna operación. Los temas de ntfy son públicos, por eso el mensaje lleva solo el título del evento y el motivo.
+Por ahora el programa usa `NotificadorInactivo`, que no envía nada. `NotificadorNtfy` ya está escrita para entregar los avisos como notificaciones push mediante ntfy.sh, en un tema propio de cada usuario, pero todavía no se utiliza. Activarla requiere solo crear el gestor con esa implementación en `App` y en `AppSwing`, sin modificar el gestor ni `ControlAcceso`.
 
 ## 10. Ejecución
 
