@@ -49,14 +49,15 @@ public class GestorEventosEnVivo {
     // Sesion actual y permisos de la cuenta.
     private ControlSesion sesion;
 
-    // Constructor: inicializa las colecciones y recibe la persistencia.
-    public GestorEventosEnVivo(Persistencia persistencia) {
+    // Constructor: inicializa las colecciones y recibe sus colaboradores.
+    public GestorEventosEnVivo(Persistencia persistencia,
+                               Notificador notificador) {
 
         this.persistencia = persistencia;
         eventos = new ArrayList<>();
         usuariosRegistrados = new ArrayList<>();
         artistasRegistrados = new ArrayList<>();
-        controlAcceso = new ControlAcceso();
+        controlAcceso = new ControlAcceso(notificador);
         sesion = new ControlSesion();
     }
 

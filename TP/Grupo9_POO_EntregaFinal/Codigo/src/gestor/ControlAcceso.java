@@ -8,6 +8,7 @@ import modelo.Evento;
 import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
+import modelo.TipoUsuario;
 import modelo.Usuario;
 
 import java.time.LocalDateTime;
@@ -30,7 +31,11 @@ public class ControlAcceso {
     // ID incremental para los objetos AccesoEvento.
     private int siguienteIdAcceso;
 
-    public ControlAcceso() {
+    // Medio por el que se avisa a los usuarios.
+    private Notificador notificador;
+
+    public ControlAcceso(Notificador notificador) {
+        this.notificador = notificador;
         registros = new ArrayList<>();
         siguienteIdAcceso = 1;
     }
@@ -87,6 +92,8 @@ public class ControlAcceso {
     public void registrarExpulsion(Usuario usuario, Evento evento) {
         registrar(RegistroAcceso.generarRegistro(
                 usuario, evento, false, "Expulsado del evento."));
+
+        avisar(usuario, "Expulsado del evento", evento.getTitulo());
     }
 
     // Agrega un registro a la trazabilidad.
@@ -111,7 +118,21 @@ public class ControlAcceso {
         RegistroAcceso registro = RegistroAcceso.registrarIntentoFallido(
                 usuario, evento, motivo);
         registrar(registro);
+
+        avisar(usuario, "Ingreso rechazado", evento.getTitulo() + ": " + motivo);
         return registro;
+    }
+
+    /*
+     * Avisa solo a las cuentas con rol Usuario. Los administradores y los
+     * artistas no reciben estos avisos, y tampoco el usuario "placeholder"
+     * que se usa cuando el intento no tiene un usuario real.
+     */
+    private void avisar(Usuario usuario, String titulo, String mensaje) {
+        if (usuario.getTipoUsuario() == TipoUsuario.USUARIO
+                && usuario.getId() > 0) {
+            notificador.notificar(usuario, titulo, mensaje);
+        }
     }
 
     /*
