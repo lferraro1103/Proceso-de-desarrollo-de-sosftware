@@ -1,8 +1,10 @@
-# Iteración 4: principios SOLID
+# Iteración 3: principios SOLID
 
 Módulo: UADE Beats, acceso a eventos en vivo
 
 ## 1. Resumen
+
+La iteración aplica los cinco principios SOLID. A partir de la sección 7 se documentan los cambios complementarios incluidos en la entrega: la arquitectura Modelo Vista Controlador, el sistema de roles y permisos y los avisos a los usuarios.
 
 | Principio | Problema detectado | Solución aplicada |
 |---|---|---|
@@ -121,13 +123,139 @@ classDiagram
 | Guardado desde las vistas | `PersistenciaArchivos.guardarDatos(gestor)` | `gestor.guardarDatos()` |
 | Carga desde las vistas | `PersistenciaArchivos.cargarDatos(gestor)` | `gestor.cargarDatos()` |
 
-La interfaz pertenece al paquete del gestor, que es el módulo de alto nivel. Para almacenar en otro medio alcanza con escribir una nueva clase que implemente `Persistencia` y pasarla al crear el gestor.
+La interfaz pertenece al paquete del gestor, que es el módulo de alto nivel. Para almacenar en otro medio alcanza con escribir una nueva clase que implemente `Persistencia` y pasarla al crear el gestor. El gestor recibe de la misma forma un `Notificador` para los avisos a los usuarios (sección 9).
 
 ## 6. Alcance
 
 `PersistenciaArchivos` conserva una comprobación de tipo al guardar un evento, porque el formato de archivo incluye campos propios del recital. Esa decisión depende del formato de almacenamiento y no del flujo de negocio.
 
-## 7. Ejecución
+## 7. Arquitectura Modelo Vista Controlador
+
+Las vistas, la de consola (`MenuAcciones`) y la ventana Swing (`VentanaPrincipal`), construían directamente los objetos del modelo y calculaban por su cuenta el identificador de cada entidad, con dos mecanismos distintos. Ahora la vista reúne los datos y el controlador crea el objeto y asigna el identificador.
+
+| Componente | Clases | Responsabilidad |
+|---|---|---|
+| Modelo | Paquete `modelo` | Datos y reglas de negocio. No conoce la consola ni la ventana. |
+| Vista | `MenuAcciones`, `MenuPorRol` y `VentanaPrincipal` | Reunir los datos, verificar campos requeridos, mostrar resultados y enviar cada acción al controlador. |
+| Controlador | `GestorEventosEnVivo` | Recibir los pedidos de la vista, crear los objetos del modelo, asignar identificadores y devolver el resultado. |
+
+| Operación del controlador | Datos que recibe | Resultado |
+|---|---|---|
+| `registrarUsuario` | Nombre de cuenta, nombre, apellido, email, contraseña y plan | El usuario creado, o `null` si el nombre de cuenta ya existe |
+| `registrarArtista` | Nombre de cuenta, contraseña y datos artísticos | El artista creado, o `null` si el nombre de cuenta ya existe |
+| `crearEvento` | `DatosRecital` y artista asociado | El recital creado y asociado al artista |
+
+El identificador siguiente se calcula en el controlador como el mayor existente más uno, porque es quien conoce las colecciones. Esto reemplaza los contadores de la consola y los métodos equivalentes de la ventana.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Persona
+    participant V as Vista
+    participant G as GestorEventosEnVivo
+    participant U as Usuario
+
+    Persona->>V: ingresa los datos del alta
+    V->>V: verifica campos requeridos
+    V->>G: registrarUsuario(datos)
+    G->>G: siguienteIdUsuario()
+    G->>U: crea el usuario con el identificador
+    G->>G: verifica que el nombre de cuenta no exista
+    alt nombre disponible
+        G-->>V: usuario creado
+        V-->>Persona: informa el identificador asignado
+    else nombre ya registrado
+        G-->>V: null
+        V-->>Persona: informa que el nombre ya existe
+    end
+```
+
+| Capa | Validación |
+|---|---|
+| Vista | Campos requeridos completos y valores numéricos bien formados |
+| Controlador | Unicidad del nombre de cuenta y permisos de la cuenta que inició sesión |
+| Modelo | Reglas de negocio: estado y horario del evento, capacidad, plan mínimo y transiciones de estado |
+
+## 8. Roles y permisos
+
+Cada cuenta tiene un rol (`TipoUsuario`): usuario, artista o administrador. Al iniciar el programa se pide el login y, según el rol de la cuenta, se muestra el menú que le corresponde. Las opciones de cada menú no están escritas una por una: se arman con las acciones que la tabla de permisos habilita para ese rol.
+
+| Acción | Usuario | Artista | Administrador |
+|---|---|---|---|
+| Solicitar ingreso a un evento | Solo a su nombre | No | Sí |
+| Ver eventos | Todos | Solo los propios | Todos |
+| Ver capacidad de un evento | Sí | Solo los propios | Sí |
+| Ver sus registros de acceso | Sí | No | No |
+| Crear un evento | No | A su nombre | Sí |
+| Iniciar, pausar, reanudar, finalizar y cancelar un evento | No | Solo los propios | Cualquiera |
+| Ver los usuarios conectados | No | Solo los propios | Sí |
+| Registrar usuarios y artistas | No | No | Sí |
+| Expulsar a un usuario | No | No | Sí |
+| Ver todos los registros, guardar y cargar datos, abrir la ventana gráfica | No | No | Sí |
+
+```mermaid
+classDiagram
+    direction LR
+
+    class Accion {
+        <<enumeration>>
+    }
+    class Permisos {
+        +permite(tipo, accion) boolean
+        +accionesPermitidas(tipo) List
+    }
+    class ControlSesion {
+        +iniciar(cuenta) void
+        +exigir(accion) void
+    }
+    class GestorEventosEnVivo {
+        +iniciarSesion(nombre, contrasena) Cuenta
+        +puede(accion) boolean
+    }
+    class MenuPorRol
+
+    Permisos --> Accion : agrupa por rol
+    ControlSesion --> Permisos : consulta
+    GestorEventosEnVivo --> ControlSesion : delega
+    MenuPorRol --> GestorEventosEnVivo : pide las acciones permitidas
+```
+
+| Pieza | Responsabilidad |
+|---|---|
+| `Accion` | Enumera las acciones del sistema con la etiqueta que se muestra en el menú. |
+| `Permisos` | Única tabla de permisos por rol. Cambiar los permisos de un rol implica modificar solo esta clase. |
+| `ControlSesion` | Guarda la cuenta con sesión iniciada y rechaza las acciones no permitidas. |
+| `MenuPorRol` | Único menú de consola, armado con las acciones que el gestor informa como permitidas. |
+
+### Autorización en el controlador
+
+El gestor verifica el permiso en cada operación, de modo que una acción no permitida se rechaza aunque se invoque sin pasar por el menú. Además del rol, controla la pertenencia: un usuario solo solicita ingresos a su nombre, y un artista solo crea y gestiona eventos propios. Sin sesión iniciada, toda operación se rechaza con `PermisoDenegadoException`.
+
+### Cuentas
+
+El login funciona igual para los tres roles. Los nombres de cuenta son únicos entre usuarios y artistas, y una cuenta sin contraseña no puede iniciar sesión. El administrador da de alta a los artistas con nombre de cuenta y contraseña. La ventana gráfica solo se abre para una cuenta administradora.
+
+| Rol | Cuenta | Contraseña |
+|---|---|---|
+| Administrador | `admin` | `admin123` |
+| Artista | `bandahorizonte` | `horizonte2024` |
+| Artista | `djprisma` | `prisma2024` |
+| Usuario | `lgabian` | `lgabian2024` |
+| Usuario | `lferraro` | `lferraro2024` |
+| Usuario | `ncaggia` | `ncaggia2024` |
+
+## 9. Avisos a los usuarios
+
+El gestor recibe un `Notificador`, una interfaz con una sola operación. `NotificadorNtfy` la implementa enviando una notificación push al servicio ntfy.sh, en un tema propio de cada usuario: `uadebeats-` seguido de su nombre de cuenta. Para recibirlas, el usuario se suscribe a ese tema desde la aplicación o la página de ntfy.
+
+| Hecho | Aviso |
+|---|---|
+| El usuario es expulsado de un evento | Expulsado del evento, con el título del evento |
+| Se rechaza su solicitud de ingreso | Ingreso rechazado, con el motivo |
+
+Solo se avisa a las cuentas de rol usuario. Los administradores y los artistas no reciben avisos. El envío es asincrónico y con tiempo máximo de espera, por lo que una falla de red no interrumpe ninguna operación. Los temas de ntfy son públicos, por eso el mensaje lleva solo el título del evento y el motivo.
+
+## 10. Ejecución
 
 Desde `TP/Grupo9_POO_EntregaFinal/Codigo/src`:
 
