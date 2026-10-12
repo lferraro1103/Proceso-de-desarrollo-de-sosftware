@@ -475,8 +475,7 @@ public class GestorEventosEnVivo {
     public void cancelarEvento(int idEvento) throws AccesoDenegadoException {
         Evento evento = buscarEventoParaCambio(idEvento, Accion.CANCELAR_EVENTO);
 
-        if (evento.getEstado() == EstadoEvento.FINALIZADO
-                || evento.getEstado() == EstadoEvento.CANCELADO) {
+        if (!evento.getEstado().permiteCancelar()) {
             throw new AccesoDenegadoException(
                     "No se puede cancelar un evento en estado "
                             + evento.getEstado() + "."
