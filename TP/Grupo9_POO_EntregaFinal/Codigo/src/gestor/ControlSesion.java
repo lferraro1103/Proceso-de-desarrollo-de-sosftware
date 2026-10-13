@@ -55,6 +55,19 @@ public class ControlSesion {
         return permisos.accionesPermitidas(cuentaActual.getTipoUsuario());
     }
 
+    /*
+     * Verifica el permiso solo si hay una sesion iniciada.
+     *
+     * El arranque del programa y la carga de datos guardados se ejecutan
+     * antes del login, por eso las altas de bajo nivel no exigen sesion;
+     * pero con una sesion iniciada solo las puede hacer un rol autorizado.
+     */
+    public void exigirSiHaySesion(Accion accion) {
+        if (cuentaActual != null) {
+            exigir(accion);
+        }
+    }
+
     // Lanza PermisoDenegadoException si la cuenta actual no puede la accion.
     public void exigir(Accion accion) {
         if (cuentaActual == null) {
