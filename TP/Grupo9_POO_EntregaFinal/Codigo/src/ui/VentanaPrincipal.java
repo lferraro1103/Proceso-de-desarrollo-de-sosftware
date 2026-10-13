@@ -1,13 +1,10 @@
 package ui;
 
-import calendario.CalendarioApple;
-import calendario.CalendarioGoogle;
 import calendario.VinculoApple;
 import calendario.VinculoGoogle;
 import excepciones.AccesoDenegadoException;
 import excepciones.PermisoDenegadoException;
 import gestor.Accion;
-import gestor.Calendario;
 import gestor.VinculoCalendario;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
@@ -98,8 +95,6 @@ public class VentanaPrincipal extends JFrame {
     private final JButton finalizar = new JButton("Finalizar");
     private final JButton cancelar = new JButton("Cancelar");
     private final JButton verConectados = new JButton("Ver conectados");
-    private final JButton calendarioGoogle = new JButton("Google Calendar");
-    private final JButton calendarioApple = new JButton("Apple Calendar");
 
     // Etiqueta inferior para mostrar el resultado de la ultima accion.
     private JLabel estado;
@@ -352,10 +347,6 @@ public class VentanaPrincipal extends JFrame {
         cancelar.addActionListener(
                 e -> ejecutar(() -> cambiarEstadoSeleccionado("cancelar")));
         verConectados.addActionListener(e -> ejecutar(this::verConectados));
-        calendarioGoogle.addActionListener(e -> ejecutar(
-                () -> agregarACalendario(new CalendarioGoogle())));
-        calendarioApple.addActionListener(e -> ejecutar(
-                () -> agregarACalendario(new CalendarioApple())));
 
         // Primera fila: ciclo de vida del evento.
         JPanel filaEvento = crearFila("Evento");
@@ -378,12 +369,7 @@ public class VentanaPrincipal extends JFrame {
         agregarSiPermitido(filaGestion, Accion.VER_CONECTADOS, verConectados);
         filaGestion.add(crearBoton("Actualizar", this::actualizarListas));
 
-        // Tercera fila: llevar el evento seleccionado a un calendario.
-        JPanel filaCalendario = crearFila("Agregar al calendario");
-        agregarSiPermitido(filaCalendario, Accion.AGREGAR_A_CALENDARIO, calendarioGoogle);
-        agregarSiPermitido(filaCalendario, Accion.AGREGAR_A_CALENDARIO, calendarioApple);
-
-        // Cuarta fila: suscribir el calendario completo de la cuenta.
+        // Tercera fila: suscribir el calendario completo de la cuenta.
         JPanel filaVinculo = crearFila("Vincular mi calendario (se actualiza solo)");
         agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, crearBoton(
                 "Google Calendar", () -> vincularCalendario(new VinculoGoogle(gestor))));
@@ -399,9 +385,6 @@ public class VentanaPrincipal extends JFrame {
         }
         acciones.add(filaGestion);
 
-        if (filaCalendario.getComponentCount() > 0) {
-            acciones.add(filaCalendario);
-        }
         if (filaVinculo.getComponentCount() > 0) {
             acciones.add(filaVinculo);
         }
@@ -506,16 +489,13 @@ public class VentanaPrincipal extends JFrame {
         finalizar.setEnabled(estadoEvento != null && estadoEvento.permiteFinalizar());
         cancelar.setEnabled(estadoEvento != null && estadoEvento.permiteCancelar());
         verConectados.setEnabled(evento != null);
-        calendarioGoogle.setEnabled(evento != null);
-        calendarioApple.setEnabled(evento != null);
 
         String ayuda = (evento == null)
                 ? "Seleccione un evento de la tabla."
                 : "No disponible para el estado " + evento.getEstado() + ".";
 
         for (JButton boton : new JButton[] {iniciar, pausar, reanudar,
-                finalizar, cancelar, verConectados,
-                calendarioGoogle, calendarioApple}) {
+                finalizar, cancelar, verConectados}) {
             boton.setToolTipText(boton.isEnabled() ? null : ayuda);
         }
     }
@@ -579,24 +559,6 @@ public class VentanaPrincipal extends JFrame {
                     + ". Confirme alli la suscripcion; despues se actualiza solo.");
         } catch (IOException e) {
             mostrarError("No se pudo vincular: " + e.getMessage());
-        }
-    }
-
-    // Lleva el evento seleccionado al calendario indicado.
-    private void agregarACalendario(Calendario calendario) {
-        Evento evento = eventoSeleccionado();
-
-        if (evento == null) {
-            mostrarError("Seleccione un evento.");
-            return;
-        }
-
-        try {
-            gestor.agregarACalendario(evento.getId(), calendario);
-            mostrarInfo("Se abrio " + calendario.getNombre()
-                    + " con \"" + evento.getTitulo() + "\".");
-        } catch (IOException e) {
-            mostrarError("No se pudo agregar al calendario: " + e.getMessage());
         }
     }
 

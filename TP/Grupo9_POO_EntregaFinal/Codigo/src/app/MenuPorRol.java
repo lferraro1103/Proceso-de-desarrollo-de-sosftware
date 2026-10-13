@@ -131,9 +131,6 @@ public final class MenuPorRol {
             case VER_CAPACIDAD:
                 MenuAcciones.mostrarCapacidad(scanner, gestor);
                 break;
-            case AGREGAR_A_CALENDARIO:
-                MenuAcciones.agregarACalendario(scanner, gestor);
-                break;
             case VINCULAR_CALENDARIO:
                 MenuAcciones.vincularCalendario(scanner, gestor);
                 break;
