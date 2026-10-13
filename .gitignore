@@ -1,2 +1,5 @@
 .planning/
 CLAUDE.md
+out/
+*.class
+.DS_Store
