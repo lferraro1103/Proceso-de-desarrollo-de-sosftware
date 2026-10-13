@@ -3,6 +3,7 @@ package calendario;
 import gestor.GestorEventosEnVivo;
 import gestor.VinculoCalendario;
 import modelo.Cuenta;
+import modelo.Evento;
 
 import java.awt.Desktop;
 import java.io.IOException;
@@ -11,7 +12,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 /*
- * Suscribe Google Calendar al calendario de la cuenta.
+ * Suscribe Google Calendar a un evento.
  *
  * Abre en el navegador el enlace de Google para agregar un calendario por
  * direccion; la persona solo confirma. Google lee el calendario desde sus
@@ -33,7 +34,7 @@ public class VinculoGoogle implements VinculoCalendario {
     }
 
     @Override
-    public void vincular(Cuenta cuenta) throws IOException {
+    public void vincular(Cuenta cuenta, Evento evento) throws IOException {
         ServidorCalendario servidor = ServidorCalendario.obtener(gestor);
 
         if (servidor.esLocal()) {
@@ -45,10 +46,10 @@ public class VinculoGoogle implements VinculoCalendario {
         if (!Desktop.isDesktopSupported()
                 || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             throw new IOException("Este equipo no puede abrir el navegador. "
-                    + "Agregue por URL: " + servidor.urlFeed(cuenta));
+                    + "Agregue por URL: " + servidor.urlFeed(cuenta, evento));
         }
 
         Desktop.getDesktop().browse(URI.create(BASE
-                + URLEncoder.encode(servidor.urlWebcal(cuenta), StandardCharsets.UTF_8)));
+                + URLEncoder.encode(servidor.urlWebcal(cuenta, evento), StandardCharsets.UTF_8)));
     }
 }

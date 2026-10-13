@@ -100,14 +100,14 @@ public class ServidorCalendario {
         return compartido;
     }
 
-    // Direccion http(s) del calendario de la cuenta.
-    public String urlFeed(Cuenta cuenta) {
-        return urlBase + PREFIJO + token(cuenta) + SUFIJO;
+    // Direccion http(s) del calendario de un evento para la cuenta.
+    public String urlFeed(Cuenta cuenta, Evento evento) {
+        return urlBase + PREFIJO + token(cuenta) + "/" + evento.getId() + SUFIJO;
     }
 
     // Direccion con esquema webcal, que Apple Calendar y Google reconocen.
-    public String urlWebcal(Cuenta cuenta) {
-        return urlFeed(cuenta).replaceFirst("^https?://", "webcal://");
+    public String urlWebcal(Cuenta cuenta, Evento evento) {
+        return urlFeed(cuenta, evento).replaceFirst("^https?://", "webcal://");
     }
 
     // Indica si la direccion solo se alcanza desde este equipo.
@@ -117,20 +117,27 @@ public class ServidorCalendario {
 
     private void atender(HttpExchange intercambio) throws IOException {
         try (intercambio) {
+            Evento evento = null;
             String ruta = intercambio.getRequestURI().getPath();
-            Cuenta cuenta = ruta.startsWith(PREFIJO) && ruta.endsWith(SUFIJO)
-                    ? buscarPorToken(ruta.substring(PREFIJO.length(),
-                            ruta.length() - SUFIJO.length()))
-                    : null;
 
-            if (cuenta == null || !cuenta.isActivo()) {
+            // Ruta: /calendario/<codigo>/<idEvento>.ics
+            if (ruta.startsWith(PREFIJO) && ruta.endsWith(SUFIJO)) {
+                String[] partes = ruta.substring(PREFIJO.length(),
+                        ruta.length() - SUFIJO.length()).split("/");
+
+                if (partes.length == 2) {
+                    evento = buscarEvento(buscarPorToken(partes[0]), partes[1]);
+                }
+            }
+
+            if (evento == null) {
                 intercambio.sendResponseHeaders(404, -1);
                 return;
             }
 
             byte[] cuerpo = FormatoIcs.calendario(
-                    "UADE Beats - " + cuenta.getNombreUsuario(),
-                    eventosDe(cuenta)).getBytes(StandardCharsets.UTF_8);
+                    evento.getTitulo(), List.of(evento))
+                    .getBytes(StandardCharsets.UTF_8);
 
             intercambio.getResponseHeaders().set(
                     "Content-Type", "text/calendar; charset=utf-8");
@@ -143,19 +150,32 @@ public class ServidorCalendario {
     }
 
     /*
-     * El gestor no esta pensado para lecturas desde otro hilo: si una
-     * lista cambia justo mientras se copia, se reintenta.
+     * Evento pedido si la cuenta esta activa y puede verlo, o null. El
+     * gestor no esta pensado para lecturas desde otro hilo: si una lista
+     * cambia justo mientras se lee, se reintenta.
      */
-    private List<Evento> eventosDe(Cuenta cuenta) {
+    private Evento buscarEvento(Cuenta cuenta, String texto) {
+        if (cuenta == null || !cuenta.isActivo()) {
+            return null;
+        }
+
+        int id;
+
+        try {
+            id = Integer.parseInt(texto);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+
         for (int intento = 0; intento < 3; intento++) {
             try {
-                return gestor.eventosDeCuenta(cuenta);
+                return gestor.buscarEventoVisiblePara(cuenta, id);
             } catch (ConcurrentModificationException e) {
-                // Reintenta con una copia nueva.
+                // Reintenta.
             }
         }
 
-        return gestor.eventosDeCuenta(cuenta);
+        return gestor.buscarEventoVisiblePara(cuenta, id);
     }
 
     private Cuenta buscarPorToken(String token) {

@@ -295,8 +295,10 @@ public class GestorEventosEnVivo {
 
     // Un artista solo ve los eventos en los que participa.
     private boolean esVisible(Evento evento) {
-        Cuenta actual = sesion.getCuentaActual();
+        return esVisiblePara(sesion.getCuentaActual(), evento);
+    }
 
+    private boolean esVisiblePara(Cuenta actual, Evento evento) {
         if (actual == null) {
             return false;
         }
@@ -471,51 +473,31 @@ public class GestorEventosEnVivo {
     }
 
     /*
-     * Vincula un calendario externo a la cuenta actual. El permiso se
-     * verifica aca; el calendario concreto llega como parametro.
+     * Suscribe un calendario externo a un evento visible para la cuenta
+     * actual. El permiso se verifica aca; el calendario concreto llega como
+     * parametro.
      */
-    public void vincularCalendario(VinculoCalendario vinculo) throws IOException {
+    public void vincularCalendario(int idEvento, VinculoCalendario vinculo)
+            throws IOException {
         sesion.exigir(Accion.VINCULAR_CALENDARIO);
-        vinculo.vincular(sesion.getCuentaActual());
+
+        Evento evento = buscarEventoVisible(idEvento);
+
+        if (evento == null) {
+            throw new IllegalArgumentException("Evento inexistente.");
+        }
+
+        vinculo.vincular(sesion.getCuentaActual(), evento);
     }
 
     /*
-     * Eventos que le corresponden a una cuenta, sin depender de la sesion:
-     * el administrador tiene todos, el artista los suyos y el usuario
-     * aquellos a los que logro ingresar.
+     * Evento de ese ID si la cuenta puede verlo, sin depender de la sesion.
+     * Lo usa el servidor del calendario, que atiende a cuentas sin sesion
+     * abierta en el programa. Si no existe o no lo puede ver, devuelve null.
      */
-    public List<Evento> eventosDeCuenta(Cuenta cuenta) {
-        List<Evento> propios = new ArrayList<>();
-
-        for (Evento evento : eventos) {
-            boolean corresponde;
-
-            switch (cuenta.getTipoUsuario()) {
-                case ADMINISTRADOR:
-                    corresponde = true;
-                    break;
-                case ARTISTA:
-                    corresponde = false;
-                    for (Artista artista : evento.getArtistas()) {
-                        corresponde |= artista.getId() == cuenta.getId();
-                    }
-                    break;
-                default:
-                    corresponde = false;
-                    for (RegistroAcceso registro : listarRegistros()) {
-                        corresponde |= registro.isExitoso()
-                                && registro.getEvento() == evento
-                                && registro.getUsuario().getId() == cuenta.getId();
-                    }
-                    break;
-            }
-
-            if (corresponde) {
-                propios.add(evento);
-            }
-        }
-
-        return propios;
+    public Evento buscarEventoVisiblePara(Cuenta cuenta, int id) {
+        Evento evento = buscarEventoPorId(id);
+        return (evento != null && esVisiblePara(cuenta, evento)) ? evento : null;
     }
 
     // Busca un artista por ID. Si no existe, devuelve null.
