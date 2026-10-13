@@ -30,6 +30,7 @@ public class Permisos {
                 Accion.VER_EVENTOS,
                 Accion.VER_CAPACIDAD,
                 Accion.AGREGAR_A_CALENDARIO,
+                Accion.VINCULAR_CALENDARIO,
                 Accion.VER_MIS_REGISTROS,
                 Accion.ABRIR_INTERFAZ_GRAFICA
         ));
@@ -46,6 +47,7 @@ public class Permisos {
                 Accion.VER_CONECTADOS,
                 Accion.VER_CAPACIDAD,
                 Accion.AGREGAR_A_CALENDARIO,
+                Accion.VINCULAR_CALENDARIO,
                 Accion.ABRIR_INTERFAZ_GRAFICA
         ));
 

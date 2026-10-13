@@ -94,7 +94,7 @@ El gestor, `ControlAcceso` y las vistas dependen solamente de `Evento`. Un tipo 
 
 ## 4. Segregación de interfaces
 
-Las interfaces del módulo son chicas y el gestor usa todas sus operaciones: `Persistencia` (guardar y cargar), `Notificador` (una operación) y `Calendario` (nombre y agregar). Ninguna clase que las implementa debe definir métodos que no necesita.
+Las interfaces del módulo son chicas y el gestor usa todas sus operaciones: `Persistencia` (guardar y cargar), `Notificador` (una operación), `Calendario` (nombre y agregar) y `VinculoCalendario` (nombre y vincular). Ninguna clase que las implementa debe definir métodos que no necesita.
 
 ## 5. Inversión de dependencias
 
@@ -188,6 +188,7 @@ Cada cuenta tiene un rol (`TipoUsuario`): usuario, artista o administrador. Al i
 | Ver eventos | Todos | Solo los propios | Todos |
 | Ver capacidad de un evento | Sí | Solo los propios | Sí |
 | Agregar un evento a Google o Apple Calendar | Sí | Solo los propios | Sí |
+| Vincular mi calendario (Google o Apple) | Sí | Sí | Sí |
 | Ver sus registros de acceso | Sí | No | No |
 | Crear un evento | No | A su nombre | Sí |
 | Iniciar, pausar, reanudar, finalizar y cancelar un evento | No | Solo los propios | Cualquiera |
@@ -320,16 +321,30 @@ Por ahora el programa usa `NotificadorInactivo`, que no envía nada. Para entreg
 
 ## 11. Calendarios
 
-Cualquier cuenta puede llevar un evento que puede ver a Google Calendar o a Apple Calendar: en la ventana, con los botones de la fila «Agregar al calendario» del evento seleccionado; en consola, con la opción «Agregar evento a Google o Apple Calendar». Un artista solo puede hacerlo con sus propios eventos.
+Hay dos formas de llevar los eventos a Google Calendar o Apple Calendar. Ambas están en la pestaña de eventos de la ventana y en el menú de consola, y las puede usar cualquier cuenta.
 
-El gestor recibe el calendario como parámetro de `agregarACalendario`, una interfaz `Calendario`, y verifica el permiso `AGREGAR_A_CALENDARIO` antes de delegar. No usa claves de API ni guarda credenciales.
+### Agregar un evento
 
-| Calendario | Cómo funciona |
+Con el evento seleccionado, el botón de Google abre el navegador en el enlace oficial «agregar evento» con título, fechas, descripción y lugar ya cargados; el de Apple genera un archivo `.ics` y lo abre con Calendario. Es una copia: no se actualiza si el evento cambia. Un artista solo puede hacerlo con sus propios eventos.
+
+### Vincular mi calendario
+
+La persona se suscribe una sola vez y sus eventos se mantienen al día solos: si un evento cambia de horario aparece el cambio, y si se cancela queda marcado como cancelado.
+
+1. En «Vincular mi calendario» toca Google Calendar o Apple Calendar.
+2. Se abre el navegador (Google) o la app Calendario (Apple) con la suscripción ya armada, y confirma allí.
+3. Desde ahí el calendario trae los eventos que le corresponden: todos si es administrador, los propios si es artista y aquellos a los que logró ingresar si es usuario.
+
+Cómo funciona por dentro: `ServidorCalendario` (servidor HTTP del JDK, sin dependencias) publica en `/calendario/<código>.ics` el calendario de cada cuenta. El código es un HMAC de la cuenta con una clave que se guarda en `~/.uadebeats/calendario.key`, por lo que no se puede adivinar y no hace falta login; una cuenta desactivada deja de recibir su calendario. Los eventos se arman con `FormatoIcs`, con un `UID` fijo por evento y `STATUS:CANCELLED` cuando corresponde.
+
+| Calendario | Requisito |
 |---|---|
-| `CalendarioGoogle` | Abre en el navegador el enlace oficial «agregar evento» de Google Calendar con título, fechas, descripción y lugar ya cargados; la persona confirma con su cuenta |
-| `CalendarioApple` | Genera un archivo `.ics` (iCalendar) y lo abre con la aplicación de calendario del sistema, que ofrece agregarlo; también sirve para cualquier calendario que importe `.ics` |
+| Apple Calendar | Funciona con la dirección local `webcal://localhost:8765/...` si el calendario está en el mismo equipo |
+| Google Calendar | Lee la dirección desde sus servidores, por lo que debe ser pública. Se expone el puerto con un túnel (por ejemplo `cloudflared tunnel --url http://localhost:8765`) y se ejecuta con `-Duadebeats.url=https://<dirección del túnel>`. Con la dirección local se informa el motivo y no se abre nada |
 
-Las fechas del evento no tienen zona horaria: Google las toma en la zona del equipo y el `.ics` las deja en hora local. Si el equipo no puede abrir el navegador o la aplicación, se informa el motivo.
+El puerto es 8765 y se cambia con `-Duadebeats.puerto`. Google actualiza una suscripción cada varias horas; Apple, en minutos.
+
+El gestor recibe los calendarios como parámetro (`agregarACalendario` y `vincularCalendario`, con las interfaces `Calendario` y `VinculoCalendario`) y verifica los permisos `AGREGAR_A_CALENDARIO` y `VINCULAR_CALENDARIO` antes de delegar. No se guardan contraseñas ni claves de API.
 
 ## 12. Diagramas
 
