@@ -471,25 +471,6 @@ public class GestorEventosEnVivo {
     }
 
     /*
-     * Agrega un evento visible al calendario elegido.
-     *
-     * El permiso se verifica aca y no en la vista; el calendario concreto
-     * (Google, Apple) llega como parametro.
-     */
-    public void agregarACalendario(int idEvento, Calendario calendario)
-            throws IOException {
-        sesion.exigir(Accion.AGREGAR_A_CALENDARIO);
-
-        Evento evento = buscarEventoVisible(idEvento);
-
-        if (evento == null) {
-            throw new IllegalArgumentException("Evento inexistente.");
-        }
-
-        calendario.agregar(evento);
-    }
-
-    /*
      * Vincula un calendario externo a la cuenta actual. El permiso se
      * verifica aca; el calendario concreto llega como parametro.
      */
