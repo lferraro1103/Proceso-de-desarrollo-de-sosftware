@@ -4,7 +4,7 @@ import calendario.VinculoApple;
 import calendario.VinculoGoogle;
 import excepciones.AccesoDenegadoException;
 import excepciones.PermisoDenegadoException;
-import excepciones.PersistenciaException;
+import excepciones.ErrorDeServicioException;
 import gestor.Accion;
 import gestor.VinculoCalendario;
 import gestor.ServicioEventos;
@@ -445,7 +445,7 @@ public class VentanaPrincipal extends JFrame {
 
         try {
             accion.run();
-        } catch (PermisoDenegadoException | PersistenciaException e) {
+        } catch (PermisoDenegadoException | ErrorDeServicioException e) {
             mostrarError(e.getMessage());
         }
     }

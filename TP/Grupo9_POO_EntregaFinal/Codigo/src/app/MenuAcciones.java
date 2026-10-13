@@ -1,6 +1,7 @@
 package app;
 
 import excepciones.AccesoDenegadoException;
+import excepciones.ErrorDeServicioException;
 import calendario.VinculoApple;
 import calendario.VinculoGoogle;
 import gestor.ServicioEventos;
@@ -53,7 +54,7 @@ public final class MenuAcciones {
                     + cuenta.getNombreUsuario() + " ("
                     + cuenta.getTipoUsuario() + ").");
             return cuenta;
-        } catch (AccesoDenegadoException e) {
+        } catch (AccesoDenegadoException | ErrorDeServicioException e) {
             System.out.println(e.getMessage());
             return null;
         }

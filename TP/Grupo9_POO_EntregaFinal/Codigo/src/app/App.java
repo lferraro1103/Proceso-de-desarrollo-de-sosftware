@@ -1,10 +1,13 @@
 package app;
 
+import cliente.GestorRemoto;
 import gestor.ServicioEventos;
+import servidor.ConfiguracionServidor;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.concurrent.CountDownLatch;
 
 /*
  * Clase principal del programa.
@@ -20,40 +23,92 @@ import java.util.Scanner;
  */
 public class App {
 
-    // Punto de entrada del programa.
+    /*
+     * Punto de entrada del programa. Segun el primer argumento:
+     *
+     *   (ninguno)           programa completo: datos propios en SQLite, API
+     *                       para clientes remotos y ventana o consola local.
+     *   servidor            solo datos y API, sin interfaz, para dejarlo
+     *                       corriendo en una PC y conectarse desde otras.
+     *   cliente [direccion] solo interfaz: no guarda datos y se conecta a un
+     *                       servidor, por ejemplo http://192.168.0.10:8765.
+     */
     public static void main(String[] args) throws IOException {
+        String modo = args.length > 0 ? args[0] : "";
+
+        if (modo.equals("servidor")) {
+            servir();
+            return;
+        }
 
         // Scanner permite leer datos ingresados por consola.
         Scanner scanner = new Scanner(System.in);
 
-        // Gestor central del modulo: administra eventos, usuarios y registros.
-        ServicioEventos gestor = Arranque.iniciarServidor(false);
-
         try {
-            int modo = elegirModo(scanner);
+            ServicioEventos gestor = modo.equals("cliente")
+                    ? new GestorRemoto(direccionDelServidor(args, scanner))
+                    : Arranque.iniciarServidor(false);
 
-            if (modo == MODO_GRAFICO) {
-                // La ventana de login se encarga del resto.
-                AppSwing.abrir(gestor);
-                return;
-            }
-
-            if (modo == MODO_CONSOLA) {
-                // La primera pantalla es el login: sin sesion no hay menu.
-                while (iniciarSesion(scanner, gestor)) {
-                    // El menu que se muestra depende del rol de la cuenta.
-                    MenuPorRol.ejecutar(scanner, gestor);
-                    gestor.cerrarSesion();
-                }
-            }
-
-            System.out.println("Programa finalizado.");
+            usar(scanner, gestor);
         } catch (NoSuchElementException e) {
             // La entrada se cerro (por ejemplo, Ctrl+D): termina sin error.
             System.out.println("\nEntrada finalizada.");
         }
 
         scanner.close();
+    }
+
+    // Deja el servidor en marcha hasta que se lo detenga con Ctrl+C.
+    private static void servir() throws IOException {
+        Arranque.iniciarServidor(true);
+
+        ConfiguracionServidor configuracion = new ConfiguracionServidor(true);
+        System.out.println("Servidor de UADE Beats en marcha en el puerto "
+                + configuracion.getPuerto() + ". Ctrl+C para detenerlo.");
+
+        try {
+            new CountDownLatch(1).await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    // Direccion del servidor: argumento, propiedad o, si falta, se pregunta.
+    private static String direccionDelServidor(String[] args, Scanner scanner) {
+        if (args.length > 1) {
+            return args[1];
+        }
+
+        String propiedad = System.getProperty("uadebeats.servidor");
+
+        if (propiedad != null && !propiedad.isBlank()) {
+            return propiedad;
+        }
+
+        System.out.print("Direccion del servidor (ej: http://192.168.0.10:8765): ");
+        return scanner.nextLine().trim();
+    }
+
+    // Elige la interfaz y la usa hasta salir.
+    private static void usar(Scanner scanner, ServicioEventos gestor) {
+        int modo = elegirModo(scanner);
+
+        if (modo == MODO_GRAFICO) {
+            // La ventana de login se encarga del resto.
+            AppSwing.abrir(gestor);
+            return;
+        }
+
+        if (modo == MODO_CONSOLA) {
+            // La primera pantalla es el login: sin sesion no hay menu.
+            while (iniciarSesion(scanner, gestor)) {
+                // El menu que se muestra depende del rol de la cuenta.
+                MenuPorRol.ejecutar(scanner, gestor);
+                gestor.cerrarSesion();
+            }
+        }
+
+        System.out.println("Programa finalizado.");
     }
 
     private static final int MODO_GRAFICO = 1;

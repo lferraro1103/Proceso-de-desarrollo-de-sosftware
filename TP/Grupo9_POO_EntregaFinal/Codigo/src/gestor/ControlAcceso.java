@@ -2,10 +2,7 @@ package gestor;
 
 import excepciones.AccesoDenegadoException;
 import modelo.AccesoEvento;
-import modelo.DatosRecital;
-import modelo.EstadoEvento;
 import modelo.Evento;
-import modelo.PlanSuscripcion;
 import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
 import modelo.TipoUsuario;
@@ -52,13 +49,13 @@ public class ControlAcceso {
     public RegistroAcceso procesarIngreso(Usuario usuario, Evento evento) {
 
         if (usuario == null) {
-            return rechazar(usuarioDesconocido(),
-                    evento != null ? evento : eventoDesconocido(),
+            return rechazar(Usuario.desconocido(),
+                    evento != null ? evento : RecitalEnVivo.desconocido(),
                     "Usuario inexistente.");
         }
 
         if (evento == null) {
-            return rechazar(usuario, eventoDesconocido(),
+            return rechazar(usuario, RecitalEnVivo.desconocido(),
                     "Evento inexistente.");
         }
 
@@ -133,43 +130,5 @@ public class ControlAcceso {
                 && usuario.getId() > 0) {
             notificador.notificar(usuario, titulo, mensaje);
         }
-    }
-
-    /*
-     * Usuario "placeholder" para poder registrar un intento cuando no hay
-     * un usuario real asociado.
-     */
-    private Usuario usuarioDesconocido() {
-        return new Usuario(
-                -1,
-                "desconocido",
-                "Usuario",
-                "Desconocido",
-                "sin-email",
-                "",
-                PlanSuscripcion.FREE,
-                false
-        );
-    }
-
-    /*
-     * Evento "placeholder" para poder registrar un intento cuando no hay
-     * un evento real asociado. No se agrega a la lista de eventos.
-     */
-    private Evento eventoDesconocido() {
-        DatosRecital datos = new DatosRecital(
-                "Evento desconocido",
-                "Evento no encontrado",
-                LocalDateTime.now(),
-                LocalDateTime.now(),
-                EstadoEvento.CANCELADO,
-                0,
-                PlanSuscripcion.FREE,
-                "",
-                true,
-                false
-        );
-
-        return new RecitalEnVivo(-1, datos);
     }
 }
