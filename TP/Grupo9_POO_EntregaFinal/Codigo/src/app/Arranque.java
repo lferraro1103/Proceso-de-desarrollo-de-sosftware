@@ -2,7 +2,7 @@ package app;
 
 import gestor.GestorEventosEnVivo;
 import notificacion.NotificadorInactivo;
-import persistencia.PersistenciaArchivos;
+import persistencia.PersistenciaSqlite;
 import servidor.CodigosCalendario;
 import servidor.ConfiguracionServidor;
 import servidor.ManejadorCalendario;
@@ -31,11 +31,16 @@ final class Arranque {
         CodigosCalendario codigos = new CodigosCalendario();
 
         GestorEventosEnVivo gestor = new GestorEventosEnVivo(
-                new PersistenciaArchivos(),
+                new PersistenciaSqlite(),
                 new NotificadorInactivo(),
                 new PublicadorHttp(configuracion, codigos));
 
-        DatosIniciales.cargar(gestor);
+        gestor.cargarDatos();
+
+        // La primera vez la base esta vacia: se cargan los datos de prueba.
+        if (gestor.listarUsuarios().isEmpty()) {
+            DatosIniciales.sembrar(gestor);
+        }
 
         ServidorHttp.iniciar(configuracion, Map.of(
                 "/calendario/", new ManejadorCalendario(gestor, codigos)));

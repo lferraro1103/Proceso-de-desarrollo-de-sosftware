@@ -188,10 +188,12 @@ public class RecitalEnVivo extends Evento {
         return ubicacion;
     }
 
+    @Override
     public boolean isStreaming() {
         return esStreaming;
     }
 
+    @Override
     public boolean isExclusivo() {
         return exclusivo;
     }
