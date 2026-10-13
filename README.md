@@ -330,10 +330,7 @@ La persona se suscribe una sola vez y sus eventos se mantienen al día solos: si
 
 Cómo funciona por dentro: `ServidorCalendario` (servidor HTTP del JDK, sin dependencias) publica en `/calendario/<código>.ics` el calendario de cada cuenta. El código es un HMAC de la cuenta con una clave que se guarda en `~/.uadebeats/calendario.key`, por lo que no se puede adivinar y no hace falta login; una cuenta desactivada deja de recibir su calendario. Los eventos se arman con `FormatoIcs`, con un `UID` fijo por evento y `STATUS:CANCELLED` cuando corresponde.
 
-| Calendario | Requisito |
-|---|---|
-| Apple Calendar | Funciona con la dirección local `webcal://localhost:8765/...` si el calendario está en el mismo equipo |
-| Google Calendar | Lee la dirección desde sus servidores, por lo que debe ser pública. Se expone el puerto con un túnel (por ejemplo `cloudflared tunnel --url http://localhost:8765`) y se ejecuta con `-Duadebeats.url=https://<dirección del túnel>`. Con la dirección local se informa el motivo y no se abre nada |
+Google y Apple se suscriben por https: Calendar convierte `webcal://` en `https://`, y Google además lee la dirección desde sus servidores. Por eso la dirección debe ser pública y con https. Se expone el puerto con un túnel (por ejemplo `cloudflared tunnel --url http://localhost:8765`) y se ejecuta con `-Duadebeats.url=https://<dirección del túnel>`. Con la dirección local se informa el motivo y no se abre nada.
 
 El puerto es 8765 y se cambia con `-Duadebeats.puerto`. Google actualiza una suscripción cada varias horas; Apple, en minutos.
 
