@@ -120,6 +120,9 @@ public abstract class Evento {
     // Plan minimo que necesita un usuario para entrar al evento.
     public abstract PlanSuscripcion getPlanMinimoRequerido();
 
+    // Lugar donde se realiza el evento.
+    public abstract String getUbicacion();
+
     // Conecta al usuario si el evento lo admite; si no, lanza la excepcion.
     public abstract void permitirIngreso(Usuario usuario)
             throws AccesoDenegadoException;

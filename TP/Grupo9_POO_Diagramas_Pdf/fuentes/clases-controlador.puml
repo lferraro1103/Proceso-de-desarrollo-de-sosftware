@@ -1,6 +1,6 @@
 @startuml
 !include estilo.iuml
-title Diagrama de clases: controlador, persistencia y avisos
+title Diagrama de clases: controlador, persistencia, avisos y calendarios
 
 class GestorEventosEnVivo {
   +registrarUsuario(datos) : Usuario
@@ -16,6 +16,7 @@ class GestorEventosEnVivo {
   +finalizarEvento(idEvento : int) : void
   +cancelarEvento(idEvento : int) : void
   +listarEventosVisibles() : List<Evento>
+  +agregarACalendario(idEvento : int, calendario : Calendario) : void
   +guardarDatos() : void
   +cargarDatos() : void
 }
@@ -58,6 +59,11 @@ interface Notificador {
   +notificar(destinatario : Usuario, titulo : String, mensaje : String) : void
 }
 
+interface Calendario {
+  +getNombre() : String
+  +agregar(evento : Evento) : void
+}
+
 class PersistenciaArchivos {
   usuarios.txt
   artistas.txt
@@ -69,17 +75,23 @@ class NotificadorInactivo {
   en uso: no envia nada
 }
 
-class NotificadorNtfy {
-  preparada, sin activar
+class CalendarioGoogle {
+  abre el enlace de Google Calendar
+}
+
+class CalendarioApple {
+  genera y abre un archivo .ics
 }
 
 GestorEventosEnVivo --> ControlAcceso
 GestorEventosEnVivo --> ControlSesion
 GestorEventosEnVivo --> Persistencia
+GestorEventosEnVivo --> Calendario
 ControlAcceso --> Notificador
 ControlSesion --> Permisos
 Permisos --> Accion
 PersistenciaArchivos ..|> Persistencia
 NotificadorInactivo ..|> Notificador
-NotificadorNtfy ..|> Notificador
+CalendarioGoogle ..|> Calendario
+CalendarioApple ..|> Calendario
 @enduml

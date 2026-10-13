@@ -1,6 +1,9 @@
 package app;
 
 import excepciones.AccesoDenegadoException;
+import calendario.CalendarioApple;
+import calendario.CalendarioGoogle;
+import gestor.Calendario;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
 import modelo.Cuenta;
@@ -552,6 +555,40 @@ public final class MenuAcciones {
                 + recital.getCantidadConectados()
                 + "/"
                 + recital.getCapacidadMaxima());
+    }
+
+    // Lleva un evento visible a Google Calendar o Apple Calendar.
+    public static void agregarACalendario(Scanner scanner,
+                                          GestorEventosEnVivo gestor) {
+
+        int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
+
+        if (gestor.buscarEventoVisible(idEvento) == null) {
+            System.out.println("Evento inexistente o no compatible.");
+            return;
+        }
+
+        System.out.println("1. Google Calendar");
+        System.out.println("2. Apple Calendar");
+        int opcion = ConsoleIO.leerEntero(scanner, "Calendario: ");
+
+        Calendario calendario;
+
+        if (opcion == 1) {
+            calendario = new CalendarioGoogle();
+        } else if (opcion == 2) {
+            calendario = new CalendarioApple();
+        } else {
+            System.out.println("Opcion invalida.");
+            return;
+        }
+
+        try {
+            gestor.agregarACalendario(idEvento, calendario);
+            System.out.println("Evento enviado a " + calendario.getNombre() + ".");
+        } catch (IOException e) {
+            System.out.println("No se pudo agregar: " + e.getMessage());
+        }
     }
 
     /*
