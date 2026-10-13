@@ -557,9 +557,16 @@ public final class MenuAcciones {
                 + recital.getCapacidadMaxima());
     }
 
-    // Suscribe el calendario de la cuenta a todos sus eventos.
+    // Suscribe un calendario externo a un evento.
     public static void vincularCalendario(Scanner scanner,
                                           GestorEventosEnVivo gestor) {
+
+        int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
+
+        if (gestor.buscarEventoVisible(idEvento) == null) {
+            System.out.println("Evento inexistente o no compatible.");
+            return;
+        }
 
         System.out.println("1. Google Calendar");
         System.out.println("2. Apple Calendar");
@@ -577,7 +584,7 @@ public final class MenuAcciones {
         }
 
         try {
-            gestor.vincularCalendario(vinculo);
+            gestor.vincularCalendario(idEvento, vinculo);
             System.out.println("Se abrio " + vinculo.getNombre()
                     + " para suscribirse. Confirme alli.");
         } catch (IOException e) {
