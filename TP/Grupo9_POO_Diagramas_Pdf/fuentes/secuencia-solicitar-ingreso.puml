@@ -30,7 +30,7 @@ else AccesoDenegadoException con el motivo
   ControlAcceso -> Notificador : notificar(usuario, motivo)\nsolo cuentas de rol usuario
 end
 ControlAcceso --> Gestor : RegistroAcceso
+Gestor -> Gestor : guardarDatos()  (automatico, en SQLite)
 Gestor --> Vista : RegistroAcceso
-Vista -> Gestor : guardarDatos()  (guardado automatico)
 Vista --> Persona : informa si fue autorizado\no el motivo del rechazo
 @enduml

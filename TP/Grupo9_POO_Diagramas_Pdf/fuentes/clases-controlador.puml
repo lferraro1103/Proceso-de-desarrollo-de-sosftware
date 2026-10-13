@@ -1,105 +1,77 @@
 @startuml
 !include estilo.iuml
-title Diagrama de clases: controlador, persistencia, avisos y calendarios
+title Diagrama de clases: controlador y sus interfaces
 
-class GestorEventosEnVivo {
+interface ServicioEventos {
+  lo que piden las vistas
+}
+
+interface ServicioSesion {
+  +iniciarSesion(nombreUsuario : String, contrasena : String) : Cuenta
+  +cerrarSesion() : void
+  +getCuentaActual() : Cuenta
+  +puede(accion : Accion) : boolean
+  +accionesPermitidas() : List<Accion>
+}
+
+interface ServicioConsultas {
+  +listarUsuarios() : List<Usuario>
+  +listarArtistas() : List<Artista>
+  +listarEventosVisibles() : List<Evento>
+  +listarRegistros() : List<RegistroAcceso>
+  +buscarEventoVisible(id : int) : Evento
+  +actualizar() : void
+}
+
+interface ServicioComandos {
   +registrarUsuario(datos) : Usuario
   +registrarArtista(datos) : Artista
   +crearEvento(datos : DatosRecital, artista : Artista) : RecitalEnVivo
-  +iniciarSesion(nombreUsuario : String, contrasena : String) : Cuenta
+  +iniciarEvento(idEvento : int) : void
   +solicitarIngreso(idUsuario : int, idEvento : int) : RegistroAcceso
   +expulsarUsuario(idEvento : int, idUsuario : int) : Usuario
   +alternarActivo(idUsuario : int) : Usuario
-  +iniciarEvento(idEvento : int) : void
-  +pausarEvento(idEvento : int) : void
-  +reanudarEvento(idEvento : int) : void
-  +finalizarEvento(idEvento : int) : void
-  +cancelarEvento(idEvento : int) : void
-  +listarEventosVisibles() : List<Evento>
-  +vincularCalendario(idEvento : int, vinculo : VinculoCalendario) : void
+  +vincularCalendario(idEvento : int, vinculo) : void
+}
+
+class GestorEventosEnVivo {
+  +autenticar(nombreUsuario, contrasena) : Cuenta
+  +asumirSesion(cuenta : Cuenta) : void
+  +urlCalendario(idEvento : int) : String
   +buscarEventoVisiblePara(cuenta : Cuenta, id : int) : Evento
-  +guardarDatos() : void
   +cargarDatos() : void
+  +guardarDatos() : void
 }
 
 class ControlAcceso {
   +procesarIngreso(usuario : Usuario, evento : Evento) : RegistroAcceso
   +registrarExpulsion(usuario : Usuario, evento : Evento) : void
-  +listar() : List<RegistroAcceso>
 }
 
 class ControlSesion {
   +iniciar(cuenta : Cuenta) : void
-  +cerrar() : void
   +exigir(accion : Accion) : void
-  +exigirSiHaySesion(accion : Accion) : void
   +permite(accion : Accion) : boolean
 }
 
 class Permisos {
   +permite(tipo : TipoUsuario, accion : Accion) : boolean
-  +accionesPermitidas(tipo : TipoUsuario) : List<Accion>
 }
 
 enum Accion {
-  REGISTRAR_USUARIO
-  REGISTRAR_ARTISTA
-  CREAR_EVENTO
   SOLICITAR_INGRESO
   EXPULSAR_USUARIO
-  ACTIVAR_DESACTIVAR_USUARIO
+  VINCULAR_CALENDARIO
   ...
 }
 
-interface Persistencia {
-  +guardar(gestor : GestorEventosEnVivo) : void
-  +cargar(gestor : GestorEventosEnVivo) : void
-}
 
-interface Notificador {
-  +notificar(destinatario : Usuario, titulo : String, mensaje : String) : void
-}
-
-interface VinculoCalendario {
-  +getNombre() : String
-  +vincular(cuenta : Cuenta, evento : Evento) : void
-}
-
-class PersistenciaArchivos {
-  usuarios.txt
-  artistas.txt
-  eventos.txt
-  registros_acceso.txt
-}
-
-class NotificadorInactivo {
-  en uso: no envia nada
-}
-
-class VinculoGoogle {
-  abre la suscripcion de Google
-}
-
-class VinculoApple {
-  abre la suscripcion webcal de Apple
-}
-
-class ServidorCalendario {
-  publica el calendario de cada evento
-  en /calendario/codigo/idEvento.ics
-}
-
+ServicioEventos --|> ServicioSesion
+ServicioEventos --|> ServicioConsultas
+ServicioEventos --|> ServicioComandos
+GestorEventosEnVivo ..|> ServicioEventos
 GestorEventosEnVivo --> ControlAcceso
 GestorEventosEnVivo --> ControlSesion
-GestorEventosEnVivo --> Persistencia
-GestorEventosEnVivo --> VinculoCalendario
-VinculoGoogle --> ServidorCalendario
-VinculoApple --> ServidorCalendario
-ControlAcceso --> Notificador
 ControlSesion --> Permisos
 Permisos --> Accion
-PersistenciaArchivos ..|> Persistencia
-NotificadorInactivo ..|> Notificador
-VinculoGoogle ..|> VinculoCalendario
-VinculoApple ..|> VinculoCalendario
 @enduml
