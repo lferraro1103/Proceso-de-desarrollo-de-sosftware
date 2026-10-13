@@ -1,4 +1,4 @@
-!pragma layout smetana
+!pragma layout elk
 skinparam linetype polyline
 skinparam classAttributeIconSize 0
 skinparam defaultFontName Helvetica
