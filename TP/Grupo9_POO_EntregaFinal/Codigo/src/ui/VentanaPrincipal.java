@@ -4,9 +4,10 @@ import calendario.VinculoApple;
 import calendario.VinculoGoogle;
 import excepciones.AccesoDenegadoException;
 import excepciones.PermisoDenegadoException;
+import excepciones.PersistenciaException;
 import gestor.Accion;
 import gestor.VinculoCalendario;
-import gestor.GestorEventosEnVivo;
+import gestor.ServicioEventos;
 import modelo.Artista;
 import modelo.DatosRecital;
 import modelo.EstadoEvento;
@@ -71,7 +72,7 @@ public class VentanaPrincipal extends JFrame {
 
     // Uso el mismo gestor que usa el menu por consola.
     // Asi la ventana trabaja con los mismos usuarios, artistas y eventos.
-    private GestorEventosEnVivo gestor;
+    private ServicioEventos gestor;
 
     // Cada tabla muestra una entidad en columnas. Los modelos guardan las
     // filas y Swing actualiza la tabla cuando se modifican.
@@ -109,7 +110,7 @@ public class VentanaPrincipal extends JFrame {
      * a esa pantalla. Si se abre desde el menu de consola, la sesion es la
      * del menu y no la cierra.
      */
-    public VentanaPrincipal(GestorEventosEnVivo gestor,
+    public VentanaPrincipal(ServicioEventos gestor,
                             boolean permiteCerrarSesion) {
         // Recibo el gestor desde afuera para no crear datos separados.
         this.gestor = gestor;
@@ -177,11 +178,6 @@ public class VentanaPrincipal extends JFrame {
         if (gestor.puede(Accion.VER_REGISTROS)
                 || gestor.puede(Accion.VER_MIS_REGISTROS)) {
             pestanias.addTab("Registros", crearPanelRegistros());
-        }
-
-        if (gestor.puede(Accion.GUARDAR_DATOS)
-                || gestor.puede(Accion.CARGAR_DATOS)) {
-            pestanias.addTab("Persistencia", crearPanelPersistencia());
         }
 
         estado = new JLabel(" ");
@@ -294,7 +290,7 @@ public class VentanaPrincipal extends JFrame {
                 crearBoton("Registrar usuario", this::registrarUsuario));
         agregarSiPermitido(acciones, Accion.ACTIVAR_DESACTIVAR_USUARIO,
                 alternarActivo);
-        acciones.add(crearBoton("Actualizar", this::actualizarListas));
+        acciones.add(crearBoton("Actualizar", this::actualizarDesdeOrigen));
 
         actualizarBotonUsuario();
 
@@ -310,7 +306,7 @@ public class VentanaPrincipal extends JFrame {
         JPanel acciones = crearFila("Artistas");
         agregarSiPermitido(acciones, Accion.REGISTRAR_ARTISTA,
                 crearBoton("Registrar artista", this::registrarArtista));
-        acciones.add(crearBoton("Actualizar", this::actualizarListas));
+        acciones.add(crearBoton("Actualizar", this::actualizarDesdeOrigen));
 
         panel.add(new JScrollPane(lista), BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
@@ -369,15 +365,15 @@ public class VentanaPrincipal extends JFrame {
         agregarSiPermitido(filaGestion, Accion.EXPULSAR_USUARIO,
                 crearBoton("Expulsar usuario", this::expulsarUsuario));
         agregarSiPermitido(filaGestion, Accion.VER_CONECTADOS, verConectados);
-        filaGestion.add(crearBoton("Actualizar", this::actualizarListas));
+        filaGestion.add(crearBoton("Actualizar", this::actualizarDesdeOrigen));
 
         // Tercera fila: suscribir el calendario completo de la cuenta.
         JPanel filaVinculo = crearFila(
                 "Agregar el evento seleccionado a mi calendario (se actualiza solo)");
         calendarioGoogle.addActionListener(e -> ejecutar(
-                () -> vincularCalendario(new VinculoGoogle(gestor))));
+                () -> vincularCalendario(new VinculoGoogle())));
         calendarioApple.addActionListener(e -> ejecutar(
-                () -> vincularCalendario(new VinculoApple(gestor))));
+                () -> vincularCalendario(new VinculoApple())));
         agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, calendarioGoogle);
         agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, calendarioApple);
 
@@ -406,22 +402,11 @@ public class VentanaPrincipal extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
 
         JPanel acciones = crearFila("Registros");
-        acciones.add(crearBoton("Actualizar", this::actualizarListas));
+        acciones.add(crearBoton("Actualizar", this::actualizarDesdeOrigen));
 
         panel.add(new JScrollPane(crearTabla(modeloRegistros, 130, 90, 190, 520)),
                 BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
-        return panel;
-    }
-
-    private JPanel crearPanelPersistencia() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-
-        // Botones que llaman a la clase de persistencia con archivos TXT.
-        agregarSiPermitido(panel, Accion.GUARDAR_DATOS,
-                crearBoton("Guardar TXT", this::guardarDatos));
-        agregarSiPermitido(panel, Accion.CARGAR_DATOS,
-                crearBoton("Cargar TXT", this::cargarDatos));
         return panel;
     }
 
@@ -460,7 +445,7 @@ public class VentanaPrincipal extends JFrame {
 
         try {
             accion.run();
-        } catch (PermisoDenegadoException e) {
+        } catch (PermisoDenegadoException | PersistenciaException e) {
             mostrarError(e.getMessage());
         }
     }
@@ -553,7 +538,6 @@ public class VentanaPrincipal extends JFrame {
             mostrarExito("Usuario " + usuario.getNombreUsuario()
                     + (usuario.isActivo() ? " activado." : " desactivado."));
             actualizarListas();
-            guardarSilencioso();
         } catch (PermisoDenegadoException e) {
             mostrarError(e.getMessage());
         }
@@ -730,8 +714,6 @@ public class VentanaPrincipal extends JFrame {
                 + " (ID " + usuario.getId() + ").");
         actualizarListas();
 
-        // Persiste de una para no perder el alta si se cierra sin guardar.
-        guardarSilencioso();
     }
 
     private void registrarArtista() {
@@ -780,8 +762,6 @@ public class VentanaPrincipal extends JFrame {
                 + " (ID " + artista.getId() + ").");
         actualizarListas();
 
-        // Persiste de una para no perder el alta si se cierra sin guardar.
-        guardarSilencioso();
     }
 
     private void crearEvento() {
@@ -866,7 +846,6 @@ public class VentanaPrincipal extends JFrame {
         mostrarExito("Evento creado: " + evento.getTitulo()
                 + " (ID " + evento.getId() + ").");
         actualizarListas();
-        guardarSilencioso();
     }
 
     // ---------------- acciones sobre eventos y usuarios ----------------
@@ -900,7 +879,6 @@ public class VentanaPrincipal extends JFrame {
         actualizarListas();
 
         // El intento, exitoso o no, queda registrado: se guarda.
-        guardarSilencioso();
 
         if (registro.isExitoso()) {
             mostrarExito("Ingreso autorizado a \"" + evento.getTitulo() + "\".");
@@ -938,7 +916,6 @@ public class VentanaPrincipal extends JFrame {
             mostrarExito("Usuario expulsado: "
                     + usuarioExpulsado.getNombreCompleto() + ".");
             actualizarListas();
-            guardarSilencioso();
         } else {
             mostrarError("No se pudo expulsar al usuario.");
         }
@@ -972,7 +949,6 @@ public class VentanaPrincipal extends JFrame {
             mostrarExito("Evento \"" + evento.getTitulo() + "\": " + accion
                     + " realizado. Estado actual: " + evento.getEstado() + ".");
             actualizarListas();
-            guardarSilencioso();
         } catch (AccesoDenegadoException | PermisoDenegadoException e) {
             mostrarError(e.getMessage());
         }
@@ -1059,47 +1035,13 @@ public class VentanaPrincipal extends JFrame {
         );
     }
 
-    // ---------------- persistencia ----------------
-
-    private void guardarDatos() {
-        try {
-            // Guarda usuarios, artistas, eventos y registros en archivos TXT.
-            gestor.guardarDatos();
-            mostrarExito("Datos guardados en la carpeta datos.");
-        } catch (IOException e) {
-            mostrarError("No se pudieron guardar los datos: " + e.getMessage());
-        }
-    }
-
-    /*
-     * Igual que guardarDatos(), pero sin mensaje de confirmacion.
-     *
-     * Se usa despues de un alta (usuario/artista) para no perder el dato
-     * si se cierra la ventana sin apretar "Guardar TXT", sin pisar el
-     * mensaje de "registrado".
-     */
-    private void guardarSilencioso() {
-        try {
-            gestor.guardarDatos();
-        } catch (IOException e) {
-            mostrarError("No se pudieron guardar los datos: " + e.getMessage());
-        }
-    }
-
-    private void cargarDatos() {
-        try {
-            // Carga usuarios, artistas y eventos desde los TXT.
-            gestor.cargarDatos();
-
-            // Despues de cargar, refresco lo que se ve en pantalla.
-            actualizarListas();
-            mostrarExito("Datos cargados desde la carpeta datos.");
-        } catch (IOException | RuntimeException e) {
-            mostrarError("No se pudieron cargar los datos: " + e.getMessage());
-        }
-    }
-
     // ---------------- tablas ----------------
+
+    // Pide los datos mas recientes al origen y los muestra.
+    private void actualizarDesdeOrigen() {
+        gestor.actualizar();
+        actualizarListas();
+    }
 
     private void actualizarListas() {
         // Recuerdo las filas seleccionadas para volver a seleccionarlas.
