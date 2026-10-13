@@ -1,0 +1,51 @@
+@startuml
+!include estilo.iuml
+title Diagrama de clases: persistencia en SQLite
+
+interface Persistencia {
+  +guardar(gestor : GestorEventosEnVivo) : void
+  +cargar(gestor : GestorEventosEnVivo) : void
+}
+
+class PersistenciaSqlite {
+  guarda en una sola transaccion
+}
+
+class ConexionSqlite {
+  abre la base y crea las tablas
+}
+
+class RepositorioUsuarios {
+  tabla usuarios
+}
+
+class RepositorioArtistas {
+  tabla artistas
+}
+
+class RepositorioEventos {
+  tablas eventos, evento_artistas
+  y evento_conectados
+}
+
+class RepositorioRegistros {
+  tabla registros_acceso
+}
+
+class DatosIniciales {
+  datos de prueba de la primera vez
+}
+
+class GestorEventosEnVivo {
+  guarda despues de cada cambio
+}
+
+GestorEventosEnVivo --> Persistencia
+PersistenciaSqlite ..|> Persistencia
+PersistenciaSqlite --> RepositorioUsuarios
+PersistenciaSqlite --> RepositorioArtistas
+PersistenciaSqlite --> RepositorioEventos
+PersistenciaSqlite --> RepositorioRegistros
+PersistenciaSqlite ..> ConexionSqlite
+DatosIniciales ..> GestorEventosEnVivo
+@enduml

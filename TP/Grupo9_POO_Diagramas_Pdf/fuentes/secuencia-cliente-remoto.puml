@@ -1,0 +1,30 @@
+@startuml
+!include estilo.iuml
+title Diagrama de secuencia: solicitar ingreso desde un cliente remoto
+
+actor Persona
+participant Vista
+participant GestorRemoto
+participant ClienteHttp
+participant ManejadorApi
+participant "GestorEventosEnVivo" as Gestor
+participant PersistenciaSqlite
+
+Persona -> Vista : solicita el ingreso a un evento
+Vista -> GestorRemoto : solicitarIngreso(idUsuario, idEvento)
+GestorRemoto -> ClienteHttp : POST /api/eventos/{id}/ingresos\ncon el token de la sesion
+ClienteHttp -> ManejadorApi : pedido HTTP con JSON
+ManejadorApi -> ManejadorApi : valida el token y busca la cuenta
+ManejadorApi -> Gestor : asumirSesion(cuenta)
+ManejadorApi -> Gestor : solicitarIngreso(idUsuario, idEvento)
+Gestor -> Gestor : exige el permiso, aplica las reglas\ny registra el intento
+Gestor -> PersistenciaSqlite : guardar(gestor)
+Gestor --> ManejadorApi : RegistroAcceso
+ManejadorApi -> Gestor : restaura la sesion anterior
+ManejadorApi --> ClienteHttp : 200 con el registro\no 403 / 409 con el error
+ClienteHttp --> GestorRemoto : texto JSON o excepcion
+GestorRemoto -> ClienteHttp : GET /api/estado
+ClienteHttp --> GestorRemoto : lo que ve la cuenta
+GestorRemoto --> Vista : RegistroAcceso
+Vista --> Persona : informa si fue autorizado\no el motivo del rechazo
+@enduml
