@@ -75,6 +75,17 @@ public final class  DatosIniciales {
         }
     }
 
+    // Proximo identificador libre: el mayor existente mas uno.
+    private static int siguienteIdUsuario(GestorEventosEnVivo gestor) {
+        int mayor = 0;
+
+        for (Usuario usuario : gestor.listarUsuarios()) {
+            mayor = Math.max(mayor, usuario.getId());
+        }
+
+        return mayor + 1;
+    }
+
     // Crea el administrador de arranque si todavia no hay ninguno.
     private static void asegurarAdministrador(GestorEventosEnVivo gestor) {
         for (Usuario usuario : gestor.listarUsuarios()) {
@@ -136,7 +147,7 @@ public final class  DatosIniciales {
      */
     private static void cargarAdministradorInicial(GestorEventosEnVivo gestor) {
         Usuario administrador = new Usuario(
-                99,
+                siguienteIdUsuario(gestor),
                 "admin",
                 "Administrador",
                 "UADE Beats",
