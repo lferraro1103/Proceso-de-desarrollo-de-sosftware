@@ -1,0 +1,60 @@
+@startuml
+!include estilo.iuml
+title Diagrama de clases: vistas
+
+package "Consola" {
+  class App {
+    main() : elige consola o ventana
+  }
+  class MenuPorRol {
+    menu armado con las acciones permitidas del rol
+  }
+  class MenuAcciones {
+    una operacion por accion
+  }
+  class ConsoleIO {
+    lectura validada de enteros
+  }
+}
+
+package "Interfaz grafica (Swing)" {
+  class AppSwing {
+    main() : abre el login
+  }
+  class VentanaLogin {
+    usuario y contrasena
+  }
+  class VentanaPrincipal {
+    pestanias y botones segun el rol
+  }
+  class ModeloTabla {
+    tabla de solo lectura
+  }
+  class Logo {
+    icono dibujado por codigo
+  }
+}
+
+class DatosIniciales {
+  carga los datos al arrancar
+}
+
+class GestorEventosEnVivo {
+  controlador: crea objetos, asigna IDs
+  y valida permisos
+}
+
+App --> MenuPorRol
+App --> AppSwing : opcion 1
+App --> DatosIniciales
+MenuPorRol --> MenuAcciones
+MenuAcciones --> ConsoleIO
+AppSwing --> VentanaLogin
+VentanaLogin --> VentanaPrincipal
+VentanaLogin --> Logo
+VentanaPrincipal --> ModeloTabla
+VentanaPrincipal --> Logo
+MenuAcciones ..> GestorEventosEnVivo
+VentanaPrincipal ..> GestorEventosEnVivo
+DatosIniciales ..> GestorEventosEnVivo
+@enduml
