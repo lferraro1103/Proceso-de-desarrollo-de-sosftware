@@ -1,21 +1,18 @@
 package gestor;
 
-import modelo.Cuenta;
-import modelo.Evento;
-
 import java.io.IOException;
 
 /*
- * Contrato para vincular un calendario externo a una cuenta.
+ * Contrato para suscribir un calendario externo a la direccion de un evento.
  *
- * El vinculo
- * suscribe el calendario a un evento y lo mantiene actualizado.
+ * Cada implementacion (Google, Apple) sabe como abrir su aplicacion con la
+ * suscripcion ya armada.
  */
 public interface VinculoCalendario {
 
     // Nombre con el que se muestra en los menus.
     String getNombre();
 
-    // Suscribe el calendario al evento de la cuenta. Falla con IOException si no se pudo.
-    void vincular(Cuenta cuenta, Evento evento) throws IOException;
+    // Abre el calendario para suscribirse a la direccion del evento.
+    void vincular(String urlFeed) throws IOException;
 }
