@@ -317,7 +317,38 @@ El gestor recibe un `Notificador`, una interfaz con una sola operación, y `Cont
 
 Por ahora el programa usa `NotificadorInactivo`, que no envía nada. `NotificadorNtfy` ya está escrita para entregar los avisos como notificaciones push mediante ntfy.sh, en un tema propio de cada usuario, pero todavía no se utiliza. Activarla requiere solo crear el gestor con esa implementación en `App` y en `AppSwing`, sin modificar el gestor ni `ControlAcceso`.
 
-## 11. Ejecución
+## 11. Diagramas
+
+Los diagramas de clases y de secuencia están actualizados al diseño actual y se generan con PlantUML. Los archivos `.puml` con su código fuente están en `TP/Grupo9_POO_Diagramas_Pdf/fuentes`, y los PDF listos para presentar, con su versión oscura, en `TP/Grupo9_POO_Diagramas_Pdf`.
+
+| Diagrama | Contenido |
+|---|---|
+| Diagrama de clase | Tres páginas: modelo, controlador con persistencia y avisos, y vistas |
+| Diagrama de secuencia | Solicitar ingreso a un evento, con control de sesión y permisos, registro del intento y aviso al usuario |
+
+### Modelo
+
+![Diagrama de clases del modelo](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-modelo.png)
+
+### Controlador, persistencia y avisos
+
+![Diagrama de clases del controlador](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-controlador.png)
+
+### Vistas
+
+![Diagrama de clases de las vistas](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-vistas.png)
+
+### Solicitar ingreso a un evento
+
+![Diagrama de secuencia de solicitar ingreso](TP/Grupo9_POO_Diagramas_Pdf/imagenes/secuencia-solicitar-ingreso.png)
+
+Para regenerarlos, desde `TP/Grupo9_POO_Diagramas_Pdf/fuentes`:
+
+```
+java -jar plantuml.jar -charset UTF-8 -tpdf *.puml
+```
+
+## 12. Ejecución
 
 Desde `TP/Grupo9_POO_EntregaFinal/Codigo/src`:
 

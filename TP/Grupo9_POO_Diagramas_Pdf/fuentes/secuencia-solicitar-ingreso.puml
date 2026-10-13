@@ -1,0 +1,36 @@
+@startuml
+!include estilo.iuml
+title Diagrama de secuencia: solicitar ingreso a un evento
+
+actor Persona
+participant Vista
+participant "GestorEventosEnVivo" as Gestor
+participant ControlSesion
+participant ControlAcceso
+participant AccesoEvento
+participant RecitalEnVivo
+participant RegistroAcceso
+participant Notificador
+
+Persona -> Vista : solicita el ingreso a un evento
+Vista -> Gestor : solicitarIngreso(idUsuario, idEvento)
+Gestor -> ControlSesion : exigir(SOLICITAR_INGRESO)
+ControlSesion --> Gestor : ok o PermisoDenegadoException
+Gestor -> Gestor : un usuario solo pide a su nombre,\nbusca usuario y evento
+Gestor -> ControlAcceso : procesarIngreso(usuario, evento)
+ControlAcceso -> AccesoEvento ** : crea
+ControlAcceso -> AccesoEvento : validarAutorizacion()
+ControlAcceso -> AccesoEvento : validarPlan()
+ControlAcceso -> RecitalEnVivo : permitirIngreso(usuario)
+RecitalEnVivo -> RecitalEnVivo : valida estado, horario,\ncapacidad y duplicado
+alt ingreso autorizado
+  ControlAcceso -> RegistroAcceso ** : crea (exitoso)
+else AccesoDenegadoException con el motivo
+  ControlAcceso -> RegistroAcceso ** : crea (rechazado, motivo)
+  ControlAcceso -> Notificador : notificar(usuario, motivo)\nsolo cuentas de rol usuario
+end
+ControlAcceso --> Gestor : RegistroAcceso
+Gestor --> Vista : RegistroAcceso
+Vista -> Gestor : guardarDatos()  (guardado automatico)
+Vista --> Persona : informa si fue autorizado\no el motivo del rechazo
+@enduml
