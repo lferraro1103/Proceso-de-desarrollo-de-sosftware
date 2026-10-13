@@ -183,6 +183,7 @@ public class RecitalEnVivo extends Evento {
         return planMinimoRequerido;
     }
 
+    @Override
     public String getUbicacion() {
         return ubicacion;
     }

@@ -94,7 +94,7 @@ El gestor, `ControlAcceso` y las vistas dependen solamente de `Evento`. Un tipo 
 
 ## 4. Segregación de interfaces
 
-La única interfaz del módulo es `Persistencia`, con dos operaciones que el gestor utiliza ambas. Ninguna clase que la implementa debe definir métodos que no necesita.
+Las interfaces del módulo son chicas y el gestor usa todas sus operaciones: `Persistencia` (guardar y cargar), `Notificador` (una operación) y `Calendario` (nombre y agregar). Ninguna clase que las implementa debe definir métodos que no necesita.
 
 ## 5. Inversión de dependencias
 
@@ -187,6 +187,7 @@ Cada cuenta tiene un rol (`TipoUsuario`): usuario, artista o administrador. Al i
 | Solicitar ingreso a un evento | Solo a su nombre | No | Sí |
 | Ver eventos | Todos | Solo los propios | Todos |
 | Ver capacidad de un evento | Sí | Solo los propios | Sí |
+| Agregar un evento a Google o Apple Calendar | Sí | Solo los propios | Sí |
 | Ver sus registros de acceso | Sí | No | No |
 | Crear un evento | No | A su nombre | Sí |
 | Iniciar, pausar, reanudar, finalizar y cancelar un evento | No | Solo los propios | Cualquiera |
@@ -315,15 +316,28 @@ El gestor recibe un `Notificador`, una interfaz con una sola operación, y `Cont
 | El usuario es expulsado de un evento | Expulsado del evento, con el título del evento |
 | Se rechaza su solicitud de ingreso | Ingreso rechazado, con el motivo |
 
-Por ahora el programa usa `NotificadorInactivo`, que no envía nada. `NotificadorNtfy` ya está escrita para entregar los avisos como notificaciones push mediante ntfy.sh, en un tema propio de cada usuario, pero todavía no se utiliza. Activarla requiere solo crear el gestor con esa implementación en `App` y en `AppSwing`, sin modificar el gestor ni `ControlAcceso`.
+Por ahora el programa usa `NotificadorInactivo`, que no envía nada. Para entregar los avisos por otro medio alcanza con escribir otra implementación de `Notificador` y pasarla al crear el gestor en `App` y en `AppSwing`, sin modificar el gestor ni `ControlAcceso`.
 
-## 11. Diagramas
+## 11. Calendarios
+
+Cualquier cuenta puede llevar un evento que puede ver a Google Calendar o a Apple Calendar: en la ventana, con los botones de la fila «Agregar al calendario» del evento seleccionado; en consola, con la opción «Agregar evento a Google o Apple Calendar». Un artista solo puede hacerlo con sus propios eventos.
+
+El gestor recibe el calendario como parámetro de `agregarACalendario`, una interfaz `Calendario`, y verifica el permiso `AGREGAR_A_CALENDARIO` antes de delegar. No usa claves de API ni guarda credenciales.
+
+| Calendario | Cómo funciona |
+|---|---|
+| `CalendarioGoogle` | Abre en el navegador el enlace oficial «agregar evento» de Google Calendar con título, fechas, descripción y lugar ya cargados; la persona confirma con su cuenta |
+| `CalendarioApple` | Genera un archivo `.ics` (iCalendar) y lo abre con la aplicación de calendario del sistema, que ofrece agregarlo; también sirve para cualquier calendario que importe `.ics` |
+
+Las fechas del evento no tienen zona horaria: Google las toma en la zona del equipo y el `.ics` las deja en hora local. Si el equipo no puede abrir el navegador o la aplicación, se informa el motivo.
+
+## 12. Diagramas
 
 Los diagramas de clases y de secuencia están actualizados al diseño actual y se generan con PlantUML. Los archivos `.puml` con su código fuente están en `TP/Grupo9_POO_Diagramas_Pdf/fuentes`, y los PDF listos para presentar, con su versión oscura, en `TP/Grupo9_POO_Diagramas_Pdf`.
 
 | Diagrama | Contenido |
 |---|---|
-| Diagrama de clase | Tres páginas: modelo, controlador con persistencia y avisos, y vistas |
+| Diagrama de clase | Tres páginas: modelo, controlador con persistencia, avisos y calendarios, y vistas |
 | Diagrama de secuencia | Solicitar ingreso a un evento, con control de sesión y permisos, registro del intento y aviso al usuario |
 
 ### Modelo
@@ -348,7 +362,7 @@ Para regenerarlos, desde `TP/Grupo9_POO_Diagramas_Pdf/fuentes`:
 java -jar plantuml.jar -charset UTF-8 -tpdf *.puml
 ```
 
-## 12. Ejecución
+## 13. Ejecución
 
 Desde `TP/Grupo9_POO_EntregaFinal/Codigo/src`:
 

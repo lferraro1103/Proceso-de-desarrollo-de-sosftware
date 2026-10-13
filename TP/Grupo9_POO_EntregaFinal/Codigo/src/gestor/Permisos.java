@@ -29,6 +29,7 @@ public class Permisos {
                 Accion.SOLICITAR_INGRESO,
                 Accion.VER_EVENTOS,
                 Accion.VER_CAPACIDAD,
+                Accion.AGREGAR_A_CALENDARIO,
                 Accion.VER_MIS_REGISTROS,
                 Accion.ABRIR_INTERFAZ_GRAFICA
         ));
@@ -44,6 +45,7 @@ public class Permisos {
                 Accion.CANCELAR_EVENTO,
                 Accion.VER_CONECTADOS,
                 Accion.VER_CAPACIDAD,
+                Accion.AGREGAR_A_CALENDARIO,
                 Accion.ABRIR_INTERFAZ_GRAFICA
         ));
 
