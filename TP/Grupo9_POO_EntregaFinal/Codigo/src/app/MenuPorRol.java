@@ -2,7 +2,8 @@ package app;
 
 import gestor.Accion;
 import excepciones.PermisoDenegadoException;
-import gestor.GestorEventosEnVivo;
+import excepciones.PersistenciaException;
+import gestor.ServicioEventos;
 
 import java.util.List;
 import java.util.Scanner;
@@ -21,7 +22,7 @@ public final class MenuPorRol {
     }
 
     // Muestra el menu y ejecuta opciones hasta que se cierra la sesion.
-    public static void ejecutar(Scanner scanner, GestorEventosEnVivo gestor) {
+    public static void ejecutar(Scanner scanner, ServicioEventos gestor) {
 
         while (true) {
             // Si los datos se recargaron y la cuenta ya no existe o no esta
@@ -60,12 +61,14 @@ public final class MenuPorRol {
                 ejecutarAccion(accion, scanner, gestor);
             } catch (PermisoDenegadoException e) {
                 System.out.println("Accion no permitida: " + e.getMessage());
+            } catch (PersistenciaException e) {
+                System.out.println(e.getMessage());
             }
         }
     }
 
     // Imprime las acciones permitidas numeradas, mas la salida de sesion.
-    private static void mostrarMenu(GestorEventosEnVivo gestor,
+    private static void mostrarMenu(ServicioEventos gestor,
                                     List<Accion> acciones) {
 
         System.out.println("\n===== MENU "
@@ -83,7 +86,7 @@ public final class MenuPorRol {
     // Deriva cada accion a la operacion de consola que la implementa.
     private static void ejecutarAccion(Accion accion,
                                        Scanner scanner,
-                                       GestorEventosEnVivo gestor) {
+                                       ServicioEventos gestor) {
 
         switch (accion) {
             case REGISTRAR_USUARIO:
@@ -142,12 +145,6 @@ public final class MenuPorRol {
                 break;
             case VER_MIS_REGISTROS:
                 MenuAcciones.listarMisRegistros(gestor);
-                break;
-            case GUARDAR_DATOS:
-                MenuAcciones.guardarDatos(gestor);
-                break;
-            case CARGAR_DATOS:
-                MenuAcciones.cargarDatos(gestor);
                 break;
             case ABRIR_INTERFAZ_GRAFICA:
                 MenuAcciones.abrirInterfazGrafica(gestor);

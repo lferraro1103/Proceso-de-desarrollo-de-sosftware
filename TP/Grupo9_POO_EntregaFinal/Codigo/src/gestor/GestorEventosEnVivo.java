@@ -2,6 +2,7 @@ package gestor;
 
 import excepciones.AccesoDenegadoException;
 import excepciones.PermisoDenegadoException;
+import excepciones.PersistenciaException;
 import modelo.Artista;
 import modelo.Cuenta;
 import modelo.DatosRecital;
@@ -29,7 +30,7 @@ import java.util.List;
  *
  * Con esto se evita que Main concentre reglas de negocio.
  */
-public class GestorEventosEnVivo {
+public class GestorEventosEnVivo implements ServicioEventos {
 
     // Eventos administrados por el modulo.
     private List<Evento> eventos;
@@ -49,11 +50,16 @@ public class GestorEventosEnVivo {
     // Sesion actual y permisos de la cuenta.
     private ControlSesion sesion;
 
+    // Direccion donde se publica el calendario de cada evento.
+    private PublicadorCalendario publicador;
+
     // Constructor: inicializa las colecciones y recibe sus colaboradores.
     public GestorEventosEnVivo(Persistencia persistencia,
-                               Notificador notificador) {
+                               Notificador notificador,
+                               PublicadorCalendario publicador) {
 
         this.persistencia = persistencia;
+        this.publicador = publicador;
         eventos = new ArrayList<>();
         usuariosRegistrados = new ArrayList<>();
         artistasRegistrados = new ArrayList<>();
@@ -61,14 +67,19 @@ public class GestorEventosEnVivo {
         sesion = new ControlSesion();
     }
 
-    // Guarda los datos usando la persistencia recibida.
-    public void guardarDatos() throws IOException {
-        persistencia.guardar(this);
-    }
-
-    // Carga los datos usando la persistencia recibida.
+    // Carga los datos usando la persistencia recibida. Se usa al arrancar.
     public void cargarDatos() throws IOException {
         persistencia.cargar(this);
+    }
+
+    // Guarda los datos. Cada operacion que modifica el sistema lo invoca.
+    public void guardarDatos() {
+        try {
+            persistencia.guardar(this);
+        } catch (IOException e) {
+            throw new PersistenciaException(
+                    "No se pudieron guardar los datos: " + e.getMessage(), e);
+        }
     }
 
     // Agrega un recital al gestor.
@@ -130,6 +141,7 @@ public class GestorEventosEnVivo {
      *
      * Devuelve el usuario creado o null si el nombre de usuario ya existe.
      */
+    @Override
     public Usuario registrarUsuario(String nombreUsuario,
                                     String nombre,
                                     String apellido,
@@ -150,7 +162,12 @@ public class GestorEventosEnVivo {
                 true
         );
 
-        return registrarUsuario(usuario) ? usuario : null;
+        if (!registrarUsuario(usuario)) {
+            return null;
+        }
+
+        guardarDatos();
+        return usuario;
     }
 
     /*
@@ -159,6 +176,7 @@ public class GestorEventosEnVivo {
      * Devuelve el artista creado o null si el nombre de cuenta ya existe
      * (los nombres de cuenta son unicos entre usuarios y artistas).
      */
+    @Override
     public Artista registrarArtista(String nombreUsuario,
                                     String contrasena,
                                     String nombreArtistico,
@@ -183,10 +201,12 @@ public class GestorEventosEnVivo {
         );
 
         registrarArtista(artista);
+        guardarDatos();
         return artista;
     }
 
     // Da de alta un recital nuevo asociado a un artista y lo devuelve.
+    @Override
     public RecitalEnVivo crearEvento(DatosRecital datos, Artista artista) {
         sesion.exigir(Accion.CREAR_EVENTO);
 
@@ -200,6 +220,7 @@ public class GestorEventosEnVivo {
 
         RecitalEnVivo recital = new RecitalEnVivo(siguienteIdEvento(), datos);
         crearEvento(recital, artista);
+        guardarDatos();
         return recital;
     }
 
@@ -255,6 +276,7 @@ public class GestorEventosEnVivo {
      * Eventos que la cuenta actual puede consultar: el administrador y los
      * usuarios ven todos; un artista ve solamente los suyos.
      */
+    @Override
     public List<Evento> listarEventosVisibles() {
         List<Evento> visibles = new ArrayList<>();
 
@@ -268,12 +290,14 @@ public class GestorEventosEnVivo {
     }
 
     // Busca un evento por ID entre los visibles para la cuenta actual.
+    @Override
     public Evento buscarEventoVisible(int id) {
         Evento evento = buscarEventoPorId(id);
         return (evento != null && esVisible(evento)) ? evento : null;
     }
 
     // Registros de acceso de la cuenta actual.
+    @Override
     public List<RegistroAcceso> listarMisRegistros() {
         sesion.exigir(Accion.VER_MIS_REGISTROS);
 
@@ -316,22 +340,30 @@ public class GestorEventosEnVivo {
         return false;
     }
 
+    // Los datos de un gestor local siempre estan al dia.
+    @Override
+    public void actualizar() {
+    }
+
     // Devuelve copia de todos los eventos administrados.
     public List<Evento> listarEventos() {
         return new ArrayList<>(eventos);
     }
 
     // Devuelve copia de los usuarios registrados.
+    @Override
     public List<Usuario> listarUsuarios() {
         return new ArrayList<>(usuariosRegistrados);
     }
 
     // Devuelve copia de los artistas registrados.
+    @Override
     public List<Artista> listarArtistas() {
         return new ArrayList<>(artistasRegistrados);
     }
 
     // Devuelve copia de los registros de acceso.
+    @Override
     public List<RegistroAcceso> listarRegistros() {
         return controlAcceso.listar();
     }
@@ -388,6 +420,7 @@ public class GestorEventosEnVivo {
     }
 
     // Busca un usuario por ID. Si no existe, devuelve null.
+    @Override
     public Usuario buscarUsuarioPorId(int id) {
         for (Usuario usuario : usuariosRegistrados) {
             if (usuario.getId() == id) {
@@ -399,6 +432,7 @@ public class GestorEventosEnVivo {
     }
 
     // Verifica si ya existe un usuario con ese nombre de cuenta.
+    @Override
     public boolean existeNombreUsuario(String nombreUsuario) {
         return buscarCuentaPorNombreUsuario(nombreUsuario) != null;
     }
@@ -431,6 +465,7 @@ public class GestorEventosEnVivo {
      *
      * Devuelve la cuenta autenticada o lanza la excepcion con el motivo.
      */
+    @Override
     public Cuenta iniciarSesion(String nombreUsuario, String contrasena)
             throws AccesoDenegadoException {
 
@@ -452,22 +487,36 @@ public class GestorEventosEnVivo {
         return cuenta;
     }
 
+    /*
+     * Abre la sesion de una cuenta ya autenticada por otro medio, sin pedir
+     * la contrasena. Lo usa el servidor, que valida el token de cada pedido,
+     * y la copia local de un cliente remoto. No esta en ServicioEventos: las
+     * vistas no pueden saltarse el login.
+     */
+    public void asumirSesion(Cuenta cuenta) {
+        sesion.iniciar(cuenta);
+    }
+
     // Cierra la sesion actual.
+    @Override
     public void cerrarSesion() {
         sesion.cerrar();
     }
 
     // Cuenta con sesion iniciada, o null.
+    @Override
     public Cuenta getCuentaActual() {
         return sesion.getCuentaActual();
     }
 
     // Indica si la cuenta actual puede ejecutar la accion.
+    @Override
     public boolean puede(Accion accion) {
         return sesion.permite(accion);
     }
 
     // Acciones que puede ejecutar la cuenta actual.
+    @Override
     public List<Accion> accionesPermitidas() {
         return sesion.accionesPermitidas();
     }
@@ -477,8 +526,18 @@ public class GestorEventosEnVivo {
      * actual. El permiso se verifica aca; el calendario concreto llega como
      * parametro.
      */
+    @Override
     public void vincularCalendario(int idEvento, VinculoCalendario vinculo)
             throws IOException {
+        vinculo.vincular(urlCalendario(idEvento));
+    }
+
+    /*
+     * Direccion donde se publica el calendario de un evento visible para la
+     * cuenta actual. Tambien la usa el servidor cuando un cliente remoto
+     * pide suscribirse.
+     */
+    public String urlCalendario(int idEvento) throws IOException {
         sesion.exigir(Accion.VINCULAR_CALENDARIO);
 
         Evento evento = buscarEventoVisible(idEvento);
@@ -487,7 +546,7 @@ public class GestorEventosEnVivo {
             throw new IllegalArgumentException("Evento inexistente.");
         }
 
-        vinculo.vincular(sesion.getCuentaActual(), evento);
+        return publicador.urlFeed(sesion.getCuentaActual(), evento);
     }
 
     /*
@@ -501,6 +560,7 @@ public class GestorEventosEnVivo {
     }
 
     // Busca un artista por ID. Si no existe, devuelve null.
+    @Override
     public Artista buscarArtistaPorId(int id) {
         for (Artista artista : artistasRegistrados) {
             if (artista.getId() == id) {
@@ -518,22 +578,31 @@ public class GestorEventosEnVivo {
      * iniciarEvento/pausarEvento/etc directamente sobre el Evento: el
      * gestor es quien recibe el pedido, busca el evento y coordina.
      */
+    @Override
     public void iniciarEvento(int idEvento) throws AccesoDenegadoException {
         buscarEventoParaCambio(idEvento, Accion.INICIAR_EVENTO).iniciarEvento();
+        guardarDatos();
     }
 
+    @Override
     public void pausarEvento(int idEvento) throws AccesoDenegadoException {
         buscarEventoParaCambio(idEvento, Accion.PAUSAR_EVENTO).pausarEvento();
+        guardarDatos();
     }
 
+    @Override
     public void reanudarEvento(int idEvento) throws AccesoDenegadoException {
         buscarEventoParaCambio(idEvento, Accion.REANUDAR_EVENTO).reanudarEvento();
+        guardarDatos();
     }
 
+    @Override
     public void finalizarEvento(int idEvento) throws AccesoDenegadoException {
         buscarEventoParaCambio(idEvento, Accion.FINALIZAR_EVENTO).finalizarEvento();
+        guardarDatos();
     }
 
+    @Override
     public void cancelarEvento(int idEvento) throws AccesoDenegadoException {
         Evento evento = buscarEventoParaCambio(idEvento, Accion.CANCELAR_EVENTO);
 
@@ -545,6 +614,7 @@ public class GestorEventosEnVivo {
         }
 
         evento.cancelarEvento();
+        guardarDatos();
     }
 
     private Evento buscarEventoParaCambio(int idEvento, Accion accion)
@@ -574,6 +644,7 @@ public class GestorEventosEnVivo {
     }
 
     // Caso de uso principal: solicitar ingreso a un evento.
+    @Override
     public RegistroAcceso solicitarIngreso(int idUsuario, int idEvento) {
         sesion.exigir(Accion.SOLICITAR_INGRESO);
 
@@ -585,9 +656,13 @@ public class GestorEventosEnVivo {
                     "Un usuario solo puede solicitar ingreso a su nombre.");
         }
 
-        return controlAcceso.procesarIngreso(
+        RegistroAcceso registro = controlAcceso.procesarIngreso(
                 buscarUsuarioPorId(idUsuario),
                 buscarEventoPorId(idEvento));
+
+        // Tambien los intentos rechazados quedan registrados.
+        guardarDatos();
+        return registro;
     }
 
     /*
@@ -599,6 +674,7 @@ public class GestorEventosEnVivo {
      *
      * Devuelve el usuario con su nuevo estado, o null si no existe.
      */
+    @Override
     public Usuario alternarActivo(int idUsuario) {
         sesion.exigir(Accion.ACTIVAR_DESACTIVAR_USUARIO);
 
@@ -610,6 +686,7 @@ public class GestorEventosEnVivo {
 
         if (!usuario.isActivo()) {
             usuario.activar();
+            guardarDatos();
             return usuario;
         }
 
@@ -629,6 +706,7 @@ public class GestorEventosEnVivo {
             }
         }
 
+        guardarDatos();
         return usuario;
     }
 
@@ -642,6 +720,7 @@ public class GestorEventosEnVivo {
      * Ademas deja trazabilidad de la expulsion en RegistroAcceso, igual
      * que se hace con los intentos de ingreso.
      */
+    @Override
     public Usuario expulsarUsuario(int idEvento, int idUsuario) {
         sesion.exigir(Accion.EXPULSAR_USUARIO);
 
@@ -656,6 +735,7 @@ public class GestorEventosEnVivo {
 
             evento.expulsarUsuario(usuario);
             controlAcceso.registrarExpulsion(usuario, evento);
+            guardarDatos();
             return usuario;
         }
 

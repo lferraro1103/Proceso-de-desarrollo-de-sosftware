@@ -1,7 +1,7 @@
 package ui;
 
 import excepciones.AccesoDenegadoException;
-import gestor.GestorEventosEnVivo;
+import gestor.ServicioEventos;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -23,7 +23,7 @@ import java.awt.Insets;
  */
 public class VentanaLogin extends JFrame {
 
-    private final GestorEventosEnVivo gestor;
+    private final ServicioEventos gestor;
 
     private final JTextField campoUsuario = new JTextField(16);
     private final JPasswordField campoContrasena = new JPasswordField(16);
@@ -31,7 +31,7 @@ public class VentanaLogin extends JFrame {
     // Muestra el motivo cuando el login falla.
     private final JLabel mensaje = new JLabel(" ");
 
-    public VentanaLogin(GestorEventosEnVivo gestor) {
+    public VentanaLogin(ServicioEventos gestor) {
         this.gestor = gestor;
 
         setTitle("UADE Beats: iniciar sesion");

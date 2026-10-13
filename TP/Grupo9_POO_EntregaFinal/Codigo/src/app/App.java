@@ -1,9 +1,8 @@
 package app;
 
-import gestor.GestorEventosEnVivo;
-import notificacion.NotificadorInactivo;
-import persistencia.PersistenciaArchivos;
+import gestor.ServicioEventos;
 
+import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -22,17 +21,13 @@ import java.util.Scanner;
 public class App {
 
     // Punto de entrada del programa.
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         // Scanner permite leer datos ingresados por consola.
         Scanner scanner = new Scanner(System.in);
 
         // Gestor central del modulo: administra eventos, usuarios y registros.
-        GestorEventosEnVivo gestor = new GestorEventosEnVivo(
-                new PersistenciaArchivos(), new NotificadorInactivo());
-
-        // Carga usuarios, artistas y recitales iniciales para poder probar.
-        DatosIniciales.cargar(gestor);
+        ServicioEventos gestor = Arranque.iniciarServidor(false);
 
         try {
             int modo = elegirModo(scanner);
@@ -89,7 +84,7 @@ public class App {
      * persona eligio salir del programa.
      */
     private static boolean iniciarSesion(Scanner scanner,
-                                         GestorEventosEnVivo gestor) {
+                                         ServicioEventos gestor) {
 
         while (true) {
             System.out.println("\n===== INICIAR SESION =====");

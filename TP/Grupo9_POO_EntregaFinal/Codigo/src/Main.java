@@ -7,7 +7,7 @@
  */
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws java.io.IOException {
         // Mantengo este Main para que el proyecto pueda ejecutarse como antes.
         // La aplicacion real esta en app.App.
         app.App.main(args);

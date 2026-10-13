@@ -1,27 +1,18 @@
 package calendario;
 
-import gestor.GestorEventosEnVivo;
 import gestor.VinculoCalendario;
-import modelo.Cuenta;
-import modelo.Evento;
 
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 
 /*
- * Suscribe Apple Calendar a un evento.
+ * Suscribe Apple Calendar a la direccion de un evento.
  *
  * Abre un enlace webcal://; el sistema lo entrega a Calendario, que muestra
  * la ventana de suscripcion. Despues se actualiza solo.
  */
 public class VinculoApple implements VinculoCalendario {
-
-    private final GestorEventosEnVivo gestor;
-
-    public VinculoApple(GestorEventosEnVivo gestor) {
-        this.gestor = gestor;
-    }
 
     @Override
     public String getNombre() {
@@ -29,16 +20,8 @@ public class VinculoApple implements VinculoCalendario {
     }
 
     @Override
-    public void vincular(Cuenta cuenta, Evento evento) throws IOException {
-        String enlace = ServidorCalendario.obtener(gestor).urlWebcal(cuenta, evento);
-
-        // Calendar convierte webcal:// en https:// y el servidor local solo
-        // habla http, por lo que la suscripcion nunca se completa.
-        if (ServidorCalendario.obtener(gestor).esLocal()) {
-            throw new IOException("Apple Calendar se suscribe por https y esta "
-                    + "direccion es local. Exponga el puerto con un tunel y "
-                    + "ejecute con -Duadebeats.url=https://su-direccion.");
-        }
+    public void vincular(String urlFeed) throws IOException {
+        String enlace = urlFeed.replaceFirst("^https?://", "webcal://");
 
         // En Mac se llama a la app Calendario de forma explicita: el
         // navegador predeterminado puede quedarse con los enlaces webcal.

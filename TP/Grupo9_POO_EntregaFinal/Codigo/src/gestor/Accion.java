@@ -28,8 +28,6 @@ public enum Accion {
     EXPULSAR_USUARIO("Expulsar usuario de un evento"),
     VER_REGISTROS("Ver registros de acceso"),
     VER_MIS_REGISTROS("Ver mis registros de acceso"),
-    GUARDAR_DATOS("Guardar datos en archivos TXT"),
-    CARGAR_DATOS("Cargar datos desde archivos TXT"),
     ABRIR_INTERFAZ_GRAFICA("Abrir interfaz grafica Swing");
 
     // Texto que se muestra en el menu.

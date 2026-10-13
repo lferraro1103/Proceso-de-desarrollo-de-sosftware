@@ -3,7 +3,7 @@ package app;
 import excepciones.AccesoDenegadoException;
 import calendario.VinculoApple;
 import calendario.VinculoGoogle;
-import gestor.GestorEventosEnVivo;
+import gestor.ServicioEventos;
 import gestor.VinculoCalendario;
 import modelo.Artista;
 import modelo.Cuenta;
@@ -40,7 +40,7 @@ public final class MenuAcciones {
      * Pide nombre de cuenta y contrasena y deja la validacion al gestor.
      * Devuelve la cuenta autenticada, o null si no pudo iniciar sesion.
      */
-    public static Cuenta login(Scanner scanner, GestorEventosEnVivo gestor) {
+    public static Cuenta login(Scanner scanner, ServicioEventos gestor) {
         System.out.print("Ingrese nombre de usuario: ");
         String nombreUsuario = scanner.nextLine().trim();
 
@@ -66,7 +66,7 @@ public final class MenuAcciones {
      * dentro del gestor.
      */
     public static void registrarUsuario(Scanner scanner,
-                                        GestorEventosEnVivo gestor) {
+                                        ServicioEventos gestor) {
 
         // Lee y valida el nombre de cuenta.
         String nombreUsuario = leerNombreUsuarioNuevo(scanner, gestor);
@@ -114,8 +114,6 @@ public final class MenuAcciones {
         System.out.println("Usuario registrado correctamente.");
         System.out.println("ID asignado: " + nuevoUsuario.getId());
 
-        // Persiste de una para no perder el alta si se cierra sin guardar.
-        guardarSilencioso(gestor);
     }
 
     /*
@@ -125,7 +123,7 @@ public final class MenuAcciones {
      * el motivo por consola.
      */
     private static String leerNombreUsuarioNuevo(Scanner scanner,
-                                                 GestorEventosEnVivo gestor) {
+                                                 ServicioEventos gestor) {
 
         System.out.print("Ingrese nombre de usuario: ");
         String nombreUsuario = scanner.nextLine().trim();
@@ -162,7 +160,7 @@ public final class MenuAcciones {
      * El artista queda disponible para ser seleccionado al crear eventos.
      */
     public static void registrarArtista(Scanner scanner,
-                                        GestorEventosEnVivo gestor) {
+                                        ServicioEventos gestor) {
 
         System.out.print("Ingrese nombre de cuenta del artista: ");
         String nombreUsuario = scanner.nextLine().trim();
@@ -203,8 +201,6 @@ public final class MenuAcciones {
         System.out.println("Artista registrado correctamente.");
         System.out.println("ID asignado: " + artista.getId());
 
-        // Persiste de una para no perder el alta si se cierra sin guardar.
-        guardarSilencioso(gestor);
     }
 
     /*
@@ -214,7 +210,7 @@ public final class MenuAcciones {
      * El gestor lo crea usando la relacion con Artista.
      */
     public static void crearEventoManual(Scanner scanner,
-                                         GestorEventosEnVivo gestor) {
+                                         ServicioEventos gestor) {
 
         // Paso 1: un artista crea el evento a su nombre; el administrador
         // elige el artista que va a estar asociado.
@@ -283,7 +279,6 @@ public final class MenuAcciones {
         System.out.println("ID asignado: " + recital.getId());
         System.out.println("Artista asociado: "
                 + artista.getNombreArtistico());
-        guardarSilencioso(gestor);
     }
 
     /*
@@ -293,7 +288,7 @@ public final class MenuAcciones {
      * en ambos casos ya se informo el motivo por consola.
      */
     private static Artista seleccionarArtistaParaEvento(
-            Scanner scanner, GestorEventosEnVivo gestor) {
+            Scanner scanner, ServicioEventos gestor) {
 
         if (gestor.listarArtistas().isEmpty()) {
             System.out.println(
@@ -338,7 +333,7 @@ public final class MenuAcciones {
     }
 
     // Lista todos los artistas registrados en el gestor.
-    public static void listarArtistas(GestorEventosEnVivo gestor) {
+    public static void listarArtistas(ServicioEventos gestor) {
         System.out.println("\nArtistas registrados:");
 
         for (Artista artista : gestor.listarArtistas()) {
@@ -375,7 +370,7 @@ public final class MenuAcciones {
     }
 
     // Lista todos los usuarios registrados en el gestor.
-    public static void listarUsuarios(GestorEventosEnVivo gestor) {
+    public static void listarUsuarios(ServicioEventos gestor) {
         System.out.println("\nUsuarios registrados:");
 
         // El toString() de Usuario define como se muestra cada usuario.
@@ -385,7 +380,7 @@ public final class MenuAcciones {
     }
 
     // Lista todos los eventos administrados por el gestor.
-    public static void listarEventos(GestorEventosEnVivo gestor) {
+    public static void listarEventos(ServicioEventos gestor) {
         System.out.println("\nEventos:");
 
         // El toString() de Evento/RecitalEnVivo define el formato de salida.
@@ -401,7 +396,7 @@ public final class MenuAcciones {
      * La logica real la ejecuta gestor.solicitarIngreso().
      */
     public static void solicitarIngreso(Scanner scanner,
-                                        GestorEventosEnVivo gestor) {
+                                        ServicioEventos gestor) {
 
         // Un usuario solicita el ingreso con su propia cuenta; el
         // administrador elige a nombre de quien lo hace.
@@ -429,13 +424,12 @@ public final class MenuAcciones {
         }
 
         // El intento, exitoso o no, queda registrado: se guarda.
-        guardarSilencioso(gestor);
     }
 
 
     // Lista usuarios conectados a un evento puntual.
     public static void listarConectados(Scanner scanner,
-                                        GestorEventosEnVivo gestor) {
+                                        ServicioEventos gestor) {
 
         // Pide ID del evento a consultar.
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
@@ -464,7 +458,7 @@ public final class MenuAcciones {
 
     // Expulsa un usuario conectado a un evento.
     public static void expulsarUsuario(Scanner scanner,
-                                       GestorEventosEnVivo gestor) {
+                                       ServicioEventos gestor) {
 
         // Muestra solo eventos activos, porque no se expulsa desde pausados.
         // Reutiliza listarEventosParaCambio con la accion "expulsar" en vez
@@ -511,7 +505,6 @@ public final class MenuAcciones {
             System.out.println("Se notifico a "
                     + usuarioExpulsado.getNombreCompleto()
                     + " que fue expulsado del evento.");
-            guardarSilencioso(gestor);
         } else {
             System.out.println("Usuario no encontrado en el evento.");
         }
@@ -537,7 +530,7 @@ public final class MenuAcciones {
 
     // Muestra capacidad usada y capacidad maxima de un evento.
     public static void mostrarCapacidad(Scanner scanner,
-                                        GestorEventosEnVivo gestor) {
+                                        ServicioEventos gestor) {
 
         // Pide ID del evento.
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
@@ -559,7 +552,7 @@ public final class MenuAcciones {
 
     // Suscribe un calendario externo a un evento.
     public static void vincularCalendario(Scanner scanner,
-                                          GestorEventosEnVivo gestor) {
+                                          ServicioEventos gestor) {
 
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
 
@@ -575,9 +568,9 @@ public final class MenuAcciones {
         VinculoCalendario vinculo;
 
         if (opcion == 1) {
-            vinculo = new VinculoGoogle(gestor);
+            vinculo = new VinculoGoogle();
         } else if (opcion == 2) {
-            vinculo = new VinculoApple(gestor);
+            vinculo = new VinculoApple();
         } else {
             System.out.println("Opcion invalida.");
             return;
@@ -602,7 +595,7 @@ public final class MenuAcciones {
      * - finalizar.
      */
     public static void cambiarEstadoEvento(Scanner scanner,
-                                           GestorEventosEnVivo gestor,
+                                           ServicioEventos gestor,
                                            String accion) {
 
         // Muestra solo los eventos que pueden recibir esa accion.
@@ -624,7 +617,6 @@ public final class MenuAcciones {
 
         try {
             ejecutarCambioDeEstado(gestor, idEvento, accion);
-            guardarSilencioso(gestor);
         } catch (AccesoDenegadoException e) {
             System.out.println("No se pudo cambiar el estado: "
                     + e.getMessage());
@@ -638,7 +630,7 @@ public final class MenuAcciones {
      * Controlador): esta clase no llama iniciarEvento/pausarEvento/etc
      * directamente sobre el Evento.
      */
-    private static void ejecutarCambioDeEstado(GestorEventosEnVivo gestor,
+    private static void ejecutarCambioDeEstado(ServicioEventos gestor,
                                                int idEvento,
                                                String accion)
             throws AccesoDenegadoException {
@@ -667,7 +659,7 @@ public final class MenuAcciones {
      * Esto evita, por ejemplo, que al pausar aparezcan eventos que todavia
      * estan PROGRAMADO o EN_ESPERA.
      */
-    private static boolean listarEventosParaCambio(GestorEventosEnVivo gestor,
+    private static boolean listarEventosParaCambio(ServicioEventos gestor,
                                                    String accion) {
 
         System.out.println("\nEventos disponibles para "
@@ -753,22 +745,9 @@ public final class MenuAcciones {
         return "modificar";
     }
 
-    /*
-     * Guarda sin mensaje de confirmacion. Se usa despues de cada cambio para
-     * que los datos no se pierdan si se cierra el programa sin guardar.
-     */
-    private static void guardarSilencioso(GestorEventosEnVivo gestor) {
-        try {
-            gestor.guardarDatos();
-        } catch (IOException e) {
-            System.out.println("No se pudieron guardar los datos: "
-                    + e.getMessage());
-        }
-    }
-
     // Activa o desactiva un usuario elegido por ID.
     public static void cambiarEstadoUsuario(Scanner scanner,
-                                            GestorEventosEnVivo gestor) {
+                                            ServicioEventos gestor) {
 
         listarUsuarios(gestor);
         int idUsuario = ConsoleIO.leerEntero(scanner, "Ingrese ID de usuario: ");
@@ -782,33 +761,10 @@ public final class MenuAcciones {
 
         System.out.println("Usuario " + usuario.getNombreUsuario()
                 + (usuario.isActivo() ? " activado." : " desactivado."));
-        guardarSilencioso(gestor);
-    }
-
-    // Guarda usuarios, artistas, eventos y registros en archivos TXT.
-    public static void guardarDatos(GestorEventosEnVivo gestor) {
-        try {
-            gestor.guardarDatos();
-            System.out.println("Datos guardados correctamente en carpeta datos.");
-        } catch (IOException e) {
-            System.out.println("No se pudieron guardar los datos: "
-                    + e.getMessage());
-        }
-    }
-
-    // Carga usuarios, artistas y eventos desde archivos TXT.
-    public static void cargarDatos(GestorEventosEnVivo gestor) {
-        try {
-            gestor.cargarDatos();
-            System.out.println("Datos cargados correctamente desde carpeta datos.");
-        } catch (IOException | RuntimeException e) {
-            System.out.println("No se pudieron cargar los datos: "
-                    + e.getMessage());
-        }
     }
 
     // Abre la ventana Swing reutilizando el mismo gestor del menu consola.
-    public static void abrirInterfazGrafica(GestorEventosEnVivo gestor) {
+    public static void abrirInterfazGrafica(ServicioEventos gestor) {
         SwingUtilities.invokeLater(() ->
                 new VentanaPrincipal(gestor, false).setVisible(true)
         );
@@ -817,7 +773,7 @@ public final class MenuAcciones {
     }
 
     // Lista los registros de acceso de la cuenta que inicio sesion.
-    public static void listarMisRegistros(GestorEventosEnVivo gestor) {
+    public static void listarMisRegistros(ServicioEventos gestor) {
         List<RegistroAcceso> registros = gestor.listarMisRegistros();
 
         if (registros.isEmpty()) {
@@ -832,7 +788,7 @@ public final class MenuAcciones {
     }
 
     // Lista todos los registros de acceso guardados por el gestor.
-    public static void listarRegistros(GestorEventosEnVivo gestor) {
+    public static void listarRegistros(ServicioEventos gestor) {
         // Pide una copia de los registros.
         List<RegistroAcceso> registros = gestor.listarRegistros();
 
