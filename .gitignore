@@ -1,1 +1,4 @@
 .planning/
+out/
+*.class
+.DS_Store
