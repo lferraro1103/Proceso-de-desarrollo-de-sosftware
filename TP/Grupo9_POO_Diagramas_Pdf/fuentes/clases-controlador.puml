@@ -1,0 +1,85 @@
+@startuml
+!include estilo.iuml
+title Diagrama de clases: controlador, persistencia y avisos
+
+class GestorEventosEnVivo {
+  +registrarUsuario(datos) : Usuario
+  +registrarArtista(datos) : Artista
+  +crearEvento(datos : DatosRecital, artista : Artista) : RecitalEnVivo
+  +iniciarSesion(nombreUsuario : String, contrasena : String) : Cuenta
+  +solicitarIngreso(idUsuario : int, idEvento : int) : RegistroAcceso
+  +expulsarUsuario(idEvento : int, idUsuario : int) : Usuario
+  +alternarActivo(idUsuario : int) : Usuario
+  +iniciarEvento(idEvento : int) : void
+  +pausarEvento(idEvento : int) : void
+  +reanudarEvento(idEvento : int) : void
+  +finalizarEvento(idEvento : int) : void
+  +cancelarEvento(idEvento : int) : void
+  +listarEventosVisibles() : List<Evento>
+  +guardarDatos() : void
+  +cargarDatos() : void
+}
+
+class ControlAcceso {
+  +procesarIngreso(usuario : Usuario, evento : Evento) : RegistroAcceso
+  +registrarExpulsion(usuario : Usuario, evento : Evento) : void
+  +listar() : List<RegistroAcceso>
+}
+
+class ControlSesion {
+  +iniciar(cuenta : Cuenta) : void
+  +cerrar() : void
+  +exigir(accion : Accion) : void
+  +exigirSiHaySesion(accion : Accion) : void
+  +permite(accion : Accion) : boolean
+}
+
+class Permisos {
+  +permite(tipo : TipoUsuario, accion : Accion) : boolean
+  +accionesPermitidas(tipo : TipoUsuario) : List<Accion>
+}
+
+enum Accion {
+  REGISTRAR_USUARIO
+  REGISTRAR_ARTISTA
+  CREAR_EVENTO
+  SOLICITAR_INGRESO
+  EXPULSAR_USUARIO
+  ACTIVAR_DESACTIVAR_USUARIO
+  ...
+}
+
+interface Persistencia {
+  +guardar(gestor : GestorEventosEnVivo) : void
+  +cargar(gestor : GestorEventosEnVivo) : void
+}
+
+interface Notificador {
+  +notificar(destinatario : Usuario, titulo : String, mensaje : String) : void
+}
+
+class PersistenciaArchivos {
+  usuarios.txt
+  artistas.txt
+  eventos.txt
+  registros_acceso.txt
+}
+
+class NotificadorInactivo {
+  en uso: no envia nada
+}
+
+class NotificadorNtfy {
+  preparada, sin activar
+}
+
+GestorEventosEnVivo --> ControlAcceso
+GestorEventosEnVivo --> ControlSesion
+GestorEventosEnVivo --> Persistencia
+ControlAcceso --> Notificador
+ControlSesion --> Permisos
+Permisos --> Accion
+PersistenciaArchivos ..|> Persistencia
+NotificadorInactivo ..|> Notificador
+NotificadorNtfy ..|> Notificador
+@enduml

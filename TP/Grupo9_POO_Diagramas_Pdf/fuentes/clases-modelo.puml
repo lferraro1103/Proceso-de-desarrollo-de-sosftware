@@ -1,0 +1,127 @@
+@startuml
+!include estilo.iuml
+title Diagrama de clases: modelo
+
+abstract class Cuenta {
+  -id : int
+  -nombreUsuario : String
+  -contrasena : String
+  -activo : boolean
+  -tipoUsuario : TipoUsuario
+  +iniciarSesion() : void
+  +validarContrasena(contrasena : String) : boolean
+  +activar() : void
+  +desactivar() : void
+  +cerrarSesion() : void
+}
+
+class Usuario {
+  -nombre : String
+  -apellido : String
+  -email : String
+  -planSuscripcion : PlanSuscripcion
+  +tieneAccesoPrioritario() : boolean
+}
+
+class Artista {
+  -nombreArtistico : String
+  -generoPrincipal : String
+  -biografia : String
+  -verificado : boolean
+  +crearEvento(evento : Evento) : void
+}
+
+enum TipoUsuario {
+  USUARIO
+  ADMINISTRADOR
+  ARTISTA
+}
+
+enum PlanSuscripcion {
+  FREE
+  PREMIUM
+  ARTIST_PASS
+  +cubre(planRequerido : PlanSuscripcion) : boolean
+}
+
+abstract class Evento {
+  -id : int
+  -titulo : String
+  -descripcion : String
+  -fechaHoraInicio : LocalDateTime
+  -fechaHoraFin : LocalDateTime
+  -capacidadMaxima : int
+  -artistas : List<Artista>
+  +iniciarEvento() : void
+  +pausarEvento() : void
+  +reanudarEvento() : void
+  +finalizarEvento() : void
+  +cancelarEvento() : void
+  +agregarArtista(artista : Artista) : void
+  +estaDentroDelHorario(momento : LocalDateTime) : boolean
+  {abstract} +getPlanMinimoRequerido() : PlanSuscripcion
+  {abstract} +permitirIngreso(usuario : Usuario) : void
+  {abstract} +expulsarUsuario(usuario : Usuario) : void
+  {abstract} +getUsuariosConectados() : Set<Usuario>
+}
+
+class RecitalEnVivo {
+  -planMinimoRequerido : PlanSuscripcion
+  -ubicacion : String
+  -esStreaming : boolean
+  -exclusivo : boolean
+  -usuariosConectados : Set<Usuario>
+  +verificarCapacidad() : boolean
+  +validarDisponibilidad(momento : LocalDateTime) : void
+  +restaurarConectado(usuario : Usuario) : void
+}
+
+enum EstadoEvento {
+  PROGRAMADO
+  EN_ESPERA
+  EN_CURSO
+  PAUSADO
+  FINALIZADO
+  CANCELADO
+  +permiteIniciar() : boolean
+  +permitePausar() : boolean
+  +permiteReanudar() : boolean
+  +permiteFinalizar() : boolean
+  +permiteCancelar() : boolean
+}
+
+class DatosRecital {
+  -titulo : String
+  -capacidadMaxima : int
+  -ubicacion : String
+}
+
+class AccesoEvento {
+  -usuario : Usuario
+  -evento : Evento
+  -planRequerido : PlanSuscripcion
+  +validarAutorizacion() : void
+  +validarPlan() : void
+}
+
+class RegistroAcceso {
+  -usuario : Usuario
+  -evento : Evento
+  -fechaHoraIngreso : LocalDateTime
+  -exitoso : boolean
+  -motivoRechazo : String
+}
+
+Cuenta <|-- Usuario
+Cuenta <|-- Artista
+Cuenta --> TipoUsuario
+Usuario --> PlanSuscripcion : plan
+Evento <|-- RecitalEnVivo
+Evento --> EstadoEvento : estado
+Evento "0..*" o-- "0..*" Artista : artistas
+RecitalEnVivo "1" o-- "0..*" Usuario : conectados
+RecitalEnVivo --> PlanSuscripcion : planMinimoRequerido
+RecitalEnVivo ..> DatosRecital : se construye con
+AccesoEvento --> Evento
+RegistroAcceso --> Evento
+@enduml
