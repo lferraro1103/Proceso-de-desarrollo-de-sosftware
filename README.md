@@ -187,7 +187,7 @@ Cada cuenta tiene un rol (`TipoUsuario`): usuario, artista o administrador. Al i
 | Solicitar ingreso a un evento | Solo a su nombre | No | Sí |
 | Ver eventos | Todos | Solo los propios | Todos |
 | Ver capacidad de un evento | Sí | Solo los propios | Sí |
-| Vincular mi calendario (Google o Apple) | Sí | Sí | Sí |
+| Agregar un evento a mi calendario (Google o Apple) | Sí | Solo los propios | Sí |
 | Ver sus registros de acceso | Sí | No | No |
 | Crear un evento | No | A su nombre | Sí |
 | Iniciar, pausar, reanudar, finalizar y cancelar un evento | No | Solo los propios | Cualquiera |
@@ -320,21 +320,21 @@ Por ahora el programa usa `NotificadorInactivo`, que no envía nada. Para entreg
 
 ## 11. Calendarios
 
-Cualquier cuenta puede vincular su calendario a Google Calendar o Apple Calendar, desde la pestaña de eventos de la ventana o desde el menú de consola.
+Cualquier cuenta puede llevar un evento a Google Calendar o Apple Calendar, desde la pestaña de eventos de la ventana o desde el menú de consola. Se suscribe únicamente el evento elegido, no el resto.
 
-La persona se suscribe una sola vez y sus eventos se mantienen al día solos: si un evento cambia de horario aparece el cambio, y si se cancela queda marcado como cancelado.
+La persona se suscribe una sola vez y ese evento se mantiene al día solo: si cambia de horario aparece el cambio, y si se cancela queda marcado como cancelado.
 
-1. En «Vincular mi calendario» toca Google Calendar o Apple Calendar.
+1. Selecciona un evento en la tabla y toca Google Calendar o Apple Calendar, en «Agregar el evento seleccionado a mi calendario».
 2. Se abre el navegador (Google) o la app Calendario (Apple) con la suscripción ya armada, y confirma allí.
-3. Desde ahí el calendario trae los eventos que le corresponden: todos si es administrador, los propios si es artista y aquellos a los que logró ingresar si es usuario.
+3. Puede repetirlo con otros eventos. Cada uno queda como un calendario aparte. Un artista solo puede hacerlo con sus propios eventos.
 
-Cómo funciona por dentro: `ServidorCalendario` (servidor HTTP del JDK, sin dependencias) publica en `/calendario/<código>.ics` el calendario de cada cuenta. El código es un HMAC de la cuenta con una clave que se guarda en `~/.uadebeats/calendario.key`, por lo que no se puede adivinar y no hace falta login; una cuenta desactivada deja de recibir su calendario. Los eventos se arman con `FormatoIcs`, con un `UID` fijo por evento y `STATUS:CANCELLED` cuando corresponde.
+Cómo funciona por dentro: `ServidorCalendario` (servidor HTTP del JDK, sin dependencias) publica en `/calendario/<código>/<id del evento>.ics` el calendario de un evento. El código es un HMAC de la cuenta con una clave que se guarda en `~/.uadebeats/calendario.key`, por lo que no se puede adivinar y no hace falta login. Responde 404 si la cuenta está desactivada, si el evento no existe o si la cuenta no puede verlo. El evento se arma con `FormatoIcs`, con un `UID` fijo y `STATUS:CANCELLED` cuando corresponde.
 
 Google y Apple se suscriben por https: Calendar convierte `webcal://` en `https://`, y Google además lee la dirección desde sus servidores. Por eso la dirección debe ser pública y con https. Se expone el puerto con un túnel (por ejemplo `cloudflared tunnel --url http://localhost:8765`) y se ejecuta con `-Duadebeats.url=https://<dirección del túnel>`. Con la dirección local se informa el motivo y no se abre nada.
 
 El puerto es 8765 y se cambia con `-Duadebeats.puerto`. Google actualiza una suscripción cada varias horas; Apple, en minutos.
 
-El gestor recibe el calendario como parámetro (`vincularCalendario`, con la interfaz `VinculoCalendario`) y verifica el permiso `VINCULAR_CALENDARIO` antes de delegar. No se guardan contraseñas ni claves de API.
+El gestor recibe el calendario como parámetro (`vincularCalendario`, con la interfaz `VinculoCalendario`) y verifica el permiso `VINCULAR_CALENDARIO` antes de delegar, y solo para eventos visibles para la cuenta. No se guardan contraseñas ni claves de API.
 
 ## 12. Diagramas
 

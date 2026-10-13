@@ -24,7 +24,7 @@ public enum Accion {
     SOLICITAR_INGRESO("Solicitar ingreso a evento"),
     VER_CONECTADOS("Ver usuarios conectados a un evento"),
     VER_CAPACIDAD("Ver capacidad de un evento"),
-    VINCULAR_CALENDARIO("Vincular mi calendario (Google o Apple)"),
+    VINCULAR_CALENDARIO("Agregar un evento a mi calendario (Google o Apple)"),
     EXPULSAR_USUARIO("Expulsar usuario de un evento"),
     VER_REGISTROS("Ver registros de acceso"),
     VER_MIS_REGISTROS("Ver mis registros de acceso"),

@@ -95,6 +95,8 @@ public class VentanaPrincipal extends JFrame {
     private final JButton finalizar = new JButton("Finalizar");
     private final JButton cancelar = new JButton("Cancelar");
     private final JButton verConectados = new JButton("Ver conectados");
+    private final JButton calendarioGoogle = new JButton("Google Calendar");
+    private final JButton calendarioApple = new JButton("Apple Calendar");
 
     // Etiqueta inferior para mostrar el resultado de la ultima accion.
     private JLabel estado;
@@ -370,11 +372,14 @@ public class VentanaPrincipal extends JFrame {
         filaGestion.add(crearBoton("Actualizar", this::actualizarListas));
 
         // Tercera fila: suscribir el calendario completo de la cuenta.
-        JPanel filaVinculo = crearFila("Vincular mi calendario (se actualiza solo)");
-        agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, crearBoton(
-                "Google Calendar", () -> vincularCalendario(new VinculoGoogle(gestor))));
-        agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, crearBoton(
-                "Apple Calendar", () -> vincularCalendario(new VinculoApple(gestor))));
+        JPanel filaVinculo = crearFila(
+                "Agregar el evento seleccionado a mi calendario (se actualiza solo)");
+        calendarioGoogle.addActionListener(e -> ejecutar(
+                () -> vincularCalendario(new VinculoGoogle(gestor))));
+        calendarioApple.addActionListener(e -> ejecutar(
+                () -> vincularCalendario(new VinculoApple(gestor))));
+        agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, calendarioGoogle);
+        agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, calendarioApple);
 
         JPanel acciones = new JPanel();
         acciones.setLayout(new BoxLayout(acciones, BoxLayout.Y_AXIS));
@@ -489,13 +494,16 @@ public class VentanaPrincipal extends JFrame {
         finalizar.setEnabled(estadoEvento != null && estadoEvento.permiteFinalizar());
         cancelar.setEnabled(estadoEvento != null && estadoEvento.permiteCancelar());
         verConectados.setEnabled(evento != null);
+        calendarioGoogle.setEnabled(evento != null);
+        calendarioApple.setEnabled(evento != null);
 
         String ayuda = (evento == null)
                 ? "Seleccione un evento de la tabla."
                 : "No disponible para el estado " + evento.getEstado() + ".";
 
         for (JButton boton : new JButton[] {iniciar, pausar, reanudar,
-                finalizar, cancelar, verConectados}) {
+                finalizar, cancelar, verConectados,
+                calendarioGoogle, calendarioApple}) {
             boton.setToolTipText(boton.isEnabled() ? null : ayuda);
         }
     }
@@ -551,12 +559,20 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    // Suscribe el calendario de la cuenta a sus eventos.
+    // Suscribe el calendario externo al evento seleccionado.
     private void vincularCalendario(VinculoCalendario vinculo) {
+        Evento evento = eventoSeleccionado();
+
+        if (evento == null) {
+            mostrarError("Seleccione un evento.");
+            return;
+        }
+
         try {
-            gestor.vincularCalendario(vinculo);
-            mostrarInfo("Se abrio " + vinculo.getNombre()
-                    + ". Confirme alli la suscripcion; despues se actualiza solo.");
+            gestor.vincularCalendario(evento.getId(), vinculo);
+            mostrarInfo("Se abrio " + vinculo.getNombre() + " con \""
+                    + evento.getTitulo() + "\". Confirme alli la suscripcion; "
+                    + "despues se actualiza solo.");
         } catch (IOException e) {
             mostrarError("No se pudo vincular: " + e.getMessage());
         }

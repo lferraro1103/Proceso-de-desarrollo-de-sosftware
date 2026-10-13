@@ -16,8 +16,8 @@ class GestorEventosEnVivo {
   +finalizarEvento(idEvento : int) : void
   +cancelarEvento(idEvento : int) : void
   +listarEventosVisibles() : List<Evento>
-  +vincularCalendario(vinculo : VinculoCalendario) : void
-  +eventosDeCuenta(cuenta : Cuenta) : List<Evento>
+  +vincularCalendario(idEvento : int, vinculo : VinculoCalendario) : void
+  +buscarEventoVisiblePara(cuenta : Cuenta, id : int) : Evento
   +guardarDatos() : void
   +cargarDatos() : void
 }
@@ -62,7 +62,7 @@ interface Notificador {
 
 interface VinculoCalendario {
   +getNombre() : String
-  +vincular(cuenta : Cuenta) : void
+  +vincular(cuenta : Cuenta, evento : Evento) : void
 }
 
 class PersistenciaArchivos {
@@ -85,8 +85,8 @@ class VinculoApple {
 }
 
 class ServidorCalendario {
-  publica el calendario de cada cuenta
-  en /calendario/codigo.ics
+  publica el calendario de cada evento
+  en /calendario/codigo/idEvento.ics
 }
 
 GestorEventosEnVivo --> ControlAcceso
