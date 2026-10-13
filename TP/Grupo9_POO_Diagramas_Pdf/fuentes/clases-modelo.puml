@@ -21,6 +21,7 @@ class Usuario {
   -email : String
   -planSuscripcion : PlanSuscripcion
   +tieneAccesoPrioritario() : boolean
+  {static} +desconocido() : Usuario
 }
 
 class Artista {
@@ -60,6 +61,9 @@ abstract class Evento {
   +agregarArtista(artista : Artista) : void
   +estaDentroDelHorario(momento : LocalDateTime) : boolean
   {abstract} +getPlanMinimoRequerido() : PlanSuscripcion
+  {abstract} +getUbicacion() : String
+  {abstract} +isStreaming() : boolean
+  {abstract} +isExclusivo() : boolean
   {abstract} +permitirIngreso(usuario : Usuario) : void
   {abstract} +expulsarUsuario(usuario : Usuario) : void
   {abstract} +getUsuariosConectados() : Set<Usuario>
@@ -74,6 +78,7 @@ class RecitalEnVivo {
   +verificarCapacidad() : boolean
   +validarDisponibilidad(momento : LocalDateTime) : void
   +restaurarConectado(usuario : Usuario) : void
+  {static} +desconocido() : RecitalEnVivo
 }
 
 enum EstadoEvento {

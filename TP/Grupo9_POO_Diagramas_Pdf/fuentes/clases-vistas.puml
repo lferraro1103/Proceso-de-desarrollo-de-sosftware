@@ -1,11 +1,16 @@
 @startuml
 !include estilo.iuml
-title Diagrama de clases: vistas
+title Diagrama de clases: vistas y arranque
+
+class App {
+  main() : modo completo, servidor o cliente
+}
+
+class Arranque {
+  arma el gestor y levanta el servidor
+}
 
 package "Consola" {
-  class App {
-    main() : elige consola o ventana
-  }
   class MenuPorRol {
     menu armado con las acciones permitidas del rol
   }
@@ -19,7 +24,7 @@ package "Consola" {
 
 package "Interfaz grafica (Swing)" {
   class AppSwing {
-    main() : abre el login
+    abre el login
   }
   class VentanaLogin {
     usuario y contrasena
@@ -35,18 +40,17 @@ package "Interfaz grafica (Swing)" {
   }
 }
 
-class DatosIniciales {
-  carga los datos al arrancar
-}
+class DatosIniciales
+interface ServicioEventos
+class GestorEventosEnVivo
+class GestorRemoto
 
-class GestorEventosEnVivo {
-  controlador: crea objetos, asigna IDs
-  y valida permisos
-}
-
+App --> Arranque : completo y servidor
+App --> GestorRemoto : cliente
 App --> MenuPorRol
-App --> AppSwing : opcion 1
-App --> DatosIniciales
+App --> AppSwing
+Arranque --> GestorEventosEnVivo
+Arranque --> DatosIniciales
 MenuPorRol --> MenuAcciones
 MenuAcciones --> ConsoleIO
 AppSwing --> VentanaLogin
@@ -54,7 +58,8 @@ VentanaLogin --> VentanaPrincipal
 VentanaLogin --> Logo
 VentanaPrincipal --> ModeloTabla
 VentanaPrincipal --> Logo
-MenuAcciones ..> GestorEventosEnVivo
-VentanaPrincipal ..> GestorEventosEnVivo
-DatosIniciales ..> GestorEventosEnVivo
+MenuAcciones ..> ServicioEventos
+VentanaPrincipal ..> ServicioEventos
+GestorEventosEnVivo ..|> ServicioEventos
+GestorRemoto ..|> ServicioEventos
 @enduml

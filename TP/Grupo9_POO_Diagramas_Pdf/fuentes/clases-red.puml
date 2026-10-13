@@ -1,0 +1,77 @@
+@startuml
+!include estilo.iuml
+title Diagrama de clases: servidor, API y cliente remoto
+
+package "Cliente" {
+  class GestorRemoto {
+    implementa ServicioEventos
+    copia local de lo que ve la cuenta
+  }
+  class ClienteHttp {
+    token y errores del servidor
+  }
+  class EstadoLocal {
+    objetos del modelo a partir de EstadoDto
+  }
+}
+
+package "API compartida" {
+  class Json
+  class EstadoDto {
+    cuenta, usuarios, artistas,
+    eventos y registros
+  }
+}
+
+package "Servidor" {
+  class ServidorHttp {
+    servidor HTTP del JDK
+  }
+  class ManejadorApi {
+    /api/
+  }
+  class ManejadorCalendario {
+    /calendario/
+  }
+  class Sesiones {
+    token de cada cliente
+  }
+  class Instantanea {
+    filtra lo visible segun el rol
+  }
+  class Conversor {
+    modelo a DTO, sin contrasenas
+  }
+  class PublicadorHttp {
+    implementa PublicadorCalendario
+  }
+  class CodigosCalendario {
+    HMAC de cada cuenta
+  }
+  class ConfiguracionServidor {
+    puerto, red y direccion publica
+  }
+}
+
+interface ServicioEventos
+class GestorEventosEnVivo
+
+GestorRemoto ..|> ServicioEventos
+GestorEventosEnVivo ..|> ServicioEventos
+GestorRemoto --> ClienteHttp
+GestorRemoto --> EstadoLocal
+ClienteHttp ..> Json
+EstadoLocal ..> EstadoDto
+ServidorHttp --> ManejadorApi
+ServidorHttp --> ManejadorCalendario
+ManejadorApi --> Sesiones
+ManejadorApi --> Instantanea
+ManejadorApi --> GestorEventosEnVivo
+Instantanea --> Conversor
+Instantanea ..> EstadoDto
+ManejadorCalendario --> CodigosCalendario
+ManejadorCalendario --> GestorEventosEnVivo
+PublicadorHttp --> CodigosCalendario
+PublicadorHttp --> ConfiguracionServidor
+ClienteHttp ..> ManejadorApi : HTTP + JSON
+@enduml

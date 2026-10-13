@@ -1,4 +1,4 @@
-# Iteración 3: principios SOLID
+# Iteración 4: base SQLite, API y modo cliente
 
 ![Logo de UADE Beats](logo.png)
 
@@ -6,295 +6,95 @@ Módulo: UADE Beats, acceso a eventos en vivo
 
 ## 1. Resumen
 
-La iteración aplica los cinco principios SOLID. A partir de la sección 7 se documentan los cambios complementarios incluidos en la entrega: la arquitectura Modelo Vista Controlador, el sistema de roles y permisos y la preparación de los avisos a los usuarios.
+Esta iteración reemplaza los archivos de texto por una base SQLite, agrega un servidor con una API HTTP y permite abrir el programa en otra PC como solo cliente. Parte de la iteración 3 (principios SOLID, arquitectura MVC y roles y permisos), que no cambia en su diseño.
 
-| Principio | Problema detectado | Solución aplicada |
-|---|---|---|
-| Responsabilidad única | `GestorEventosEnVivo` administraba usuarios, artistas y eventos, y además resolvía los ingresos y guardaba los registros de acceso | Nueva clase `ControlAcceso` con esa única responsabilidad |
-| Abierto y cerrado | El gestor y las vistas verificaban con `instanceof` que el evento fuera un `RecitalEnVivo` y lo convertían con un cast | `Evento` declara las operaciones de ingreso, expulsión y consulta de conectados, y los clientes trabajan con `Evento` |
-| Sustitución de Liskov | El gestor rechazaba cualquier evento que no fuera `RecitalEnVivo`, por lo que una subclase de `Evento` no podía reemplazar a un recital | Cualquier subclase de `Evento` puede usarse en el gestor y en las vistas sin modificarlos |
-| Segregación de interfaces | No había una interfaz con métodos que sus clientes no usaran | La nueva interfaz `Persistencia` tiene solo las dos operaciones que el gestor necesita |
-| Inversión de dependencias | El gestor y las vistas dependían de la clase concreta `PersistenciaArchivos` | El gestor depende de la interfaz `Persistencia`, que recibe por constructor |
-
-## 2. Responsabilidad única
-
-Antes, `GestorEventosEnVivo` concentraba dos responsabilidades distintas: administrar las colecciones de usuarios, artistas y eventos, y decidir si un usuario puede ingresar a un evento, dejando constancia de cada intento.
-
-`ControlAcceso` se encarga ahora de resolver cada solicitud de ingreso y de llevar la trazabilidad.
-
-| Clase | Responsabilidad |
+| Cambio | Qué se hizo |
 |---|---|
-| `GestorEventosEnVivo` | Altas, búsquedas, ciclo de vida de los eventos y expulsión. Delega la solicitud de ingreso. |
-| `ControlAcceso` | Validar el ingreso, crear el registro de cada intento, guardar los registros y registrar las expulsiones. |
+| Base de datos | Los TXT se reemplazan por una base SQLite. Cada tipo de dato tiene su repositorio y todo se guarda en una transacción. |
+| Servidor | El programa expone el gestor por una API HTTP con JSON. Cada pedido lleva el token de una sesión y el servidor filtra lo que ve cada rol. |
+| Modo cliente | Otra PC corre solo la interfaz, sin datos propios, y se conecta al servidor. La ventana y la consola son las mismas. |
+| Interfaces | Las vistas dependen de `ServicioEventos` y no del gestor concreto, de modo que usan igual un gestor local o uno remoto. |
+| Guardado | El gestor guarda después de cada cambio. Se quitan los botones y opciones de guardar y cargar. |
+| Calendarios | Una persona puede suscribir Google Calendar o Apple Calendar a un evento. El servidor publica el calendario de cada evento. |
+| Avisos | Se elimina la implementación de ntfy. Queda la interfaz `Notificador` con la implementación inactiva. |
 
-El gestor pasó de 521 a 385 líneas. La solicitud de ingreso en el gestor quedó reducida a buscar al usuario y al evento y delegar la decisión.
+## 2. Modos de ejecución
 
-```mermaid
-classDiagram
-    direction LR
-
-    class GestorEventosEnVivo {
-        +solicitarIngreso(idUsuario, idEvento) RegistroAcceso
-        +expulsarUsuario(idEvento, idUsuario) Usuario
-    }
-    class ControlAcceso {
-        +procesarIngreso(usuario, evento) RegistroAcceso
-        +registrarExpulsion(usuario, evento) void
-        +listar() List
-    }
-    class RegistroAcceso
-
-    GestorEventosEnVivo --> ControlAcceso : delega el ingreso
-    ControlAcceso --> RegistroAcceso : crea
-```
-
-## 3. Abierto y cerrado, y sustitución de Liskov
-
-Antes, para solicitar un ingreso o expulsar a un usuario, el gestor comprobaba el tipo concreto del evento:
-
-```java
-if (!(evento instanceof RecitalEnVivo)) {
-    // rechaza: "Tipo de evento no soportado por este modulo."
-}
-RecitalEnVivo recital = (RecitalEnVivo) evento;
-```
-
-Cada tipo nuevo de evento obligaba a modificar el gestor y las vistas, y ningún evento que no fuera un recital podía usarse. Ahora `Evento` declara las operaciones que sus clientes necesitan y cada subclase las implementa.
-
-| Operación declarada en `Evento` | Uso |
-|---|---|
-| `getPlanMinimoRequerido()` | Determinar el plan que exige el evento |
-| `permitirIngreso(usuario)` | Conectar al usuario o rechazar el ingreso |
-| `expulsarUsuario(usuario)` | Desconectar al usuario |
-| `getUsuariosConectados()` | Listar los usuarios conectados |
-| `getCantidadConectados()` | Mostrar la ocupación del evento |
-
-```mermaid
-classDiagram
-    direction TB
-
-    class Evento {
-        <<abstract>>
-        +getPlanMinimoRequerido() PlanSuscripcion
-        +permitirIngreso(usuario) void
-        +expulsarUsuario(usuario) void
-        +getUsuariosConectados() Set
-        +getCantidadConectados() int
-    }
-    class RecitalEnVivo
-    class GestorEventosEnVivo
-    class ControlAcceso
-
-    Evento <|-- RecitalEnVivo
-    GestorEventosEnVivo --> Evento : usa
-    ControlAcceso --> Evento : usa
-```
-
-El gestor, `ControlAcceso` y las vistas dependen solamente de `Evento`. Un tipo nuevo de evento se agrega creando una subclase, sin modificar ninguna de estas clases, y puede reemplazar a un recital en cualquier lugar donde se use un `Evento`.
-
-## 4. Segregación de interfaces
-
-Las interfaces del módulo son chicas y el gestor usa todas sus operaciones: `Persistencia` (guardar y cargar), `Notificador` (una operación) y `VinculoCalendario` (nombre y vincular). Ninguna clase que las implementa debe definir métodos que no necesita.
-
-## 5. Inversión de dependencias
-
-Antes, las vistas y el gestor invocaban directamente a la clase concreta `PersistenciaArchivos`. Ahora el gestor recibe por constructor una `Persistencia` y las vistas piden guardar o cargar al gestor.
-
-```mermaid
-classDiagram
-    direction LR
-
-    class GestorEventosEnVivo {
-        +guardarDatos() void
-        +cargarDatos() void
-    }
-    class Persistencia {
-        <<interface>>
-        +guardar(gestor) void
-        +cargar(gestor) void
-    }
-    class PersistenciaArchivos
-
-    GestorEventosEnVivo --> Persistencia : depende de
-    PersistenciaArchivos ..|> Persistencia : implementa
-```
-
-| Elemento | Antes | Después |
+| Modo | Comando | Qué hace |
 |---|---|---|
-| Creación del gestor | `new GestorEventosEnVivo()` | `new GestorEventosEnVivo(new PersistenciaArchivos())` |
-| Guardado desde las vistas | `PersistenciaArchivos.guardarDatos(gestor)` | `gestor.guardarDatos()` |
-| Carga desde las vistas | `PersistenciaArchivos.cargarDatos(gestor)` | `gestor.cargarDatos()` |
+| Completo | `Main` | Datos propios en SQLite, API para clientes remotos (solo accesible desde el mismo equipo) y ventana o consola local. |
+| Servidor | `Main servidor` | Solo datos y API, sin interfaz. Acepta conexiones de la red. Se deja corriendo en una PC. |
+| Cliente | `Main cliente http://192.168.0.10:8765` | Solo interfaz. No guarda nada: se conecta al servidor, inicia sesión allí y trabaja con lo que su rol puede ver. |
 
-La interfaz pertenece al paquete del gestor, que es el módulo de alto nivel. Para almacenar en otro medio alcanza con escribir una nueva clase que implemente `Persistencia` y pasarla al crear el gestor. El gestor recibe de la misma forma un `Notificador` para los avisos a los usuarios (sección 10).
+Los parámetros se pasan como propiedades de Java (`-D`):
 
-## 6. Alcance
-
-`PersistenciaArchivos` conserva una comprobación de tipo al guardar un evento, porque el formato de archivo incluye campos propios del recital. Esa decisión depende del formato de almacenamiento y no del flujo de negocio.
-
-## 7. Arquitectura Modelo Vista Controlador
-
-Las vistas, la de consola (`MenuAcciones`) y la ventana Swing (`VentanaPrincipal`), construían directamente los objetos del modelo y calculaban por su cuenta el identificador de cada entidad, con dos mecanismos distintos. Ahora la vista reúne los datos y el controlador crea el objeto y asigna el identificador.
-
-| Componente | Clases | Responsabilidad |
+| Propiedad | Valor por defecto | Uso |
 |---|---|---|
-| Modelo | Paquete `modelo` | Datos y reglas de negocio. No conoce la consola ni la ventana. |
-| Vista | `MenuAcciones`, `MenuPorRol` y `VentanaPrincipal` | Reunir los datos, verificar campos requeridos, mostrar resultados y enviar cada acción al controlador. |
-| Controlador | `GestorEventosEnVivo` | Recibir los pedidos de la vista, crear los objetos del modelo, asignar identificadores y devolver el resultado. |
+| `uadebeats.db` | `~/.uadebeats/uadebeats.db` | Archivo de la base SQLite. |
+| `uadebeats.puerto` | `8765` | Puerto del servidor. |
+| `uadebeats.escuchar` | `local` en modo completo, `todas` en modo servidor | `todas` acepta conexiones de la red. |
+| `uadebeats.url` | (ninguna) | Dirección pública con https por la que se alcanza el servidor, necesaria para los calendarios. |
+| `uadebeats.servidor` | (ninguna) | Dirección del servidor para el modo cliente, si no se la pasa como argumento. |
 
-| Operación del controlador | Datos que recibe | Resultado |
+![Diagrama de servidor, API y cliente](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-red.png)
+
+## 3. Patrones de diseño aplicados
+
+| Patrón | Dónde | Para qué |
 |---|---|---|
-| `registrarUsuario` | Nombre de cuenta, nombre, apellido, email, contraseña y plan | El usuario creado, o `null` si el nombre de cuenta ya existe |
-| `registrarArtista` | Nombre de cuenta, contraseña y datos artísticos | El artista creado, o `null` si el nombre de cuenta ya existe |
-| `crearEvento` | `DatosRecital` y artista asociado | El recital creado y asociado al artista |
+| Repository | `RepositorioUsuarios`, `RepositorioArtistas`, `RepositorioEventos` y `RepositorioRegistros` | Cada uno traduce entre una tabla y los objetos del modelo. El resto del programa no conoce SQL. |
+| Proxy remoto | `GestorRemoto` | Implementa `ServicioEventos` igual que `GestorEventosEnVivo` y reenvía cada pedido al servidor. Las vistas no distinguen cuál usan. |
+| DTO | Paquete `api` | Registros que viajan por la red. Ninguno lleva contraseñas, y el servidor los arma ya filtrados por rol. |
+| Inversión de dependencias | `Persistencia`, `Notificador`, `PublicadorCalendario` y `VinculoCalendario` | El gestor depende de interfaces que recibe por constructor o por parámetro. `PersistenciaSqlite` reemplaza a la de archivos sin tocar el gestor. |
+| Segregación de interfaces | `ServicioSesion`, `ServicioConsultas` y `ServicioComandos` | Tres interfaces chicas que `ServicioEventos` reúne para las vistas. |
 
-El identificador siguiente se calcula en el controlador como el mayor existente más uno, porque es quien conoce las colecciones. Esto reemplaza los contadores de la consola y los métodos equivalentes de la ventana.
+![Controlador y sus interfaces](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-controlador.png)
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Persona
-    participant V as Vista
-    participant G as GestorEventosEnVivo
-    participant U as Usuario
+![Colaboradores del gestor](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-colaboradores.png)
 
-    Persona->>V: ingresa los datos del alta
-    V->>V: verifica campos requeridos
-    V->>G: registrarUsuario(datos)
-    G->>G: siguienteIdUsuario()
-    G->>U: crea el usuario con el identificador
-    G->>G: verifica que el nombre de cuenta no exista
-    alt nombre disponible
-        G-->>V: usuario creado
-        V-->>Persona: informa el identificador asignado
-    else nombre ya registrado
-        G-->>V: null
-        V-->>Persona: informa que el nombre ya existe
-    end
-```
+## 4. Elecciones y motivos
 
-| Capa | Validación |
-|---|---|
-| Vista | Campos requeridos completos y valores numéricos bien formados |
-| Controlador | Unicidad del nombre de cuenta y permisos de la cuenta que inició sesión |
-| Modelo | Reglas de negocio: estado y horario del evento, capacidad, plan mínimo y transiciones de estado |
-
-## 8. Roles y permisos
-
-Cada cuenta tiene un rol (`TipoUsuario`): usuario, artista o administrador. Al iniciar el programa se pide el login y, según el rol de la cuenta, se muestra el menú que le corresponde. Las opciones de cada menú no están escritas una por una: se arman con las acciones que la tabla de permisos habilita para ese rol.
-
-| Acción | Usuario | Artista | Administrador |
+| Tema | Elección | Alternativa descartada | Motivo |
 |---|---|---|---|
-| Solicitar ingreso a un evento | Solo a su nombre | No | Sí |
-| Ver eventos | Todos | Solo los propios | Todos |
-| Ver capacidad de un evento | Sí | Solo los propios | Sí |
-| Agregar un evento a mi calendario (Google o Apple) | Sí | Solo los propios | Sí |
-| Ver sus registros de acceso | Sí | No | No |
-| Crear un evento | No | A su nombre | Sí |
-| Iniciar, pausar, reanudar, finalizar y cancelar un evento | No | Solo los propios | Cualquiera |
-| Ver los usuarios conectados | No | Solo los propios | Sí |
-| Registrar usuarios y artistas | No | No | Sí |
-| Activar o desactivar usuarios | No | No | Sí |
-| Expulsar a un usuario | No | No | Sí |
-| Ver todos los registros, guardar y cargar datos | No | No | Sí |
-| Abrir la ventana gráfica | Sí | Sí | Sí |
+| Driver de SQLite | `sqlite-jdbc` como jar en `Codigo/lib` | Descargarlo al compilar | El proyecto compila con `javac` sin Maven. Con el jar en el repositorio funciona sin internet. |
+| Acceso del cliente | A través de la API del servidor | Que el cliente abra la base | SQLite es un archivo y no acepta conexiones de red. Además, así los permisos se aplican en un solo lugar. |
+| Formato de la API | HTTP con JSON (`gson`) | Sockets con serialización de objetos | Es estándar, legible y no ata cliente y servidor a la misma versión de las clases. Se agregó el jar de `gson`. |
+| Servidor HTTP | El del JDK (`com.sun.net.httpserver`) | Un framework web | Ya se usaba para los calendarios y no agrega dependencias. |
+| Forma de guardar | Se reescriben las tablas completas en una transacción | Actualizar solo las filas modificadas | Con pocos datos es más simple y la base queda siempre consistente: si algo falla se deshace todo. |
+| Quién guarda | El gestor, después de cada operación | Las vistas | Servidor, ventana y consola quedan con el mismo comportamiento y las vistas se simplifican. |
+| Persistencia en TXT | Se eliminó junto con los archivos | Dejarla como alternativa | Sin código sin uso. Los datos de prueba pasaron a `DatosIniciales`. |
+| Qué ve el cliente | Una copia de solo lectura que se vuelve a pedir tras cada cambio | Repetir las reglas en el cliente | Las reglas y los permisos se aplican solo en el servidor, que es quien las verifica. |
+| Sesiones remotas | Token aleatorio por inicio de sesión, en memoria | Enviar usuario y contraseña en cada pedido | La contraseña viaja una sola vez. Al reiniciar el servidor hay que volver a iniciar sesión. |
+| Concurrencia | Las operaciones del gestor son `synchronized` y cada pedido remoto abre y devuelve su sesión | Un gestor por sesión | Un solo conjunto de datos compartido. La sesión de quien usa el equipo del servidor no se pisa. |
+| Conectados que ve cada rol | Administrador y artista ven nombres; el usuario solo ve cuántos hay | Enviar todo | El servidor no envía datos que el rol no puede ver. |
 
-```mermaid
-classDiagram
-    direction LR
+## 5. Base de datos
 
-    class Accion {
-        <<enumeration>>
-    }
-    class Permisos {
-        +permite(tipo, accion) boolean
-        +accionesPermitidas(tipo) List
-    }
-    class ControlSesion {
-        +iniciar(cuenta) void
-        +exigir(accion) void
-    }
-    class GestorEventosEnVivo {
-        +iniciarSesion(nombre, contrasena) Cuenta
-        +puede(accion) boolean
-    }
-    class MenuPorRol
+Un archivo SQLite con seis tablas. Las claves foráneas están activadas.
 
-    Permisos --> Accion : agrupa por rol
-    ControlSesion --> Permisos : consulta
-    GestorEventosEnVivo --> ControlSesion : delega
-    MenuPorRol --> GestorEventosEnVivo : pide las acciones permitidas
-```
-
-| Pieza | Responsabilidad |
+| Tabla | Contenido |
 |---|---|
-| `Accion` | Enumera las acciones del sistema con la etiqueta que se muestra en el menú. |
-| `Permisos` | Única tabla de permisos por rol. Cambiar los permisos de un rol implica modificar solo esta clase. |
-| `ControlSesion` | Guarda la cuenta con sesión iniciada y rechaza las acciones no permitidas. |
-| `MenuPorRol` | Único menú de consola, armado con las acciones que el gestor informa como permitidas. |
+| `usuarios` | Usuarios y administrador: cuenta (única, sin distinguir mayúsculas), nombre, apellido, email, contraseña, plan, activo y rol |
+| `artistas` | Cuenta, contraseña, nombre artístico, género, biografía y verificado |
+| `eventos` | Título, descripción, inicio, fin, estado, capacidad, plan mínimo, ubicación, streaming y exclusivo |
+| `evento_artistas` | Artistas de cada evento |
+| `evento_conectados` | Usuarios conectados a cada evento |
+| `registros_acceso` | Usuario, evento, fecha, resultado y motivo del rechazo |
 
-### Autorización en el controlador
+Un intento de ingreso con un usuario o un evento inexistente se informa al momento pero no se guarda, porque no refiere a ninguna fila.
 
-El gestor verifica el permiso en cada operación, de modo que una acción no permitida se rechaza aunque se invoque sin pasar por el menú. Además del rol, controla la pertenencia: un usuario solo solicita ingresos a su nombre, y un artista solo crea y gestiona eventos propios. Sin sesión iniciada, toda operación se rechaza con `PermisoDenegadoException`.
+![Persistencia en SQLite](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-persistencia.png)
 
-### Cuentas
+### Datos de prueba
 
-El login funciona igual para los tres roles. Los nombres de cuenta son únicos entre usuarios y artistas, y una cuenta sin contraseña no puede iniciar sesión. El administrador da de alta a los artistas con nombre de cuenta y contraseña. La ventana gráfica se abre para cualquier cuenta y muestra solo las pestañas y los botones que permite su rol: el usuario ve los eventos, solicita ingresos a su nombre y consulta sus registros; el artista ve y gestiona únicamente sus eventos; el administrador accede a todas las pestañas.
+Si la base está vacía, el programa carga ocho usuarios, cuatro artistas, seis eventos en distintos estados y dieciséis accesos coherentes entre sí. Con ellos se pueden probar todos los casos de ingreso a un evento.
 
-| Rol | Cuenta | Contraseña | Plan |
-|---|---|---|---|
-| Administrador | `admin` | `admin123` | Premium |
-| Artista | `bandahorizonte` | `horizonte2024` | |
-| Artista | `djprisma` | `prisma2024` | |
-| Artista | `lunanocturna` | `luna2024` | |
-| Artista | `losdelsur` | `sur2024` | |
-| Usuario | `lgabian` | `lgabian2024` | Premium |
-| Usuario | `lferraro` | `lferraro2024` | Artist Pass |
-| Usuario | `ncaggia` | `ncaggia2024` | Free |
-| Usuario | `mrossi` | `mrossi2024` | Premium |
-| Usuario | `jperez` | `jperez2024` | Free |
-| Usuario | `sdiaz` | `sdiaz2024` | Artist Pass |
-| Usuario | `tgomez` | `tgomez2024` | Free, cuenta inactiva |
-
-El administrador puede activar o desactivar usuarios. Una cuenta inactiva no puede iniciar sesión ni ingresar a eventos, y al desactivarla se la desconecta de los eventos en los que estaba. Un administrador no puede desactivar su propia cuenta.
-
-### Inicio del programa y ventana de login
-
-Al iniciar, el programa pregunta con qué interfaz se usa: interfaz gráfica (Swing) o consola. La interfaz gráfica empieza con una ventana de login simple, con usuario y contraseña. Si los datos son correctos se abre la ventana del rol de la cuenta, y el botón de cerrar sesión devuelve a la ventana de login. Si la ventana se abre desde el menú de consola, usa la sesión de ese menú.
-
-Las ventanas usan un logo propio, que reemplaza el ícono por defecto de Java en la ventana y en el Dock. Se dibuja por código en la clase `Logo`, por lo que no hay archivos que empaquetar.
-
-### Uso de la ventana
-
-| Aspecto | Comportamiento |
-|---|---|
-| Tablas | Los datos se muestran en tablas ordenables por columna. El estado de cada evento se colorea según su valor y un doble clic sobre un evento muestra sus usuarios conectados. |
-| Botones | Los botones están agrupados en dos filas, una para el ciclo de vida del evento y otra para la gestión. Cada botón se habilita solo cuando la acción es posible: hace falta un evento seleccionado y que su estado la permita. |
-| Mensajes | Los resultados correctos se informan en la barra de estado, en verde, sin ventana emergente. Los errores se muestran también en una ventana para que no pasen desapercibidos. |
-| Formularios | Registrar un usuario, registrar un artista y crear un evento se hacen en una sola ventana con todos los campos. Si un dato no es válido se informa el motivo y el formulario vuelve a abrirse con lo ya cargado. |
-
-Las reglas de qué transición permite cada estado están en `EstadoEvento`. Las usan el propio evento, el gestor, el menú de consola y la ventana, de modo que no se repiten en cada interfaz.
-
-## 9. Persistencia y datos de prueba
-
-Los datos se guardan en cuatro archivos de texto de la carpeta `datos`, con un registro por línea y campos separados por `|`.
-
-| Archivo | Contenido de cada línea |
-|---|---|
-| `usuarios.txt` | Identificador, cuenta, nombre, apellido, email, contraseña, plan, activo y rol |
-| `artistas.txt` | Identificador, nombre artístico, género, biografía, verificado, cuenta, contraseña y rol |
-| `eventos.txt` | Identificador, título, descripción, inicio, fin, estado, capacidad, plan mínimo, ubicación, streaming, exclusivo, artistas y usuarios conectados |
-| `registros_acceso.txt` | Fecha, usuario, evento, resultado y motivo del rechazo |
-
-| Aspecto | Comportamiento |
-|---|---|
-| Guardado | Después de cada cambio (altas, ingresos, expulsiones, cambios de estado y activación de usuarios) los datos se guardan solos. Las opciones de guardar y cargar manualmente siguen disponibles para el administrador. |
-| Textos | Un `|` o un salto de línea dentro de un nombre, una contraseña o una biografía se guarda codificado y se lee tal como fue escrito. |
-| Conectados | Los usuarios conectados a cada evento se guardan y se restauran. Un evento finalizado o cancelado desconecta a todos. |
-| Archivos viejos | Los formatos anteriores, con menos campos, siguen cargando. |
-| Arranque | Si un archivo está dañado se informa y se usan los datos de prueba. Si no hay ningún administrador, se agrega uno para que siempre se pueda iniciar sesión. |
-| Registros sin entidad | Los intentos de ingreso de un usuario o un evento inexistente se informan al momento pero no se guardan, porque no refieren a ninguna entidad real. |
-
-Los archivos entregados traen datos de prueba coherentes entre sí: ocho usuarios, cuatro artistas, seis eventos en distintos estados y dieciséis accesos vinculados a los usuarios.
+| Cuenta | Rol | Contraseña |
+|---|---|---|
+| `admin` | Administrador | `admin123` |
+| `lgabian`, `lferraro`, `ncaggia`, `mrossi`, `jperez`, `sdiaz` | Usuario | `<cuenta>2024` |
+| `tgomez` | Usuario inactivo, no puede iniciar sesión | `tgomez2024` |
+| `bandahorizonte`, `djprisma`, `lunanocturna`, `losdelsur` | Artista | `horizonte2024`, `prisma2024`, `luna2024` y `sur2024` |
 
 | Evento | Estado | Plan mínimo | Conectados |
 |---|---|---|---|
@@ -305,59 +105,81 @@ Los archivos entregados traen datos de prueba coherentes entre sí: ocho usuario
 | 104 Festival de Verano 2025 | Finalizado | Free | Ninguno |
 | 105 Fiesta Electrónica Cancelada | Cancelado | Premium | Ninguno |
 
-Los accesos incluyen ingresos autorizados, rechazos por plan insuficiente, por usuario ya conectado, por evento no disponible y por cuenta inactiva, y dos expulsiones. Con ellos se pueden probar todos los casos del ingreso a un evento.
+## 6. API
 
-## 10. Avisos a los usuarios
+Después de iniciar sesión, cada pedido lleva `Authorization: Bearer <token>`. Los errores devuelven un JSON con `tipo` y `mensaje`, y el cliente los convierte en las mismas excepciones que lanza el gestor local.
 
-El gestor recibe un `Notificador`, una interfaz con una sola operación, y `ControlAcceso` la invoca cuando un usuario es expulsado de un evento o se rechaza su solicitud de ingreso. Solo se avisa a las cuentas de rol usuario.
-
-| Hecho | Aviso |
+| Método y ruta | Acción |
 |---|---|
-| El usuario es expulsado de un evento | Expulsado del evento, con el título del evento |
-| Se rechaza su solicitud de ingreso | Ingreso rechazado, con el motivo |
+| `POST /api/sesion` | Inicia sesión y devuelve el token |
+| `DELETE /api/sesion` | Cierra la sesión |
+| `GET /api/estado` | Todo lo que la cuenta puede ver, ya filtrado por rol |
+| `POST /api/usuarios` | Registra un usuario |
+| `POST /api/usuarios/{id}/alternar-activo` | Activa o desactiva un usuario |
+| `POST /api/artistas` | Registra un artista |
+| `POST /api/eventos` | Crea un evento a nombre de un artista |
+| `POST /api/eventos/{id}/{iniciar, pausar, reanudar, finalizar, cancelar}` | Cambia el estado del evento |
+| `POST /api/eventos/{id}/ingresos` | Solicita el ingreso de un usuario |
+| `POST /api/eventos/{id}/expulsiones` | Expulsa a un usuario |
+| `GET /api/eventos/{id}/calendario` | Dirección del calendario del evento |
 
-Por ahora el programa usa `NotificadorInactivo`, que no envía nada. Para entregar los avisos por otro medio alcanza con escribir otra implementación de `Notificador` y pasarla al crear el gestor en `App` y en `AppSwing`, sin modificar el gestor ni `ControlAcceso`.
+| Código | Tipo | Excepción en el cliente |
+|---|---|---|
+| 409 | `acceso` | `AccesoDenegadoException` (regla del negocio) |
+| 403 y 401 | `permiso` y `sesion` | `PermisoDenegadoException` |
+| 500 | `persistencia` | `PersistenciaException` |
+| 409 | `calendario` | `IOException` |
+| 400 | `pedido` | `IllegalArgumentException` |
+| Sin conexión | | `ConexionException` |
 
-## 11. Calendarios
+Qué recibe cada rol en `/api/estado`:
 
-Cualquier cuenta puede llevar un evento a Google Calendar o Apple Calendar, desde la pestaña de eventos de la ventana o desde el menú de consola. Se suscribe únicamente el evento elegido, no el resto.
+| Rol | Eventos | Usuarios | Registros |
+|---|---|---|---|
+| Administrador | Todos | Todos | Todos |
+| Artista | Solo los suyos | Los conectados a sus eventos | Ninguno |
+| Usuario | Todos | Su cuenta y los conectados sin datos personales | Solo los propios |
 
-La persona se suscribe una sola vez y ese evento se mantiene al día solo: si cambia de horario aparece el cambio, y si se cancela queda marcado como cancelado.
+Las contraseñas nunca viajan al cliente.
 
-1. Selecciona un evento en la tabla y toca Google Calendar o Apple Calendar, en «Agregar el evento seleccionado a mi calendario».
-2. Se abre el navegador (Google) o la app Calendario (Apple) con la suscripción ya armada, y confirma allí.
-3. Puede repetirlo con otros eventos. Cada uno queda como un calendario aparte. Un artista solo puede hacerlo con sus propios eventos.
+![Solicitar ingreso desde un cliente remoto](TP/Grupo9_POO_Diagramas_Pdf/imagenes/secuencia-cliente-remoto.png)
 
-Cómo funciona por dentro: `ServidorCalendario` (servidor HTTP del JDK, sin dependencias) publica en `/calendario/<código>/<id del evento>.ics` el calendario de un evento. El código es un HMAC de la cuenta con una clave que se guarda en `~/.uadebeats/calendario.key`, por lo que no se puede adivinar y no hace falta login. Responde 404 si la cuenta está desactivada, si el evento no existe o si la cuenta no puede verlo. El evento se arma con `FormatoIcs`, con un `UID` fijo y `STATUS:CANCELLED` cuando corresponde.
+## 7. Roles y permisos
+
+Sin cambios respecto de la iteración 3, salvo que se quitan guardar y cargar datos (ahora automáticos) y se agrega el calendario.
+
+| Acción | Usuario | Artista | Administrador |
+|---|---|---|---|
+| Solicitar ingreso a un evento | Solo a su nombre | No | Sí |
+| Ver eventos | Todos | Solo los propios | Todos |
+| Ver capacidad de un evento | Sí | Solo los propios | Sí |
+| Agregar un evento a mi calendario | Sí | Solo los propios | Sí |
+| Ver sus registros de acceso | Sí | No | No |
+| Crear un evento | No | A su nombre | Sí |
+| Iniciar, pausar, reanudar, finalizar y cancelar un evento | No | Solo los propios | Cualquiera |
+| Ver los usuarios conectados | No | Solo los propios | Sí |
+| Registrar usuarios y artistas | No | No | Sí |
+| Activar o desactivar usuarios | No | No | Sí |
+| Expulsar a un usuario | No | No | Sí |
+| Ver todos los registros | No | No | Sí |
+| Abrir la ventana gráfica | Sí | Sí | Sí |
+
+## 8. Calendarios
+
+Una persona selecciona un evento y toca Google Calendar o Apple Calendar. Se abre el navegador (Google) o la app Calendario (Apple) con la suscripción armada, y confirma allí. Desde entonces ese evento se mantiene al día: si cambia de horario aparece el cambio, y si se cancela queda marcado como cancelado. Puede repetirlo con otros eventos; un artista solo con los suyos.
+
+El servidor publica cada evento en `/calendario/<código>/<id>.ics`. El código es un HMAC de la cuenta con una clave guardada en `~/.uadebeats/calendario.key`, por lo que no se puede adivinar y no hace falta login. Responde 404 si la cuenta está desactivada, el evento no existe o la cuenta no puede verlo. En modo cliente, el pedido pasa por el servidor, que es quien arma la dirección.
 
 Google y Apple se suscriben por https: Calendar convierte `webcal://` en `https://`, y Google además lee la dirección desde sus servidores. Por eso la dirección debe ser pública y con https. Se expone el puerto con un túnel (por ejemplo `cloudflared tunnel --url http://localhost:8765`) y se ejecuta con `-Duadebeats.url=https://<dirección del túnel>`. Con la dirección local se informa el motivo y no se abre nada.
 
-El puerto es 8765 y se cambia con `-Duadebeats.puerto`. Google actualiza una suscripción cada varias horas; Apple, en minutos.
+## 9. Diagramas
 
-El gestor recibe el calendario como parámetro (`vincularCalendario`, con la interfaz `VinculoCalendario`) y verifica el permiso `VINCULAR_CALENDARIO` antes de delegar, y solo para eventos visibles para la cuenta. No se guardan contraseñas ni claves de API.
-
-## 12. Diagramas
-
-Los diagramas de clases y de secuencia están actualizados al diseño actual y se generan con PlantUML. Los archivos `.puml` con su código fuente están en `TP/Grupo9_POO_Diagramas_Pdf/fuentes`, y los PDF listos para presentar, con su versión oscura, en `TP/Grupo9_POO_Diagramas_Pdf`.
+Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_Pdf/fuentes` y los PDF listos para presentar, con su versión oscura, en `TP/Grupo9_POO_Diagramas_Pdf`.
 
 | Diagrama | Contenido |
 |---|---|
-| Diagrama de clase | Tres páginas: modelo, controlador con persistencia, avisos y calendarios, y vistas |
-| Diagrama de secuencia | Solicitar ingreso a un evento, con control de sesión y permisos, registro del intento y aviso al usuario |
-
-### Modelo
-
-![Diagrama de clases del modelo](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-modelo.png)
-
-### Controlador, persistencia y avisos
-
-![Diagrama de clases del controlador](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-controlador.png)
-
-### Vistas
-
-![Diagrama de clases de las vistas](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-vistas.png)
-
-### Solicitar ingreso a un evento
+| Diagrama de clase | Seis páginas: modelo, controlador, colaboradores, persistencia, red y vistas |
+| Diagrama de secuencia | Solicitar ingreso con el gestor local y desde un cliente remoto |
 
 ![Diagrama de secuencia de solicitar ingreso](TP/Grupo9_POO_Diagramas_Pdf/imagenes/secuencia-solicitar-ingreso.png)
 
@@ -367,14 +189,27 @@ Para regenerarlos, desde `TP/Grupo9_POO_Diagramas_Pdf/fuentes`:
 java -jar plantuml.jar -charset UTF-8 -tpdf *.puml
 ```
 
-## 13. Ejecución
+## 10. Ejecución
 
-Desde `TP/Grupo9_POO_EntregaFinal/Codigo/src`:
+Desde `TP/Grupo9_POO_EntregaFinal/Codigo`:
 
 ```
-javac -d ../out $(find . -name "*.java")
-java -cp ../out Main
-java -cp ../out app.AppSwing
+javac -encoding UTF-8 -cp "lib/*" -d out $(find src -name "*.java")
+java --enable-native-access=ALL-UNNAMED -cp "out:lib/*" Main
+java --enable-native-access=ALL-UNNAMED -cp "out:lib/*" Main servidor
+java -cp "out:lib/*" Main cliente http://192.168.0.10:8765
 ```
 
-`Main` pregunta qué interfaz usar. `AppSwing` abre directamente la ventana gráfica con su login, que se adapta al rol de la cuenta.
+En Windows el separador del classpath es `;` en lugar de `:`. La opción `--enable-native-access` evita el aviso que muestra Java al cargar el driver de SQLite; el modo cliente no usa SQLite y no la necesita.
+
+Para usar el cliente desde otra PC, el servidor debe aceptar conexiones de la red (modo `servidor`, o el completo con `-Duadebeats.escuchar=todas`) y el puerto estar abierto en el firewall.
+
+## 11. Limitaciones conocidas
+
+| Limitación | Detalle |
+|---|---|
+| Conexión sin cifrar | La API usa HTTP. Fuera de una red de confianza conviene exponerla por un túnel con https o una VPN, porque el inicio de sesión envía la contraseña. |
+| Contraseñas | Se guardan en texto plano en la base, igual que en los archivos de la iteración anterior. |
+| Sesiones | Viven en memoria y no vencen por tiempo. |
+| Concurrencia | Las operaciones están sincronizadas, pero la ventana del equipo servidor lee objetos del modelo sin bloqueo mientras un cliente remoto puede modificarlos. |
+| Fin del evento | `fechaHoraFin` es la ventana en la que se permite ingresar y no la duración real del evento. Es un problema heredado del diseño original del modelo. |

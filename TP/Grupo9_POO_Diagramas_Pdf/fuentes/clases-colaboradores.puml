@@ -1,0 +1,50 @@
+@startuml
+!include estilo.iuml
+title Diagrama de clases: colaboradores del gestor (por constructor)
+
+class GestorEventosEnVivo
+class ControlAcceso
+
+interface Persistencia {
+  +guardar(gestor : GestorEventosEnVivo) : void
+  +cargar(gestor : GestorEventosEnVivo) : void
+}
+
+interface Notificador {
+  +notificar(destinatario : Usuario, titulo : String, mensaje : String) : void
+}
+
+interface PublicadorCalendario {
+  +urlFeed(cuenta : Cuenta, evento : Evento) : String
+}
+
+interface VinculoCalendario {
+  +getNombre() : String
+  +vincular(urlFeed : String) : void
+}
+
+class PersistenciaSqlite
+class NotificadorInactivo {
+  en uso: no envia nada
+}
+class PublicadorHttp {
+  exige direccion publica https
+}
+class VinculoGoogle {
+  abre la suscripcion de Google
+}
+class VinculoApple {
+  abre la suscripcion webcal de Apple
+}
+
+GestorEventosEnVivo --> Persistencia
+GestorEventosEnVivo --> PublicadorCalendario
+GestorEventosEnVivo --> ControlAcceso
+GestorEventosEnVivo ..> VinculoCalendario : recibe por parametro
+ControlAcceso --> Notificador
+PersistenciaSqlite ..|> Persistencia
+NotificadorInactivo ..|> Notificador
+PublicadorHttp ..|> PublicadorCalendario
+VinculoGoogle ..|> VinculoCalendario
+VinculoApple ..|> VinculoCalendario
+@enduml
