@@ -131,6 +131,9 @@ public final class MenuPorRol {
             case VER_CAPACIDAD:
                 MenuAcciones.mostrarCapacidad(scanner, gestor);
                 break;
+            case AGREGAR_A_CALENDARIO:
+                MenuAcciones.agregarACalendario(scanner, gestor);
+                break;
             case EXPULSAR_USUARIO:
                 MenuAcciones.expulsarUsuario(scanner, gestor);
                 break;

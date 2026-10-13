@@ -8,7 +8,7 @@ import modelo.Usuario;
  *
  * Es el que usa hoy el programa: los avisos estan previstos en el gestor,
  * pero todavia no se entregan por ningun medio. Para activarlos alcanza con
- * crear el gestor con NotificadorNtfy (u otro medio) en lugar de esta clase.
+ * crear el gestor con otra implementacion de Notificador en lugar de esta.
  */
 public class NotificadorInactivo implements Notificador {
 
