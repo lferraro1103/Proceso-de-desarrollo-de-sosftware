@@ -1,6 +1,7 @@
 package ui;
 
 import excepciones.AccesoDenegadoException;
+import excepciones.ErrorDeServicioException;
 import gestor.ServicioEventos;
 
 import javax.swing.BorderFactory;
@@ -107,7 +108,7 @@ public class VentanaLogin extends JFrame {
             new VentanaPrincipal(gestor, true).setVisible(true);
             dispose();
 
-        } catch (AccesoDenegadoException e) {
+        } catch (AccesoDenegadoException | ErrorDeServicioException e) {
             mensaje.setText(e.getMessage());
             campoContrasena.setText("");
         }

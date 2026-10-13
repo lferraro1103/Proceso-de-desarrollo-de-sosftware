@@ -71,6 +71,15 @@ public class Usuario extends Cuenta {
     }
 
     // Actualiza datos principales del perfil.
+    /*
+     * Usuario "placeholder" para poder registrar un intento cuando no hay
+     * un usuario real asociado. No se agrega a ninguna lista.
+     */
+    public static Usuario desconocido() {
+        return new Usuario(-1, "desconocido", "Usuario", "Desconocido",
+                "sin-email", "", PlanSuscripcion.FREE, false);
+    }
+
     public void actualizarPerfil(String nombre,
                                  String apellido,
                                  String email) {
