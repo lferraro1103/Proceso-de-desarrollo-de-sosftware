@@ -489,6 +489,54 @@ public class GestorEventosEnVivo {
         calendario.agregar(evento);
     }
 
+    /*
+     * Vincula un calendario externo a la cuenta actual. El permiso se
+     * verifica aca; el calendario concreto llega como parametro.
+     */
+    public void vincularCalendario(VinculoCalendario vinculo) throws IOException {
+        sesion.exigir(Accion.VINCULAR_CALENDARIO);
+        vinculo.vincular(sesion.getCuentaActual());
+    }
+
+    /*
+     * Eventos que le corresponden a una cuenta, sin depender de la sesion:
+     * el administrador tiene todos, el artista los suyos y el usuario
+     * aquellos a los que logro ingresar.
+     */
+    public List<Evento> eventosDeCuenta(Cuenta cuenta) {
+        List<Evento> propios = new ArrayList<>();
+
+        for (Evento evento : eventos) {
+            boolean corresponde;
+
+            switch (cuenta.getTipoUsuario()) {
+                case ADMINISTRADOR:
+                    corresponde = true;
+                    break;
+                case ARTISTA:
+                    corresponde = false;
+                    for (Artista artista : evento.getArtistas()) {
+                        corresponde |= artista.getId() == cuenta.getId();
+                    }
+                    break;
+                default:
+                    corresponde = false;
+                    for (RegistroAcceso registro : listarRegistros()) {
+                        corresponde |= registro.isExitoso()
+                                && registro.getEvento() == evento
+                                && registro.getUsuario().getId() == cuenta.getId();
+                    }
+                    break;
+            }
+
+            if (corresponde) {
+                propios.add(evento);
+            }
+        }
+
+        return propios;
+    }
+
     // Busca un artista por ID. Si no existe, devuelve null.
     public Artista buscarArtistaPorId(int id) {
         for (Artista artista : artistasRegistrados) {

@@ -3,8 +3,11 @@ package app;
 import excepciones.AccesoDenegadoException;
 import calendario.CalendarioApple;
 import calendario.CalendarioGoogle;
+import calendario.VinculoApple;
+import calendario.VinculoGoogle;
 import gestor.Calendario;
 import gestor.GestorEventosEnVivo;
+import gestor.VinculoCalendario;
 import modelo.Artista;
 import modelo.Cuenta;
 import modelo.DatosRecital;
@@ -555,6 +558,34 @@ public final class MenuAcciones {
                 + recital.getCantidadConectados()
                 + "/"
                 + recital.getCapacidadMaxima());
+    }
+
+    // Suscribe el calendario de la cuenta a todos sus eventos.
+    public static void vincularCalendario(Scanner scanner,
+                                          GestorEventosEnVivo gestor) {
+
+        System.out.println("1. Google Calendar");
+        System.out.println("2. Apple Calendar");
+        int opcion = ConsoleIO.leerEntero(scanner, "Calendario: ");
+
+        VinculoCalendario vinculo;
+
+        if (opcion == 1) {
+            vinculo = new VinculoGoogle(gestor);
+        } else if (opcion == 2) {
+            vinculo = new VinculoApple(gestor);
+        } else {
+            System.out.println("Opcion invalida.");
+            return;
+        }
+
+        try {
+            gestor.vincularCalendario(vinculo);
+            System.out.println("Se abrio " + vinculo.getNombre()
+                    + " para suscribirse. Confirme alli.");
+        } catch (IOException e) {
+            System.out.println("No se pudo vincular: " + e.getMessage());
+        }
     }
 
     // Lleva un evento visible a Google Calendar o Apple Calendar.

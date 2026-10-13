@@ -2,10 +2,13 @@ package ui;
 
 import calendario.CalendarioApple;
 import calendario.CalendarioGoogle;
+import calendario.VinculoApple;
+import calendario.VinculoGoogle;
 import excepciones.AccesoDenegadoException;
 import excepciones.PermisoDenegadoException;
 import gestor.Accion;
 import gestor.Calendario;
+import gestor.VinculoCalendario;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
 import modelo.DatosRecital;
@@ -380,6 +383,13 @@ public class VentanaPrincipal extends JFrame {
         agregarSiPermitido(filaCalendario, Accion.AGREGAR_A_CALENDARIO, calendarioGoogle);
         agregarSiPermitido(filaCalendario, Accion.AGREGAR_A_CALENDARIO, calendarioApple);
 
+        // Cuarta fila: suscribir el calendario completo de la cuenta.
+        JPanel filaVinculo = crearFila("Vincular mi calendario (se actualiza solo)");
+        agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, crearBoton(
+                "Google Calendar", () -> vincularCalendario(new VinculoGoogle(gestor))));
+        agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, crearBoton(
+                "Apple Calendar", () -> vincularCalendario(new VinculoApple(gestor))));
+
         JPanel acciones = new JPanel();
         acciones.setLayout(new BoxLayout(acciones, BoxLayout.Y_AXIS));
 
@@ -391,6 +401,9 @@ public class VentanaPrincipal extends JFrame {
 
         if (filaCalendario.getComponentCount() > 0) {
             acciones.add(filaCalendario);
+        }
+        if (filaVinculo.getComponentCount() > 0) {
+            acciones.add(filaVinculo);
         }
 
         // Hasta que se elija un evento, los botones de estado quedan apagados.
@@ -555,6 +568,17 @@ public class VentanaPrincipal extends JFrame {
             guardarSilencioso();
         } catch (PermisoDenegadoException e) {
             mostrarError(e.getMessage());
+        }
+    }
+
+    // Suscribe el calendario de la cuenta a sus eventos.
+    private void vincularCalendario(VinculoCalendario vinculo) {
+        try {
+            gestor.vincularCalendario(vinculo);
+            mostrarInfo("Se abrio " + vinculo.getNombre()
+                    + ". Confirme alli la suscripcion; despues se actualiza solo.");
+        } catch (IOException e) {
+            mostrarError("No se pudo vincular: " + e.getMessage());
         }
     }
 

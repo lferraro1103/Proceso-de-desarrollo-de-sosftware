@@ -17,6 +17,8 @@ class GestorEventosEnVivo {
   +cancelarEvento(idEvento : int) : void
   +listarEventosVisibles() : List<Evento>
   +agregarACalendario(idEvento : int, calendario : Calendario) : void
+  +vincularCalendario(vinculo : VinculoCalendario) : void
+  +eventosDeCuenta(cuenta : Cuenta) : List<Evento>
   +guardarDatos() : void
   +cargarDatos() : void
 }
@@ -64,6 +66,11 @@ interface Calendario {
   +agregar(evento : Evento) : void
 }
 
+interface VinculoCalendario {
+  +getNombre() : String
+  +vincular(cuenta : Cuenta) : void
+}
+
 class PersistenciaArchivos {
   usuarios.txt
   artistas.txt
@@ -79,6 +86,19 @@ class CalendarioGoogle {
   abre el enlace de Google Calendar
 }
 
+class VinculoGoogle {
+  abre la suscripcion de Google
+}
+
+class VinculoApple {
+  abre la suscripcion webcal de Apple
+}
+
+class ServidorCalendario {
+  publica el calendario de cada cuenta
+  en /calendario/codigo.ics
+}
+
 class CalendarioApple {
   genera y abre un archivo .ics
 }
@@ -87,6 +107,9 @@ GestorEventosEnVivo --> ControlAcceso
 GestorEventosEnVivo --> ControlSesion
 GestorEventosEnVivo --> Persistencia
 GestorEventosEnVivo --> Calendario
+GestorEventosEnVivo --> VinculoCalendario
+VinculoGoogle --> ServidorCalendario
+VinculoApple --> ServidorCalendario
 ControlAcceso --> Notificador
 ControlSesion --> Permisos
 Permisos --> Accion
@@ -94,4 +117,6 @@ PersistenciaArchivos ..|> Persistencia
 NotificadorInactivo ..|> Notificador
 CalendarioGoogle ..|> Calendario
 CalendarioApple ..|> Calendario
+VinculoGoogle ..|> VinculoCalendario
+VinculoApple ..|> VinculoCalendario
 @enduml

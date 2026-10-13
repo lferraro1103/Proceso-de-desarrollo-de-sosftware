@@ -134,6 +134,9 @@ public final class MenuPorRol {
             case AGREGAR_A_CALENDARIO:
                 MenuAcciones.agregarACalendario(scanner, gestor);
                 break;
+            case VINCULAR_CALENDARIO:
+                MenuAcciones.vincularCalendario(scanner, gestor);
+                break;
             case EXPULSAR_USUARIO:
                 MenuAcciones.expulsarUsuario(scanner, gestor);
                 break;
