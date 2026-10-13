@@ -2,7 +2,7 @@ package app;
 
 import gestor.Accion;
 import excepciones.PermisoDenegadoException;
-import excepciones.PersistenciaException;
+import excepciones.ErrorDeServicioException;
 import gestor.ServicioEventos;
 
 import java.util.List;
@@ -61,7 +61,7 @@ public final class MenuPorRol {
                 ejecutarAccion(accion, scanner, gestor);
             } catch (PermisoDenegadoException e) {
                 System.out.println("Accion no permitida: " + e.getMessage());
-            } catch (PersistenciaException e) {
+            } catch (ErrorDeServicioException e) {
                 System.out.println(e.getMessage());
             }
         }

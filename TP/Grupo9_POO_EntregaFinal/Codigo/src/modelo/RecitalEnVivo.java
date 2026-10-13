@@ -61,6 +61,18 @@ public class RecitalEnVivo extends Evento {
     }
 
     // Devuelve true si todavia hay lugar disponible.
+    /*
+     * Evento "placeholder" para poder registrar un intento cuando no hay
+     * un evento real asociado. No se agrega a ninguna lista.
+     */
+    public static RecitalEnVivo desconocido() {
+        return new RecitalEnVivo(-1, new DatosRecital(
+                "Evento desconocido", "Evento no encontrado",
+                LocalDateTime.now(), LocalDateTime.now(),
+                EstadoEvento.CANCELADO, 0, PlanSuscripcion.FREE,
+                "", true, false));
+    }
+
     public boolean verificarCapacidad() {
         return usuariosConectados.size() < getCapacidadMaxima();
     }

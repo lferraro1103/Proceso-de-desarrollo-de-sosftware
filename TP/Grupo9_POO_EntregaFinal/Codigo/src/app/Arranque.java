@@ -5,11 +5,13 @@ import notificacion.NotificadorInactivo;
 import persistencia.PersistenciaSqlite;
 import servidor.CodigosCalendario;
 import servidor.ConfiguracionServidor;
+import servidor.ManejadorApi;
 import servidor.ManejadorCalendario;
 import servidor.PublicadorHttp;
 import servidor.ServidorHttp;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.util.Map;
 
 /*
@@ -42,8 +44,15 @@ final class Arranque {
             DatosIniciales.sembrar(gestor);
         }
 
-        ServidorHttp.iniciar(configuracion, Map.of(
-                "/calendario/", new ManejadorCalendario(gestor, codigos)));
+        try {
+            ServidorHttp.iniciar(configuracion, Map.of(
+                    "/api/", new ManejadorApi(gestor),
+                    "/calendario/", new ManejadorCalendario(gestor, codigos)));
+        } catch (BindException e) {
+            throw new IOException("El puerto " + configuracion.getPuerto()
+                    + " ya esta en uso (¿hay otro programa abierto?). "
+                    + "Use -Duadebeats.puerto=<otro puerto>.", e);
+        }
 
         return gestor;
     }

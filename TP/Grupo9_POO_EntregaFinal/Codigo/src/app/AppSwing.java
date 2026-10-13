@@ -4,7 +4,6 @@ import gestor.ServicioEventos;
 import ui.VentanaLogin;
 
 import javax.swing.SwingUtilities;
-import java.io.IOException;
 
 /*
  * Lanzador de la interfaz grafica Swing.
@@ -13,10 +12,6 @@ import java.io.IOException;
  * pestanias y los botones que corresponden al rol de la cuenta.
  */
 public class AppSwing {
-
-    public static void main(String[] args) throws IOException {
-        abrir(Arranque.iniciarServidor(false));
-    }
 
     // invokeLater es la forma recomendada de abrir ventanas Swing.
     // Ejecuta la creacion de la ventana en el hilo grafico de Java.
