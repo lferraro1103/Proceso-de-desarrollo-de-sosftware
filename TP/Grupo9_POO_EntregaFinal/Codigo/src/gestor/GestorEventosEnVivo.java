@@ -75,6 +75,8 @@ public class GestorEventosEnVivo {
     public void crearEvento(
             RecitalEnVivo evento) {
 
+        sesion.exigirSiHaySesion(Accion.CREAR_EVENTO);
+
         eventos.add(evento);
     }
 
@@ -86,6 +88,8 @@ public class GestorEventosEnVivo {
      */
     public void crearEvento(RecitalEnVivo evento,
                             Artista artista) {
+
+        sesion.exigirSiHaySesion(Accion.CREAR_EVENTO);
 
         if (artista != null) {
             artista.crearEvento(evento);
@@ -102,6 +106,8 @@ public class GestorEventosEnVivo {
      * con el mismo nombre de usuario.
      */
     public boolean registrarUsuario(Usuario usuario) {
+        sesion.exigirSiHaySesion(Accion.REGISTRAR_USUARIO);
+
         if (existeNombreUsuario(usuario.getNombreUsuario())) {
             return false;
         }
@@ -112,6 +118,8 @@ public class GestorEventosEnVivo {
 
     // Registra un artista en la lista del gestor.
     public void registrarArtista(Artista artista) {
+        sesion.exigirSiHaySesion(Accion.REGISTRAR_ARTISTA);
+
         artistasRegistrados.add(artista);
     }
 
