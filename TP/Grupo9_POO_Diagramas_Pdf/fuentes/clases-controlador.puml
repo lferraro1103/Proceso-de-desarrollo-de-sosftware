@@ -16,7 +16,6 @@ class GestorEventosEnVivo {
   +finalizarEvento(idEvento : int) : void
   +cancelarEvento(idEvento : int) : void
   +listarEventosVisibles() : List<Evento>
-  +agregarACalendario(idEvento : int, calendario : Calendario) : void
   +vincularCalendario(vinculo : VinculoCalendario) : void
   +eventosDeCuenta(cuenta : Cuenta) : List<Evento>
   +guardarDatos() : void
@@ -61,11 +60,6 @@ interface Notificador {
   +notificar(destinatario : Usuario, titulo : String, mensaje : String) : void
 }
 
-interface Calendario {
-  +getNombre() : String
-  +agregar(evento : Evento) : void
-}
-
 interface VinculoCalendario {
   +getNombre() : String
   +vincular(cuenta : Cuenta) : void
@@ -82,10 +76,6 @@ class NotificadorInactivo {
   en uso: no envia nada
 }
 
-class CalendarioGoogle {
-  abre el enlace de Google Calendar
-}
-
 class VinculoGoogle {
   abre la suscripcion de Google
 }
@@ -99,14 +89,9 @@ class ServidorCalendario {
   en /calendario/codigo.ics
 }
 
-class CalendarioApple {
-  genera y abre un archivo .ics
-}
-
 GestorEventosEnVivo --> ControlAcceso
 GestorEventosEnVivo --> ControlSesion
 GestorEventosEnVivo --> Persistencia
-GestorEventosEnVivo --> Calendario
 GestorEventosEnVivo --> VinculoCalendario
 VinculoGoogle --> ServidorCalendario
 VinculoApple --> ServidorCalendario
@@ -115,8 +100,6 @@ ControlSesion --> Permisos
 Permisos --> Accion
 PersistenciaArchivos ..|> Persistencia
 NotificadorInactivo ..|> Notificador
-CalendarioGoogle ..|> Calendario
-CalendarioApple ..|> Calendario
 VinculoGoogle ..|> VinculoCalendario
 VinculoApple ..|> VinculoCalendario
 @enduml

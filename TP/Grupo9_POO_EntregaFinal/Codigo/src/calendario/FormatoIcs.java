@@ -24,7 +24,7 @@ public final class FormatoIcs {
     private FormatoIcs() {
     }
 
-    // Calendario completo con los eventos indicados (puede ser uno solo).
+    // Calendario completo con los eventos indicados.
     public static String calendario(String nombre, List<Evento> eventos) {
         StringBuilder ics = new StringBuilder();
 

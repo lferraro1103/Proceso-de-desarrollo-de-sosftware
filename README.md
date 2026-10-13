@@ -94,7 +94,7 @@ El gestor, `ControlAcceso` y las vistas dependen solamente de `Evento`. Un tipo 
 
 ## 4. Segregación de interfaces
 
-Las interfaces del módulo son chicas y el gestor usa todas sus operaciones: `Persistencia` (guardar y cargar), `Notificador` (una operación), `Calendario` (nombre y agregar) y `VinculoCalendario` (nombre y vincular). Ninguna clase que las implementa debe definir métodos que no necesita.
+Las interfaces del módulo son chicas y el gestor usa todas sus operaciones: `Persistencia` (guardar y cargar), `Notificador` (una operación) y `VinculoCalendario` (nombre y vincular). Ninguna clase que las implementa debe definir métodos que no necesita.
 
 ## 5. Inversión de dependencias
 
@@ -187,7 +187,6 @@ Cada cuenta tiene un rol (`TipoUsuario`): usuario, artista o administrador. Al i
 | Solicitar ingreso a un evento | Solo a su nombre | No | Sí |
 | Ver eventos | Todos | Solo los propios | Todos |
 | Ver capacidad de un evento | Sí | Solo los propios | Sí |
-| Agregar un evento a Google o Apple Calendar | Sí | Solo los propios | Sí |
 | Vincular mi calendario (Google o Apple) | Sí | Sí | Sí |
 | Ver sus registros de acceso | Sí | No | No |
 | Crear un evento | No | A su nombre | Sí |
@@ -321,13 +320,7 @@ Por ahora el programa usa `NotificadorInactivo`, que no envía nada. Para entreg
 
 ## 11. Calendarios
 
-Hay dos formas de llevar los eventos a Google Calendar o Apple Calendar. Ambas están en la pestaña de eventos de la ventana y en el menú de consola, y las puede usar cualquier cuenta.
-
-### Agregar un evento
-
-Con el evento seleccionado, el botón de Google abre el navegador en el enlace oficial «agregar evento» con título, fechas, descripción y lugar ya cargados; el de Apple genera un archivo `.ics` y lo abre con Calendario. Es una copia: no se actualiza si el evento cambia. Un artista solo puede hacerlo con sus propios eventos.
-
-### Vincular mi calendario
+Cualquier cuenta puede vincular su calendario a Google Calendar o Apple Calendar, desde la pestaña de eventos de la ventana o desde el menú de consola.
 
 La persona se suscribe una sola vez y sus eventos se mantienen al día solos: si un evento cambia de horario aparece el cambio, y si se cancela queda marcado como cancelado.
 
@@ -344,7 +337,7 @@ Cómo funciona por dentro: `ServidorCalendario` (servidor HTTP del JDK, sin depe
 
 El puerto es 8765 y se cambia con `-Duadebeats.puerto`. Google actualiza una suscripción cada varias horas; Apple, en minutos.
 
-El gestor recibe los calendarios como parámetro (`agregarACalendario` y `vincularCalendario`, con las interfaces `Calendario` y `VinculoCalendario`) y verifica los permisos `AGREGAR_A_CALENDARIO` y `VINCULAR_CALENDARIO` antes de delegar. No se guardan contraseñas ni claves de API.
+El gestor recibe el calendario como parámetro (`vincularCalendario`, con la interfaz `VinculoCalendario`) y verifica el permiso `VINCULAR_CALENDARIO` antes de delegar. No se guardan contraseñas ni claves de API.
 
 ## 12. Diagramas
 
