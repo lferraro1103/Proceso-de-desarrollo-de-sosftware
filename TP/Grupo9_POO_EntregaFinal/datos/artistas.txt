@@ -1,4 +1,0 @@
-1|Banda Horizonte|Rock|Banda argentina de rock alternativo.|true|bandahorizonte|horizonte2024|ARTISTA
-2|DJ Prisma|Electronica|Productora de shows audiovisuales.|true|djprisma|prisma2024|ARTISTA
-3|Luna Nocturna|Pop|Cantautora de pop indie con tres discos editados.|false|lunanocturna|luna2024|ARTISTA
-4|Los del Sur|Folklore|Conjunto de folklore con giras por todo el pais.|true|losdelsur|sur2024|ARTISTA
