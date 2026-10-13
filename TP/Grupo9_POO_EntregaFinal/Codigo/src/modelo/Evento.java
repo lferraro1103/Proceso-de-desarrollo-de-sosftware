@@ -123,6 +123,12 @@ public abstract class Evento {
     // Lugar donde se realiza el evento.
     public abstract String getUbicacion();
 
+    // Indica si se transmite en vivo por internet.
+    public abstract boolean isStreaming();
+
+    // Indica si es un evento exclusivo.
+    public abstract boolean isExclusivo();
+
     // Conecta al usuario si el evento lo admite; si no, lanza la excepcion.
     public abstract void permitirIngreso(Usuario usuario)
             throws AccesoDenegadoException;
