@@ -4,6 +4,7 @@ import excepciones.AccesoDenegadoException;
 import excepciones.PermisoDenegadoException;
 import excepciones.PersistenciaException;
 import modelo.Artista;
+import modelo.Contrasenas;
 import modelo.Cuenta;
 import modelo.DatosRecital;
 import modelo.EstadoEvento;
@@ -160,7 +161,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
                 nombre,
                 apellido,
                 email,
-                contrasena,
+                Contrasenas.hashear(contrasena),
                 plan,
                 true
         );
@@ -196,7 +197,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
         Artista artista = new Artista(
                 siguienteIdArtista(),
                 nombreUsuario.trim(),
-                contrasena,
+                Contrasenas.hashear(contrasena),
                 nombreArtistico,
                 generoPrincipal,
                 biografia,

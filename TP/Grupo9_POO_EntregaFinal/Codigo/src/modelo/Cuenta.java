@@ -16,8 +16,8 @@ public abstract class Cuenta {
     // Nombre de cuenta dentro de la plataforma.
     private String nombreUsuario;
 
-    // Contrasena simplificada para el prototipo.
-    private String contrasena;
+    // Hash de la contrasena (ver Contrasenas); nunca el texto original.
+    private String hashContrasena;
 
     // Indica si la cuenta esta habilitada en la plataforma.
     private boolean activo;
@@ -30,13 +30,13 @@ public abstract class Cuenta {
 
     protected Cuenta(int id,
                       String nombreUsuario,
-                      String contrasena,
+                      String hashContrasena,
                       boolean activo,
                       TipoUsuario tipoUsuario) {
 
         this.id = id;
         this.nombreUsuario = nombreUsuario;
-        this.contrasena = contrasena;
+        this.hashContrasena = hashContrasena;
         this.activo = activo;
         this.tipoUsuario = tipoUsuario;
         this.sesionIniciada = false;
@@ -52,13 +52,14 @@ public abstract class Cuenta {
     /*
      * Valida la contrasena ingresada para el login.
      *
-     * No expone la contrasena con un getter de uso general: la comparacion
-     * se hace adentro de Cuenta para mantener encapsulado ese dato.
+     * Se compara contra el hash guardado: la contrasena original no se
+     * conserva en ningun lugar.
      */
     public boolean validarContrasena(String contrasenaIngresada) {
         // Una cuenta sin contrasena (datos guardados antes de pedir
         // credenciales) no puede iniciar sesion hasta que se le asignen.
-        return !contrasena.isEmpty() && contrasena.equals(contrasenaIngresada);
+        return !hashContrasena.isEmpty()
+                && Contrasenas.verificar(contrasenaIngresada, hashContrasena);
     }
 
     // Deshabilita la cuenta: no puede iniciar sesion hasta que se la active.
@@ -86,8 +87,8 @@ public abstract class Cuenta {
     }
 
     // Getter usado solo por la capa de persistencia para guardar la cuenta.
-    public String getContrasena() {
-        return contrasena;
+    public String getHashContrasena() {
+        return hashContrasena;
     }
 
     public boolean isActivo() {

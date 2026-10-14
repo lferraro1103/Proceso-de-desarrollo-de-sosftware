@@ -2,6 +2,7 @@ package app;
 
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
+import modelo.Contrasenas;
 import modelo.DatosRecital;
 import modelo.EstadoEvento;
 import modelo.PlanSuscripcion;
@@ -36,40 +37,40 @@ public final class DatosIniciales {
 
         // Usuarios: lgabian a sdiaz tienen distintos planes; tgomez esta inactivo.
         usuarios.add(new Usuario(1, "lgabian", "Lucia", "Gabian",
-                "lucia.gabian@uadebeats.com", "lgabian2024",
+                "lucia.gabian@uadebeats.com", Contrasenas.hashear("lgabian2024"),
                 PlanSuscripcion.PREMIUM, true, TipoUsuario.USUARIO));
         usuarios.add(new Usuario(2, "lferraro", "Leandro", "Ferraro",
-                "leandro.ferraro@uadebeats.com", "lferraro2024",
+                "leandro.ferraro@uadebeats.com", Contrasenas.hashear("lferraro2024"),
                 PlanSuscripcion.ARTIST_PASS, true, TipoUsuario.USUARIO));
         usuarios.add(new Usuario(3, "ncaggia", "Nicolas", "Caggia",
-                "nicolas.caggia@uadebeats.com", "ncaggia2024",
+                "nicolas.caggia@uadebeats.com", Contrasenas.hashear("ncaggia2024"),
                 PlanSuscripcion.FREE, true, TipoUsuario.USUARIO));
         usuarios.add(new Usuario(4, "mrossi", "Martina", "Rossi",
-                "martina.rossi@uadebeats.com", "mrossi2024",
+                "martina.rossi@uadebeats.com", Contrasenas.hashear("mrossi2024"),
                 PlanSuscripcion.PREMIUM, true, TipoUsuario.USUARIO));
         usuarios.add(new Usuario(5, "jperez", "Juan", "Perez",
-                "juan.perez@uadebeats.com", "jperez2024",
+                "juan.perez@uadebeats.com", Contrasenas.hashear("jperez2024"),
                 PlanSuscripcion.FREE, true, TipoUsuario.USUARIO));
         usuarios.add(new Usuario(6, "sdiaz", "Sofia", "Diaz",
-                "sofia.diaz@uadebeats.com", "sdiaz2024",
+                "sofia.diaz@uadebeats.com", Contrasenas.hashear("sdiaz2024"),
                 PlanSuscripcion.ARTIST_PASS, true, TipoUsuario.USUARIO));
         usuarios.add(new Usuario(7, "tgomez", "Tomas", "Gomez",
-                "tomas.gomez@uadebeats.com", "tgomez2024",
+                "tomas.gomez@uadebeats.com", Contrasenas.hashear("tgomez2024"),
                 PlanSuscripcion.FREE, false, TipoUsuario.USUARIO));
         usuarios.add(new Usuario(8, "admin", "Administrador", "UADE Beats",
-                "admin@uadebeats.com", "admin123",
+                "admin@uadebeats.com", Contrasenas.hashear("admin123"),
                 PlanSuscripcion.PREMIUM, true, TipoUsuario.ADMINISTRADOR));
 
-        artistas.add(new Artista(1, "bandahorizonte", "horizonte2024",
+        artistas.add(new Artista(1, "bandahorizonte", Contrasenas.hashear("horizonte2024"),
                 "Banda Horizonte", "Rock",
                 "Banda argentina de rock alternativo.", true));
-        artistas.add(new Artista(2, "djprisma", "prisma2024",
+        artistas.add(new Artista(2, "djprisma", Contrasenas.hashear("prisma2024"),
                 "DJ Prisma", "Electronica",
                 "Productora de shows audiovisuales.", true));
-        artistas.add(new Artista(3, "lunanocturna", "luna2024",
+        artistas.add(new Artista(3, "lunanocturna", Contrasenas.hashear("luna2024"),
                 "Luna Nocturna", "Pop",
                 "Cantautora de pop indie con tres discos editados.", false));
-        artistas.add(new Artista(4, "losdelsur", "sur2024",
+        artistas.add(new Artista(4, "losdelsur", Contrasenas.hashear("sur2024"),
                 "Los del Sur", "Folklore",
                 "Conjunto de folklore con giras por todo el pais.", true));
 
