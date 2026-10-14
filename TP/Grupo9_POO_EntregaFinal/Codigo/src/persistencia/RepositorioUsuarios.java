@@ -23,7 +23,7 @@ final class RepositorioUsuarios {
 
         try (PreparedStatement insertar = conexion.prepareStatement(
                 "INSERT INTO usuarios (id, nombre_usuario, nombre, apellido, "
-                        + "email, contrasena, plan, activo, tipo) "
+                        + "email, contrasena_hash, plan, activo, tipo) "
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 
             for (Usuario usuario : usuarios) {
@@ -32,7 +32,7 @@ final class RepositorioUsuarios {
                 insertar.setString(3, usuario.getNombre());
                 insertar.setString(4, usuario.getApellido());
                 insertar.setString(5, usuario.getEmail());
-                insertar.setString(6, usuario.getContrasena());
+                insertar.setString(6, usuario.getHashContrasena());
                 insertar.setString(7, usuario.getPlanSuscripcion().name());
                 insertar.setInt(8, usuario.isActivo() ? 1 : 0);
                 insertar.setString(9, usuario.getTipoUsuario().name());
@@ -47,7 +47,7 @@ final class RepositorioUsuarios {
         try (Statement consulta = conexion.createStatement();
              ResultSet filas = consulta.executeQuery(
                      "SELECT id, nombre_usuario, nombre, apellido, email, "
-                             + "contrasena, plan, activo, tipo "
+                             + "contrasena_hash, plan, activo, tipo "
                              + "FROM usuarios ORDER BY id")) {
 
             while (filas.next()) {
@@ -57,7 +57,7 @@ final class RepositorioUsuarios {
                         filas.getString("nombre"),
                         filas.getString("apellido"),
                         filas.getString("email"),
-                        filas.getString("contrasena"),
+                        filas.getString("contrasena_hash"),
                         PlanSuscripcion.valueOf(filas.getString("plan")),
                         filas.getInt("activo") == 1,
                         TipoUsuario.valueOf(filas.getString("tipo"))));

@@ -15,6 +15,7 @@ Esta iteración reemplaza los archivos de texto por una base SQLite, agrega un s
 | Modo cliente | Otra PC corre solo la interfaz, sin datos propios, y se conecta al servidor. La ventana y la consola son las mismas. |
 | Interfaces | Las vistas dependen de `ServicioEventos` y no del gestor concreto, de modo que usan igual un gestor local o uno remoto. |
 | Guardado | El gestor guarda después de cada cambio. Se quitan los botones y opciones de guardar y cargar. |
+| Contraseñas | Se guardan como hash PBKDF2 con sal por cuenta y nunca en texto plano. |
 | Calendarios | Una persona puede suscribir Google Calendar o Apple Calendar a un evento. El servidor publica el calendario de cada evento. |
 | Avisos | Se elimina la implementación de ntfy. Queda la interfaz `Notificador` con la implementación inactiva. |
 
@@ -64,6 +65,7 @@ Los parámetros se pasan como propiedades de Java (`-D`):
 | Quién guarda | El gestor, después de cada operación | Las vistas | Servidor, ventana y consola quedan con el mismo comportamiento y las vistas se simplifican. |
 | Persistencia en TXT | Se eliminó junto con los archivos | Dejarla como alternativa | Sin código sin uso. Los datos de prueba pasaron a `DatosIniciales`. |
 | Qué ve el cliente | Una copia de solo lectura que se vuelve a pedir tras cada cambio | Repetir las reglas en el cliente | Las reglas y los permisos se aplican solo en el servidor, que es quien las verifica. |
+| Hash de contraseñas | PBKDF2 con HMAC-SHA256 del JDK, 120.000 iteraciones y sal aleatoria de 16 bytes por contraseña, en el formato `pbkdf2$iteraciones$sal$hash` | Una librería externa (bcrypt, argon2) | No agrega dependencias. Guardar las iteraciones junto al hash permite subirlas más adelante sin invalidar los hash ya guardados. |
 | Sesiones remotas | Token aleatorio por inicio de sesión, en memoria | Enviar usuario y contraseña en cada pedido | La contraseña viaja una sola vez. Al reiniciar el servidor hay que volver a iniciar sesión. |
 | Concurrencia | Las operaciones del gestor son `synchronized` y cada pedido remoto abre y devuelve su sesión | Un gestor por sesión | Un solo conjunto de datos compartido. La sesión de quien usa el equipo del servidor no se pisa. |
 | Conectados que ve cada rol | Administrador y artista ven nombres; el usuario solo ve cuántos hay | Enviar todo | El servidor no envía datos que el rol no puede ver. |
@@ -74,8 +76,8 @@ Un archivo SQLite con seis tablas. Las claves foráneas están activadas.
 
 | Tabla | Contenido |
 |---|---|
-| `usuarios` | Usuarios y administrador: cuenta (única, sin distinguir mayúsculas), nombre, apellido, email, contraseña, plan, activo y rol |
-| `artistas` | Cuenta, contraseña, nombre artístico, género, biografía y verificado |
+| `usuarios` | Usuarios y administrador: cuenta (única, sin distinguir mayúsculas), nombre, apellido, email, hash de la contraseña, plan, activo y rol |
+| `artistas` | Cuenta, hash de la contraseña, nombre artístico, género, biografía y verificado |
 | `eventos` | Título, descripción, inicio, fin, estado, capacidad, plan mínimo, ubicación, streaming y exclusivo |
 | `evento_artistas` | Artistas de cada evento |
 | `evento_conectados` | Usuarios conectados a cada evento |
@@ -208,8 +210,8 @@ Para usar el cliente desde otra PC, el servidor debe aceptar conexiones de la re
 
 | Limitación | Detalle |
 |---|---|
-| Conexión sin cifrar | La API usa HTTP. Fuera de una red de confianza conviene exponerla por un túnel con https o una VPN, porque el inicio de sesión envía la contraseña. |
-| Contraseñas | Se guardan en texto plano en la base, igual que en los archivos de la iteración anterior. |
+| Conexión sin cifrar | La API usa HTTP. Fuera de una red de confianza conviene exponerla por un túnel con https o una VPN, porque el inicio de sesión envía la contraseña. En la base y en la memoria del servidor solo queda el hash, pero por la red viaja una vez al iniciar sesión. |
+| Base anterior | Una base creada antes de guardar hashes no es compatible: hay que borrar `~/.uadebeats/uadebeats.db` para que se cree de nuevo con los datos de prueba. |
 | Sesiones | Viven en memoria y no vencen por tiempo. |
 | Concurrencia | Las operaciones están sincronizadas, pero la ventana del equipo servidor lee objetos del modelo sin bloqueo mientras un cliente remoto puede modificarlos. |
 | Fin del evento | `fechaHoraFin` es la ventana en la que se permite ingresar y no la duración real del evento. Es un problema heredado del diseño original del modelo. |

@@ -24,7 +24,7 @@ final class ConexionSqlite {
             + "nombre TEXT NOT NULL,"
             + "apellido TEXT NOT NULL,"
             + "email TEXT NOT NULL,"
-            + "contrasena TEXT NOT NULL,"
+            + "contrasena_hash TEXT NOT NULL,"
             + "plan TEXT NOT NULL,"
             + "activo INTEGER NOT NULL,"
             + "tipo TEXT NOT NULL)",
@@ -32,7 +32,7 @@ final class ConexionSqlite {
         "CREATE TABLE IF NOT EXISTS artistas ("
             + "id INTEGER PRIMARY KEY,"
             + "nombre_usuario TEXT NOT NULL UNIQUE COLLATE NOCASE,"
-            + "contrasena TEXT NOT NULL,"
+            + "contrasena_hash TEXT NOT NULL,"
             + "nombre_artistico TEXT NOT NULL,"
             + "genero_principal TEXT NOT NULL,"
             + "biografia TEXT NOT NULL,"

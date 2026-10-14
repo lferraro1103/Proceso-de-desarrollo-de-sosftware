@@ -42,13 +42,13 @@ public class Artista extends Cuenta {
      */
     public Artista(int id,
                    String nombreUsuario,
-                   String contrasena,
+                   String hashContrasena,
                    String nombreArtistico,
                    String generoPrincipal,
                    String biografia,
                    boolean verificado) {
 
-        super(id, nombreUsuario, contrasena, true, TipoUsuario.ARTISTA);
+        super(id, nombreUsuario, hashContrasena, true, TipoUsuario.ARTISTA);
         this.nombreArtistico = nombreArtistico;
         this.generoPrincipal = generoPrincipal;
         this.biografia = biografia;

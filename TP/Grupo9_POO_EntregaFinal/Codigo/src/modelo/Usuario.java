@@ -29,12 +29,12 @@ public class Usuario extends Cuenta {
                    String nombre,
                    String apellido,
                    String email,
-                   String contrasena,
+                   String hashContrasena,
                    PlanSuscripcion planSuscripcion,
                    boolean activo,
                    TipoUsuario tipoUsuario) {
 
-        super(id, nombreUsuario, contrasena, activo, tipoUsuario);
+        super(id, nombreUsuario, hashContrasena, activo, tipoUsuario);
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
@@ -50,11 +50,11 @@ public class Usuario extends Cuenta {
                    String nombre,
                    String apellido,
                    String email,
-                   String contrasena,
+                   String hashContrasena,
                    PlanSuscripcion planSuscripcion,
                    boolean activo) {
 
-        this(id, nombreUsuario, nombre, apellido, email, contrasena,
+        this(id, nombreUsuario, nombre, apellido, email, hashContrasena,
                 planSuscripcion, activo, TipoUsuario.USUARIO);
     }
 
@@ -65,7 +65,7 @@ public class Usuario extends Cuenta {
                 nombre,
                 "",
                 nombre.toLowerCase() + "@uadebeats.com",
-                "1234",
+                Contrasenas.hashear("1234"),
                 planSuscripcion,
                 true);
     }
