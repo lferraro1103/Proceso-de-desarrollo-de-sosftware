@@ -202,6 +202,14 @@ java --enable-native-access=ALL-UNNAMED -cp "out:lib/*" Main servidor
 java -cp "out:lib/*" Main cliente http://192.168.0.10:8765
 ```
 
+Para exponer el servidor con un túnel de Cloudflare en un solo paso (requiere `cloudflared`), desde la misma carpeta:
+
+```
+./servidor-publico.sh
+```
+
+El script abre el túnel, toma la dirección https que le asignan, arranca el servidor con `-Duadebeats.url` y muestra el comando para conectar un cliente. Con el argumento `completo` arranca además la interfaz local. Ctrl+C cierra el túnel y el servidor.
+
 En Windows el separador del classpath es `;` en lugar de `:`. La opción `--enable-native-access` evita el aviso que muestra Java al cargar el driver de SQLite; el modo cliente no usa SQLite y no la necesita.
 
 Para usar el cliente desde otra PC, el servidor debe aceptar conexiones de la red (modo `servidor`, o el completo con `-Duadebeats.escuchar=todas`) y el puerto estar abierto en el firewall.
