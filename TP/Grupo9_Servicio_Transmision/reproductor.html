@@ -27,7 +27,6 @@
   .vivo.fin { background: #555; animation: none; }
   @keyframes latido { 50% { opacity: .55; } }
   #titulo { font-size: 16px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #reloj-caja { font-size: 13px; color: #c5cbdb; font-variant-numeric: tabular-nums; }
 
   #sonido { position: absolute; z-index: 10; left: 50%; bottom: 7vh; transform: translateX(-50%);
             background: #7aa2ff; color: #0b0d14; border: 0; border-radius: 999px; padding: 13px 26px;
@@ -53,7 +52,6 @@
     <span class="marca">UADE BEATS</span>
     <span class="vivo" id="etiqueta">EN VIVO</span>
     <span id="titulo"></span>
-    <span id="reloj-caja">minuto <span id="reloj">0:00</span></span>
   </div>
 
   <div id="mensaje"></div>
@@ -79,7 +77,13 @@
   const errores = [];       // codigos de error del reproductor, para diagnostico
 
   // Segundos que deberia llevar la transmision: ahora menos el inicio del evento.
-  const esperado = () => Math.max(0, (Date.now() + desfase - inicio) / 1000);
+  const transcurrido = () => Math.max(0, (Date.now() + desfase - inicio) / 1000);
+
+  // Posicion del video en este momento. Si el video dura menos que el evento, vuelve a empezar en bucle.
+  const esperado = () => {
+    const total = jugador ? jugador.duracion() : 0;
+    return total > 0 ? transcurrido() % total : transcurrido();
+  };
 
   const formato = (s) => {
     s = Math.floor(s);
@@ -111,16 +115,25 @@
     video.style.display = "block";
     video.src = "/media/" + encodeURIComponent(src);
     video.muted = true;
-    video.addEventListener("loadedmetadata", () => { video.currentTime = Math.min(esperado(), video.duration || esperado()); video.play(); });
+    let propio = true;   // true mientras el movimiento del tiempo lo hace esta pagina
+    video.addEventListener("loadedmetadata", () => { video.currentTime = esperado(); video.play(); });
     video.addEventListener("error", () => { detener("ERROR", "No se pudo reproducir la transmision."); });
-    video.addEventListener("ended", () => detener("FINALIZADO", "La transmision finalizo."));
+    // Cualquier movimiento del tiempo que no sea de esta pagina se deshace en el acto.
+    video.addEventListener("seeking", () => {
+      if (propio) return;
+      propio = true;
+      video.currentTime = esperado();
+    });
+    video.addEventListener("seeked", () => { propio = false; });
+    // Si el video termina antes que el evento, vuelve a empezar en el minuto que corresponde.
+    video.addEventListener("ended", () => { propio = true; video.currentTime = esperado(); video.play(); });
 
     jugador = {
       tiempo: () => video.currentTime,
       duracion: () => video.duration || 0,
       reproduciendo: () => !video.paused && !video.ended && video.readyState > 2,
       reproducir: () => video.play(),
-      ir: (t) => { video.currentTime = t; },
+      ir: (t) => { propio = true; video.currentTime = t; },
       activarSonido: () => { video.muted = false; video.volume = 1; },
       destruir: () => { video.pause(); video.removeAttribute("src"); video.load(); video.style.display = "none"; },
     };
@@ -176,8 +189,6 @@
 
     reportado = false;
     intentoDesde = Date.now();
-    diagnostico("Probando video " + (indice + 1) + " de " + videos.length
-      + (errores.length ? " (fallaron: " + errores.map((x) => x.split(":")[1]).join(", ") + ")" : ""));
     yt = new YT.Player("reproductor", {
       videoId: videos[indice],
       playerVars: {
@@ -188,7 +199,7 @@
         // Los navegadores solo dejan reproducir solo si esta silenciado.
         onReady: (e) => { e.target.mute(); e.target.playVideo(); document.getElementById("sonido").hidden = false; },
         onStateChange: (e) => {
-          if (e.data === YT.PlayerState.ENDED) detener("FINALIZADO", "La transmision finalizo.");
+          if (e.data === YT.PlayerState.ENDED) { yt.seekTo(esperado(), true); yt.playVideo(); }
           // Primera vez que reproduce: se recuerda que este video sirve.
           if (e.data === YT.PlayerState.PLAYING && !reportado) {
             reportado = true;
@@ -271,15 +282,16 @@
       if (terminado || !jugador) return;
 
       const meta = esperado();
-      document.getElementById("reloj").textContent = formato(meta);
-
-      const duracion = jugador.duracion();
-      if (duracion > 0 && meta >= duracion) { detener("FINALIZADO", "La transmision finalizo."); return; }
 
       if (!jugador.reproduciendo()) jugador.reproducir();
 
       // Si se adelanto o atraso (o el video se trabo), vuelve al minuto del directo.
-      if (jugador.reproduciendo() && Math.abs(jugador.tiempo() - meta) > 4) jugador.ir(meta);
+      // La diferencia es circular: cerca del final del video y del bucle no cuenta como salto.
+      const total = jugador.duracion();
+      let diferencia = Math.abs(jugador.tiempo() - meta);
+      if (total > 0) diferencia = Math.min(diferencia, total - diferencia);
+
+      if (jugador.reproduciendo() && diferencia > 4) jugador.ir(meta);
     }, 1000);
   }
 
