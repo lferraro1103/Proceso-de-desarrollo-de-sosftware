@@ -35,6 +35,9 @@
   #mensaje { position: absolute; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center;
              flex-direction: column; text-align: center; padding: 30px; background: rgba(8,10,16,.94); font-size: 24px; }
   #mensaje a { color: #7aa2ff; }
+  #aviso { position: absolute; z-index: 11; top: 64px; left: 50%; transform: translateX(-50%); width: min(90%, 720px);
+           background: rgba(20,24,36,.96); border: 1px solid #7aa2ff; border-radius: 10px; padding: 12px 18px;
+           font-size: 15px; line-height: 1.4; text-align: center; display: none; }
   #diagnostico { position: absolute; z-index: 9; left: 14px; bottom: 10px; font-size: 12px; color: #9aa3b8;
                  max-width: 70%; pointer-events: none; }
 </style>
@@ -54,6 +57,7 @@
   </div>
 
   <div id="mensaje"></div>
+  <div id="aviso">YouTube pide verificar que no sos un robot. Si ves <b>Sign in</b> en el reproductor, tocalo e inicia sesion.<br>Si ya tenes sesion de YouTube en este navegador, recarga esta pagina.</div>
   <div id="diagnostico"></div>
   <button id="sonido" hidden>Activar sonido y pantalla completa</button>
 </div>
@@ -125,11 +129,41 @@
 
   // ---------- YouTube: reproductor incrustado ----------
 
-  let apiLista = false, indice = 0, yt = null, reportado = false;
+  let apiLista = false, indice = 0, yt = null, reportado = false, intentoDesde = 0, agotado = false;
 
   function diagnostico(texto) {
     document.getElementById("diagnostico").textContent = texto;
   }
+
+  // Si el video no arranca y YouTube no avisa ningun error (por ejemplo, queda en la
+  // pantalla de verificacion "Sign in"), se destapa el reproductor para que la
+  // persona pueda iniciar sesion y, pasado un rato, se prueba con el siguiente video.
+  setInterval(() => {
+    if (terminado || agotado || !yt || !yt.getPlayerState || src) return;
+
+    const escudo = document.getElementById("escudo");
+    const aviso = document.getElementById("aviso");
+
+    if (yt.getPlayerState() === YT.PlayerState.PLAYING) {
+      escudo.style.pointerEvents = "";
+      aviso.style.display = "none";
+      return;
+    }
+
+    const espera = Date.now() - intentoDesde;
+
+    if (espera > 6000) {
+      escudo.style.pointerEvents = "none";
+      aviso.style.display = "block";
+    }
+
+    if (espera > 45000) {
+      escudo.style.pointerEvents = "";
+      aviso.style.display = "none";
+      errores.push(videos[indice] + ":sin-inicio");
+      siguienteVideo();
+    }
+  }, 1000);
 
   // Un reproductor nuevo por cada video: despues de un error, YouTube deja el
   // reproductor viejo en estado de error y los videos siguientes fallarian igual.
@@ -141,6 +175,7 @@
     }
 
     reportado = false;
+    intentoDesde = Date.now();
     diagnostico("Probando video " + (indice + 1) + " de " + videos.length
       + (errores.length ? " (fallaron: " + errores.map((x) => x.split(":")[1]).join(", ") + ")" : ""));
     yt = new YT.Player("reproductor", {
@@ -157,6 +192,9 @@
           // Primera vez que reproduce: se recuerda que este video sirve.
           if (e.data === YT.PlayerState.PLAYING && !reportado) {
             reportado = true;
+            agotado = false;
+            document.getElementById("aviso").style.display = "none";
+            document.getElementById("escudo").style.pointerEvents = "";
             diagnostico("");
             fetch("/exito?v=" + encodeURIComponent(videos[indice])).catch(() => {});
           }
@@ -204,13 +242,17 @@
   }
 
   function sinReproduccion() {
-    // Ningun video se pudo reproducir aca: se informa, con los codigos de error de YouTube.
-    const caja = document.getElementById("mensaje");
-    caja.innerHTML = "No se pudo reproducir la transmision.<br>"
-      + "<small style='color:#9aa3b8'>YouTube rechazo los videos (codigos: "
-      + errores.map((x) => x.split(":")[1]).join(", ") + ")</small>";
-    caja.style.display = "flex";
+    // Ningun video arranco. El ultimo reproductor queda a la vista y sin la capa que lo tapa, para que se
+    // pueda tocar "Sign in" si YouTube pide verificar la sesion; la tarjeta explica que hacer.
+    const aviso = document.getElementById("aviso");
+    aviso.innerHTML = "No se pudo reproducir la transmision <small style='color:#9aa3b8'>(codigos de YouTube: "
+      + errores.map((x) => x.split(":")[1]).join(", ") + ")</small>.<br>"
+      + "Si ves <b>Sign in</b> en el reproductor, tocalo e inicia sesion. "
+      + "Si ya tenes sesion de YouTube en este navegador, recarga esta pagina.";
+    aviso.style.display = "block";
+    document.getElementById("escudo").style.pointerEvents = "none";
     document.getElementById("sonido").hidden = true;
+    agotado = true;
     diagnostico("");
   }
 
