@@ -1,17 +1,26 @@
 // Servicio de transmisiones de UADE Beats.
 //
 // Microservicio aparte del programa principal. Dado el nombre de un artista y
-// la hora en que empezo el evento, busca un recital suyo en YouTube y lo
-// muestra en una pagina con el reproductor: sin controles para adelantar,
-// volver ni pausar, y arrancando en el minuto que corresponde, como si fuera
-// una transmision en vivo. No tiene dependencias: usa el servidor HTTP y
-// fetch que trae Node.
+// la hora en que empezo el evento, muestra su recital en una pagina a pantalla
+// completa, sin controles para adelantar, volver ni pausar, y arrancando en el
+// minuto que corresponde, como si fuera una transmision en vivo. No tiene
+// dependencias: usa el servidor HTTP y fetch que trae Node.
+//
+// De donde sale el video, en este orden:
+//   1. Un archivo de la carpeta media/ cuyo nombre sea el del artista
+//      (por ejemplo sabrina-carpenter.mp4). El servicio lo transmite el mismo,
+//      con soporte de Range, sin depender de ningun sitio externo.
+//   2. Si no hay archivo, se prueban recitales de YouTube en el reproductor
+//      incrustado de YouTube, como lo permite YouTube. Los videos que sus
+//      duenos no dejan reproducir fuera de YouTube no se descargan ni se
+//      retransmiten: la pagina pasa al siguiente.
 //
 //   GET /salud                    -> { estado, espectadores }
 //   GET /transmision?q=<artista>&inicio=<fecha ISO>
 //        -> { titulo, canal, duracion, enVivo, url, ruta, alternativas }
 //           ruta es la pagina del reproductor; 404 si no hay ningun recital
-//   GET /reproductor?v=<id>&alt=<ids>&inicio=<ms>&titulo=<texto>&e=<espectador>
+//   GET /media/<archivo>          -> el video de la carpeta media/ (con Range)
+//   GET /reproductor?src=<archivo>|v=<id>&alt=<ids>&inicio=<ms>&titulo=<texto>&e=<espectador>
 //        -> pagina HTML con el reproductor sincronizado
 //   GET /latido?e=<espectador>    -> { vigente }   (la pagina lo pide cada pocos segundos)
 //   GET /salida?e=<patron>        -> { cerrados }  cierra espectadores (ver abajo)
@@ -138,6 +147,61 @@ function recorrer(nodo, accion) {
   }
 }
 
+// ---------- videos propios (carpeta media/) ----------
+
+const fs = require("fs");
+const path = require("path");
+
+const CARPETA_MEDIA = path.join(__dirname, "media");
+const TIPOS = { ".mp4": "video/mp4", ".m4v": "video/mp4", ".webm": "video/webm" };
+
+// Nombre de archivo de un artista: "Sabrina Carpenter" -> "sabrina-carpenter".
+const aNombreDeArchivo = (t) => sinAcentos(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+// Archivo de media/ que corresponde al artista, o null.
+function buscarArchivoPropio(artista) {
+  if (!fs.existsSync(CARPETA_MEDIA)) return null;
+
+  const buscado = aNombreDeArchivo(artista);
+  return fs.readdirSync(CARPETA_MEDIA).find((archivo) =>
+    TIPOS[path.extname(archivo).toLowerCase()]
+      && aNombreDeArchivo(path.basename(archivo, path.extname(archivo))) === buscado) || null;
+}
+
+// Entrega el archivo con soporte de Range, que los navegadores necesitan para reproducir.
+function servirMedia(req, res, nombre) {
+  const archivo = path.join(CARPETA_MEDIA, path.basename(nombre));
+
+  if (!fs.existsSync(archivo) || !TIPOS[path.extname(archivo).toLowerCase()]) {
+    return responder(res, 404, { error: "Archivo inexistente." });
+  }
+
+  const total = fs.statSync(archivo).size;
+  const tipo = TIPOS[path.extname(archivo).toLowerCase()];
+  const rango = /bytes=(\d*)-(\d*)/.exec(req.headers.range || "");
+
+  if (!rango) {
+    res.writeHead(200, { "Content-Type": tipo, "Content-Length": total, "Accept-Ranges": "bytes" });
+    return fs.createReadStream(archivo).pipe(res);
+  }
+
+  const desde = rango[1] ? Number(rango[1]) : Math.max(0, total - Number(rango[2]));
+  const hasta = rango[1] && rango[2] ? Math.min(Number(rango[2]), total - 1) : total - 1;
+
+  if (desde > hasta || desde >= total) {
+    res.writeHead(416, { "Content-Range": `bytes */${total}` });
+    return res.end();
+  }
+
+  res.writeHead(206, {
+    "Content-Type": tipo,
+    "Content-Length": hasta - desde + 1,
+    "Content-Range": `bytes ${desde}-${hasta}/${total}`,
+    "Accept-Ranges": "bytes",
+  });
+  fs.createReadStream(archivo, { start: desde, end: hasta }).pipe(res);
+}
+
 // ---------- eleccion del mejor resultado ----------
 
 const sinAcentos = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -209,6 +273,25 @@ async function buscarCandidatos(artista) {
 // Mejor video para el momento actual: si el evento empezo hace 30 minutos,
 // el video tiene que durar mas que eso. Si ninguno alcanza, el mas largo.
 async function buscarTransmision(artista, inicioMs, espectador) {
+  const quien = espectador ? "&e=" + encodeURIComponent(espectador) : "";
+
+  // 1. Video propio: se transmite desde este servicio.
+  const propio = buscarArchivoPropio(artista);
+
+  if (propio) {
+    return {
+      titulo: artista + " (transmision propia)",
+      canal: "UADE Beats",
+      duracion: "",
+      enVivo: true,
+      url: "/media/" + encodeURIComponent(propio),
+      ruta: "/reproductor?src=" + encodeURIComponent(propio) + quien
+        + "&inicio=" + inicioMs + "&titulo=" + encodeURIComponent(artista),
+      alternativas: [],
+    };
+  }
+
+  // 2. Recital de YouTube que permita reproducirse incrustado.
   const candidatos = await buscarCandidatos(artista);
 
   if (!candidatos.length) {
@@ -225,8 +308,7 @@ async function buscarTransmision(artista, inicioMs, espectador) {
   // Varias de reserva: algunos videos no permiten reproducirse incrustados.
   const alternativas = resto.slice(0, 7);
 
-  const ruta = "/reproductor?v=" + mejor.id
-    + (espectador ? "&e=" + encodeURIComponent(espectador) : "")
+  const ruta = "/reproductor?v=" + mejor.id + quien
     + "&alt=" + alternativas.map((a) => a.id).join(",")
     + "&inicio=" + inicioMs
     + "&titulo=" + encodeURIComponent(mejor.titulo);
@@ -241,9 +323,6 @@ function responder(res, codigo, cuerpo) {
   res.writeHead(codigo, { "Content-Type": "application/json; charset=utf-8" });
   res.end(JSON.stringify(cuerpo));
 }
-
-const fs = require("fs");
-const path = require("path");
 
 const servidor = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
@@ -274,6 +353,11 @@ const servidor = http.createServer(async (req, res) => {
   // Hora del servidor, para que la pagina no dependa del reloj de la PC.
   if (url.pathname === "/hora") {
     return responder(res, 200, { ahora: Date.now() });
+  }
+
+  // Video propio.
+  if (url.pathname.startsWith("/media/")) {
+    return servirMedia(req, res, decodeURIComponent(url.pathname.slice("/media/".length)));
   }
 
   // Pagina con el reproductor.
