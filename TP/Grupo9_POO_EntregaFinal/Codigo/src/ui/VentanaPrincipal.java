@@ -8,6 +8,7 @@ import excepciones.ErrorDeServicioException;
 import gestor.Accion;
 import gestor.VinculoCalendario;
 import gestor.ServicioEventos;
+import gestor.Transmision;
 import modelo.Artista;
 import modelo.DatosRecital;
 import modelo.EstadoEvento;
@@ -96,6 +97,7 @@ public class VentanaPrincipal extends JFrame {
     private final JButton finalizar = new JButton("Finalizar");
     private final JButton cancelar = new JButton("Cancelar");
     private final JButton verConectados = new JButton("Ver conectados");
+    private final JButton verTransmision = new JButton("Ver transmision");
     private final JButton calendarioGoogle = new JButton("Google Calendar");
     private final JButton calendarioApple = new JButton("Apple Calendar");
 
@@ -345,6 +347,7 @@ public class VentanaPrincipal extends JFrame {
         cancelar.addActionListener(
                 e -> ejecutar(() -> cambiarEstadoSeleccionado("cancelar")));
         verConectados.addActionListener(e -> ejecutar(this::verConectados));
+        verTransmision.addActionListener(e -> ejecutar(this::verTransmision));
 
         // Primera fila: ciclo de vida del evento.
         JPanel filaEvento = crearFila("Evento");
@@ -365,6 +368,7 @@ public class VentanaPrincipal extends JFrame {
         agregarSiPermitido(filaGestion, Accion.EXPULSAR_USUARIO,
                 crearBoton("Expulsar usuario", this::expulsarUsuario));
         agregarSiPermitido(filaGestion, Accion.VER_CONECTADOS, verConectados);
+        agregarSiPermitido(filaGestion, Accion.VER_TRANSMISION, verTransmision);
         filaGestion.add(crearBoton("Actualizar", this::actualizarDesdeOrigen));
 
         // Tercera fila: suscribir el calendario completo de la cuenta.
@@ -479,6 +483,7 @@ public class VentanaPrincipal extends JFrame {
         finalizar.setEnabled(estadoEvento != null && estadoEvento.permiteFinalizar());
         cancelar.setEnabled(estadoEvento != null && estadoEvento.permiteCancelar());
         verConectados.setEnabled(evento != null);
+        verTransmision.setEnabled(estadoEvento == EstadoEvento.EN_CURSO);
         calendarioGoogle.setEnabled(evento != null);
         calendarioApple.setEnabled(evento != null);
 
@@ -487,7 +492,7 @@ public class VentanaPrincipal extends JFrame {
                 : "No disponible para el estado " + evento.getEstado() + ".";
 
         for (JButton boton : new JButton[] {iniciar, pausar, reanudar,
-                finalizar, cancelar, verConectados,
+                finalizar, cancelar, verConectados, verTransmision,
                 calendarioGoogle, calendarioApple}) {
             boton.setToolTipText(boton.isEnabled() ? null : ayuda);
         }
@@ -559,6 +564,27 @@ public class VentanaPrincipal extends JFrame {
                     + "despues se actualiza solo.");
         } catch (IOException e) {
             mostrarError("No se pudo vincular: " + e.getMessage());
+        }
+    }
+
+    /*
+     * Abre en el navegador la transmision del evento seleccionado. Un usuario
+     * solo puede verla si ya ingreso al evento; el gestor lo verifica.
+     */
+    private void verTransmision() {
+        Evento evento = eventoSeleccionado();
+
+        if (evento == null) {
+            mostrarError("Seleccione un evento.");
+            return;
+        }
+
+        try {
+            Transmision transmision = gestor.obtenerTransmision(evento.getId());
+            Navegador.abrir(transmision.url());
+            mostrarInfo("Se abrio la transmision: " + transmision.titulo());
+        } catch (AccesoDenegadoException | IOException e) {
+            mostrarError(e.getMessage());
         }
     }
 

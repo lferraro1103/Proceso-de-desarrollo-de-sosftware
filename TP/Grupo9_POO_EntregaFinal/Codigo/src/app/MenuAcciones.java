@@ -5,6 +5,7 @@ import excepciones.ErrorDeServicioException;
 import calendario.VinculoApple;
 import calendario.VinculoGoogle;
 import gestor.ServicioEventos;
+import gestor.Transmision;
 import gestor.VinculoCalendario;
 import modelo.Artista;
 import modelo.Cuenta;
@@ -16,6 +17,7 @@ import modelo.RecitalEnVivo;
 import modelo.RegistroAcceso;
 import modelo.TipoUsuario;
 import modelo.Usuario;
+import ui.Navegador;
 import ui.VentanaPrincipal;
 
 import java.io.IOException;
@@ -549,6 +551,22 @@ public final class MenuAcciones {
                 + recital.getCantidadConectados()
                 + "/"
                 + recital.getCapacidadMaxima());
+    }
+
+    // Muestra y abre la transmision de un evento en curso.
+    public static void verTransmision(Scanner scanner,
+                                      ServicioEventos gestor) {
+
+        int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
+
+        try {
+            Transmision transmision = gestor.obtenerTransmision(idEvento);
+            System.out.println("Transmision: " + transmision.titulo());
+            System.out.println(transmision.url());
+            Navegador.abrir(transmision.url());
+        } catch (AccesoDenegadoException | IOException e) {
+            System.out.println("No se pudo ver la transmision: " + e.getMessage());
+        }
     }
 
     // Suscribe un calendario externo a un evento.

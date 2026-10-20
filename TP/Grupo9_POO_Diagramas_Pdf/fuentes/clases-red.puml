@@ -53,8 +53,16 @@ package "Servidor" {
   }
 }
 
+package "Servicio aparte en Node" {
+  class ServicioTransmision {
+    servidor.js: busca recitales en YouTube
+    GET /transmision?q=artista
+  }
+}
+
 interface ServicioEventos
 class GestorEventosEnVivo
+class ClienteTransmision
 
 GestorRemoto ..|> ServicioEventos
 GestorEventosEnVivo ..|> ServicioEventos
@@ -74,4 +82,7 @@ ManejadorCalendario --> GestorEventosEnVivo
 PublicadorHttp --> CodigosCalendario
 PublicadorHttp --> ConfiguracionServidor
 ClienteHttp ..> ManejadorApi : HTTP + JSON
+ManejadorApi --> ClienteTransmision
+GestorEventosEnVivo --> ClienteTransmision
+ClienteTransmision ..> ServicioTransmision : HTTP
 @enduml

@@ -57,13 +57,18 @@ public class GestorEventosEnVivo implements ServicioEventos {
     // Direccion donde se publica el calendario de cada evento.
     private PublicadorCalendario publicador;
 
+    // Servicio que encuentra la transmision de cada evento.
+    private ProveedorTransmision proveedorTransmision;
+
     // Constructor: inicializa las colecciones y recibe sus colaboradores.
     public GestorEventosEnVivo(Persistencia persistencia,
                                Notificador notificador,
-                               PublicadorCalendario publicador) {
+                               PublicadorCalendario publicador,
+                               ProveedorTransmision proveedorTransmision) {
 
         this.persistencia = persistencia;
         this.publicador = publicador;
+        this.proveedorTransmision = proveedorTransmision;
         eventos = new ArrayList<>();
         usuariosRegistrados = new ArrayList<>();
         artistasRegistrados = new ArrayList<>();
@@ -560,6 +565,62 @@ public class GestorEventosEnVivo implements ServicioEventos {
         }
 
         return publicador.urlFeed(sesion.getCuentaActual(), evento);
+    }
+
+    /*
+     * Transmision de un evento en curso. Se decide con el bloqueo tomado, pero
+     * la busqueda en el servicio externo se hace sin el: puede tardar y no
+     * debe frenar al resto de las operaciones.
+     */
+    @Override
+    public Transmision obtenerTransmision(int idEvento)
+            throws AccesoDenegadoException, IOException {
+        return proveedorTransmision.buscar(consultaDeTransmision(idEvento));
+    }
+
+    /*
+     * Verifica que la cuenta actual pueda ver la transmision del evento y
+     * devuelve que buscar: el artista principal o, si no tiene, el titulo.
+     * Tambien la usa el servidor antes de buscar fuera del bloqueo.
+     */
+    public synchronized String consultaDeTransmision(int idEvento)
+            throws AccesoDenegadoException {
+
+        sesion.exigir(Accion.VER_TRANSMISION);
+
+        Evento evento = buscarEventoVisible(idEvento);
+
+        if (evento == null) {
+            throw new IllegalArgumentException("Evento inexistente.");
+        }
+
+        if (evento.getEstado() != EstadoEvento.EN_CURSO) {
+            throw new AccesoDenegadoException("La transmision solo esta "
+                    + "disponible mientras el evento esta en curso. Estado "
+                    + "actual: " + evento.getEstado() + ".");
+        }
+
+        Cuenta actual = sesion.getCuentaActual();
+
+        if (actual.getTipoUsuario() == TipoUsuario.USUARIO
+                && !estaConectado(evento, actual)) {
+            throw new AccesoDenegadoException(
+                    "Debe ingresar al evento para ver la transmision.");
+        }
+
+        return evento.getArtistas().isEmpty()
+                ? evento.getTitulo()
+                : evento.getArtistas().get(0).getNombreArtistico();
+    }
+
+    private boolean estaConectado(Evento evento, Cuenta cuenta) {
+        for (Usuario usuario : evento.getUsuariosConectados()) {
+            if (usuario.getId() == cuenta.getId()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /*

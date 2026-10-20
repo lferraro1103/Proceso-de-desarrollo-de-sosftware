@@ -1,10 +1,12 @@
 package gestor;
 
+import excepciones.AccesoDenegadoException;
 import modelo.Artista;
 import modelo.Evento;
 import modelo.RegistroAcceso;
 import modelo.Usuario;
 
+import java.io.IOException;
 import java.util.List;
 
 /*
@@ -35,6 +37,14 @@ public interface ServicioConsultas {
     Artista buscarArtistaPorId(int id);
 
     boolean existeNombreUsuario(String nombreUsuario);
+
+    /*
+     * Transmision de un evento en curso. Un usuario solo la recibe si ya
+     * ingreso al evento. Falla con AccesoDenegadoException si no corresponde
+     * y con IOException si el servicio de transmisiones no la encuentra.
+     */
+    Transmision obtenerTransmision(int idEvento)
+            throws AccesoDenegadoException, IOException;
 
     /*
      * Trae los datos mas recientes. Cuando el gestor es local los datos ya

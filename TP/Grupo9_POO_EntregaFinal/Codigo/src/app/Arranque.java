@@ -1,8 +1,10 @@
 package app;
 
 import gestor.GestorEventosEnVivo;
+import gestor.ProveedorTransmision;
 import notificacion.NotificadorInactivo;
 import persistencia.PersistenciaSqlite;
+import transmision.ClienteTransmision;
 import servidor.CodigosCalendario;
 import servidor.ConfiguracionServidor;
 import servidor.ManejadorApi;
@@ -32,10 +34,13 @@ final class Arranque {
         ConfiguracionServidor configuracion = new ConfiguracionServidor(aceptaRed);
         CodigosCalendario codigos = new CodigosCalendario();
 
+        ProveedorTransmision proveedorTransmision = new ClienteTransmision();
+
         GestorEventosEnVivo gestor = new GestorEventosEnVivo(
                 new PersistenciaSqlite(),
                 new NotificadorInactivo(),
-                new PublicadorHttp(configuracion, codigos));
+                new PublicadorHttp(configuracion, codigos),
+                proveedorTransmision);
 
         gestor.cargarDatos();
 
@@ -46,7 +51,7 @@ final class Arranque {
 
         try {
             ServidorHttp.iniciar(configuracion, Map.of(
-                    "/api/", new ManejadorApi(gestor),
+                    "/api/", new ManejadorApi(gestor, proveedorTransmision),
                     "/calendario/", new ManejadorCalendario(gestor, codigos)));
         } catch (BindException e) {
             throw new IOException("El puerto " + configuracion.getPuerto()

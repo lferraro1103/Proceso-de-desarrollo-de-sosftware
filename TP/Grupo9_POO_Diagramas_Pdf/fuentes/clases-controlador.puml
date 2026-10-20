@@ -20,6 +20,7 @@ interface ServicioConsultas {
   +listarEventosVisibles() : List<Evento>
   +listarRegistros() : List<RegistroAcceso>
   +buscarEventoVisible(id : int) : Evento
+  +obtenerTransmision(idEvento : int) : Transmision
   +actualizar() : void
 }
 
@@ -38,6 +39,7 @@ class GestorEventosEnVivo {
   +autenticar(nombreUsuario, contrasena) : Cuenta
   +asumirSesion(cuenta : Cuenta) : void
   +urlCalendario(idEvento : int) : String
+  +consultaDeTransmision(idEvento : int) : String
   +buscarEventoVisiblePara(cuenta : Cuenta, id : int) : Evento
   +cargarDatos() : void
   +guardarDatos() : void
