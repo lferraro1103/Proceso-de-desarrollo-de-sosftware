@@ -52,17 +52,26 @@ Al darse de baja, la página detiene y elimina el reproductor y avisa que la tra
 
 ## De dónde sale el video
 
-1. **Video propio (recomendado).** Si en la carpeta `media/` hay un archivo con el nombre del artista, por ejemplo `sabrina-carpenter.mp4` (también `.webm` y `.m4v`), el servicio lo transmite él mismo, con soporte de `Range` para que el navegador lo reproduzca. No depende de ningún sitio externo. El nombre se arma con el artista en minúsculas, sin acentos y con guiones. La carpeta está ignorada por git: los videos no se suben al repositorio.
-2. **YouTube incrustado.** Si no hay archivo, busca recitales del artista y los muestra con el reproductor incrustado que ofrece YouTube:
-   - Busca `<artista> concierto completo en vivo` y `<artista> live concert full show`.
-   - Descarta los videos cuyo título o canal no nombran al artista.
-   - Prefiere los de recital, los largos y los que duran más que lo transcurrido desde el inicio del evento.
-   - Prueba hasta ocho. Los videos que sus dueños no permiten reproducir fuera de YouTube **no se descargan ni se retransmiten**: la página pasa al siguiente y, si ninguno sirve, avisa que hace falta un video propio.
+Siempre es un recital real. En este orden:
 
-Los videos que se agreguen a `media/` tienen que ser contenido que se pueda usar (propio, con licencia o autorizado).
+1. **Archivo propio (opcional).** Si en la carpeta `media/` hay un archivo con el nombre del artista, por ejemplo `sabrina-carpenter.mp4` (también `.webm` y `.m4v`), el servicio lo transmite él mismo, con soporte de `Range`. La carpeta está ignorada por git. Solo sirve si ya tenés un recital que puedas usar (propio, con licencia o autorizado); no viene ningún archivo.
+2. **Recital de YouTube**, en el reproductor incrustado que ofrece YouTube.
+   - **Con clave de la API de YouTube** (recomendado): busca primero un **directo en este momento** y después recitales largos, y solo considera los videos que sus dueños dejan reproducir incrustados. Así casi siempre hay uno que se reproduce.
+   - **Sin clave:** lee la página de resultados y prueba hasta quince videos. Muchos recitales no permiten reproducirse fuera de YouTube; los que fallan se recuerdan y no se vuelven a ofrecer, pero puede que haya que esperar a que pase por varios.
+
+Los videos que sus dueños no dejan reproducir fuera de YouTube **no se descargan ni se retransmiten**.
+
+### Cómo conseguir la clave (gratis)
+
+1. En <https://console.cloud.google.com> crear un proyecto.
+2. Activar «YouTube Data API v3» en Biblioteca de APIs.
+3. En Credenciales, crear una clave de API.
+4. Guardarla en el archivo `~/.uadebeats/youtube.key` (solo la clave, sin comillas), o definirla en la variable `YOUTUBE_API_KEY`. No la subas al repositorio.
+
+La búsqueda con la API cuesta 200 de las 10.000 unidades diarias gratuitas, y los resultados se guardan diez minutos.
 
 ## Limitaciones
 
 - Usa la página de resultados de YouTube sin clave de API. Si YouTube cambia su formato hay que ajustar la lectura.
 - Devuelve un recital del artista, que puede ser grabado y no necesariamente transmitirse en ese momento.
-- Muchos recitales no permiten reproducirse fuera de YouTube (o YouTube pide iniciar sesión según la red). Para una demostración segura, usar un video propio en `media/`.
+- Sin clave de la API, muchos recitales no permiten reproducirse fuera de YouTube (o YouTube pide iniciar sesión según la red) y hay que probar varios. La clave de la API filtra solo los que sí se pueden incrustar. La búsqueda con la API no se probó con una clave real.
