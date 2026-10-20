@@ -35,6 +35,8 @@
   #mensaje { position: absolute; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center;
              flex-direction: column; text-align: center; padding: 30px; background: rgba(8,10,16,.94); font-size: 24px; }
   #mensaje a { color: #7aa2ff; }
+  #diagnostico { position: absolute; z-index: 9; left: 14px; bottom: 10px; font-size: 12px; color: #9aa3b8;
+                 max-width: 70%; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -52,6 +54,7 @@
   </div>
 
   <div id="mensaje"></div>
+  <div id="diagnostico"></div>
   <button id="sonido" hidden>Activar sonido y pantalla completa</button>
 </div>
 
@@ -124,6 +127,10 @@
 
   let apiLista = false, indice = 0, yt = null, reportado = false;
 
+  function diagnostico(texto) {
+    document.getElementById("diagnostico").textContent = texto;
+  }
+
   // Un reproductor nuevo por cada video: despues de un error, YouTube deja el
   // reproductor viejo en estado de error y los videos siguientes fallarian igual.
   function crearJugadorYoutube() {
@@ -134,6 +141,8 @@
     }
 
     reportado = false;
+    diagnostico("Probando video " + (indice + 1) + " de " + videos.length
+      + (errores.length ? " (fallaron: " + errores.map((x) => x.split(":")[1]).join(", ") + ")" : ""));
     yt = new YT.Player("reproductor", {
       videoId: videos[indice],
       playerVars: {
@@ -148,6 +157,7 @@
           // Primera vez que reproduce: se recuerda que este video sirve.
           if (e.data === YT.PlayerState.PLAYING && !reportado) {
             reportado = true;
+            diagnostico("");
             fetch("/exito?v=" + encodeURIComponent(videos[indice])).catch(() => {});
           }
         },
@@ -194,10 +204,14 @@
   }
 
   function sinReproduccion() {
+    // Ningun video se pudo reproducir aca: se informa, con los codigos de error de YouTube.
     const caja = document.getElementById("mensaje");
-    caja.innerHTML = "Ningun recital de este artista permite reproducirse fuera de YouTube.<br><br>"
-      + "Con una clave de la API de YouTube el servicio busca solo los que si lo permiten.";
+    caja.innerHTML = "No se pudo reproducir la transmision.<br>"
+      + "<small style='color:#9aa3b8'>YouTube rechazo los videos (codigos: "
+      + errores.map((x) => x.split(":")[1]).join(", ") + ")</small>";
     caja.style.display = "flex";
+    document.getElementById("sonido").hidden = true;
+    diagnostico("");
   }
 
   window.onYouTubeIframeAPIReady = () => { apiLista = true; iniciar(); };
