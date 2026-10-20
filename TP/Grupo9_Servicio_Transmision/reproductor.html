@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>UADE Beats - Transmision</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0b0d14; color: #e8eaf0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+         min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+  header { width: 100%; max-width: 1100px; padding: 18px 20px 10px; display: flex; align-items: center; gap: 14px; }
+  .marca { font-weight: 800; letter-spacing: .5px; color: #7aa2ff; }
+  .vivo { background: #e5293e; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 4px;
+          animation: latido 1.6s infinite; }
+  .vivo.fin { background: #555; animation: none; }
+  @keyframes latido { 50% { opacity: .55; } }
+  h1 { font-size: 18px; font-weight: 600; margin: 0; flex: 1; }
+  #marco { position: relative; width: 100%; max-width: 1100px; aspect-ratio: 16 / 9; background: #000;
+           border-radius: 10px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+  #reproductor, #reproductor iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* Capa transparente: bloquea clics y atajos sobre el video (pausa, adelantar). */
+  #escudo { position: absolute; inset: 0; z-index: 5; }
+  #sonido { position: absolute; z-index: 10; left: 50%; bottom: 22px; transform: translateX(-50%);
+            background: #7aa2ff; color: #0b0d14; border: 0; border-radius: 999px; padding: 11px 22px;
+            font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 18px rgba(0,0,0,.5); }
+  #mensaje { position: absolute; inset: 0; z-index: 8; display: none; align-items: center; justify-content: center;
+             text-align: center; padding: 30px; background: rgba(11,13,20,.92); font-size: 22px; }
+  footer { width: 100%; max-width: 1100px; padding: 12px 20px 30px; font-size: 14px; color: #9aa3b8;
+           display: flex; justify-content: space-between; }
+  #reloj { font-variant-numeric: tabular-nums; color: #e8eaf0; }
+</style>
+</head>
+<body>
+<header>
+  <span class="marca">UADE BEATS</span>
+  <span class="vivo" id="etiqueta">EN VIVO</span>
+  <h1 id="titulo"></h1>
+</header>
+
+<div id="marco">
+  <div id="reproductor"></div>
+  <div id="escudo" oncontextmenu="return false"></div>
+  <div id="mensaje"></div>
+  <button id="sonido" hidden>Activar sonido</button>
+</div>
+
+<footer>
+  <span>Transmision en directo: no se puede pausar, adelantar ni volver.</span>
+  <span>Minuto <span id="reloj">0:00</span></span>
+</footer>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+  // Parametros: v = video, alt = videos de reserva, inicio = cuando empezo el evento (ms).
+  const params = new URLSearchParams(location.search);
+  const videos = [params.get("v"), ...(params.get("alt") || "").split(",")].filter(Boolean);
+  const inicio = Number(params.get("inicio"));
+  document.getElementById("titulo").textContent = params.get("titulo") || "";
+
+  let desfase = 0;          // diferencia entre el reloj del servidor y el de esta pagina
+  let jugador = null;
+  let indice = 0;
+  let terminado = false;
+  const errores = [];       // codigos de error del reproductor, para diagnostico
+  let apiLista = false, horaLista = false;
+
+  // Segundos que deberia llevar la transmision: ahora menos el inicio del evento.
+  const esperado = () => Math.max(0, (Date.now() + desfase - inicio) / 1000);
+
+  const formato = (s) => {
+    s = Math.floor(s);
+    const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), seg = s % 60;
+    const mm = String(m).padStart(h ? 2 : 1, "0"), ss = String(seg).padStart(2, "0");
+    return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  };
+
+  function mostrar(texto) {
+    const caja = document.getElementById("mensaje");
+    caja.textContent = texto;
+    caja.style.display = texto ? "flex" : "none";
+  }
+
+  function terminar() {
+    terminado = true;
+    document.getElementById("etiqueta").textContent = "FINALIZADO";
+    document.getElementById("etiqueta").classList.add("fin");
+    mostrar("La transmision finalizo.");
+    if (jugador) jugador.stopVideo();
+  }
+
+  // Ningun video se pudo incrustar: se ofrece abrir el primero en YouTube, en el minuto actual.
+  function sinReproduccion() {
+    const caja = document.getElementById("mensaje");
+    const enlace = document.createElement("a");
+    enlace.href = "https://www.youtube.com/watch?v=" + videos[0] + "&t=" + Math.floor(esperado()) + "s";
+    enlace.target = "_blank";
+    enlace.style.color = "#7aa2ff";
+    enlace.textContent = "Abrir la transmision en YouTube";
+    caja.innerHTML = "Los videos de este artista no permiten reproducirse aca.<br><br>";
+    caja.appendChild(enlace);
+    caja.style.display = "flex";
+    caja.style.flexDirection = "column";
+  }
+
+  // Pasa al siguiente video cuando el actual no se puede reproducir (por ejemplo, embebido deshabilitado).
+  function siguienteVideo() {
+    indice++;
+    if (indice >= videos.length) { sinReproduccion(); return; }
+    jugador.loadVideoById({ videoId: videos[indice], startSeconds: esperado() });
+  }
+
+  function iniciar() {
+    if (!apiLista || !horaLista || jugador) return;
+
+    jugador = new YT.Player("reproductor", {
+      videoId: videos[indice],
+      playerVars: {
+        autoplay: 1, controls: 0, disablekb: 1, fs: 0, modestbranding: 1, rel: 0,
+        iv_load_policy: 3, playsinline: 1, start: Math.floor(esperado()), origin: location.origin,
+      },
+      events: {
+        onReady: (e) => {
+          // Los navegadores solo dejan reproducir solo si esta silenciado.
+          e.target.mute();
+          e.target.playVideo();
+          document.getElementById("sonido").hidden = false;
+        },
+        onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) terminar(); },
+        onError: (e) => { errores.push(videos[indice] + ":" + e.data); siguienteVideo(); },
+      },
+    });
+
+    // Cada segundo: mantiene el video en el minuto que corresponde.
+    setInterval(() => {
+      if (terminado || !jugador || !jugador.getCurrentTime) return;
+
+      const meta = esperado();
+      document.getElementById("reloj").textContent = formato(meta);
+
+      const duracion = jugador.getDuration ? jugador.getDuration() : 0;
+      if (duracion > 0 && meta >= duracion) { terminar(); return; }
+
+      const estado = jugador.getPlayerState();
+      if (estado === YT.PlayerState.PAUSED || estado === YT.PlayerState.CUED) jugador.playVideo();
+
+      // Si se adelanto o atraso (o el video se trabo), vuelve al minuto del directo.
+      if (estado === YT.PlayerState.PLAYING && Math.abs(jugador.getCurrentTime() - meta) > 4) {
+        jugador.seekTo(meta, true);
+      }
+    }, 1000);
+  }
+
+  window.onYouTubeIframeAPIReady = () => { apiLista = true; iniciar(); };
+
+  // Hora del servidor, para no depender de que el reloj de esta PC este bien.
+  fetch("/hora").then((r) => r.json()).then((d) => {
+    desfase = d.ahora - Date.now();
+    horaLista = true;
+    iniciar();
+  });
+
+  document.getElementById("sonido").addEventListener("click", (e) => {
+    jugador.unMute();
+    jugador.setVolume(100);
+    e.target.hidden = true;
+  });
+
+  // Sin atajos de teclado.
+  document.addEventListener("keydown", (e) => e.preventDefault());
+</script>
+</body>
+</html>

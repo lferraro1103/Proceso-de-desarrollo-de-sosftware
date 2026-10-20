@@ -19,7 +19,7 @@ interface PublicadorCalendario {
 }
 
 interface ProveedorTransmision {
-  +buscar(consulta : String) : Transmision
+  +buscar(consulta : ConsultaTransmision) : Transmision
 }
 
 interface VinculoCalendario {

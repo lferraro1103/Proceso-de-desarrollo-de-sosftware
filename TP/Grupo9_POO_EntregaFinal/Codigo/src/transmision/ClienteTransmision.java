@@ -1,6 +1,7 @@
 package transmision;
 
 import com.google.gson.Gson;
+import gestor.ConsultaTransmision;
 import gestor.ProveedorTransmision;
 import gestor.Transmision;
 
@@ -16,13 +17,18 @@ import java.time.Duration;
 /*
  * Pide las transmisiones al servicio aparte (TP/Grupo9_Servicio_Transmision).
  *
- * La direccion del servicio se toma de la propiedad uadebeats.transmision
- * (por defecto http://localhost:8766).
+ * Propiedades:
+ *  - uadebeats.transmision:         direccion con la que este programa llama
+ *                                   al servicio (http://localhost:8766).
+ *  - uadebeats.transmision.publica: direccion con la que las personas abren la
+ *                                   pagina del reproductor. Por defecto es la
+ *                                   misma; hay que cambiarla si los clientes
+ *                                   estan en otra PC y no ven "localhost".
  */
 public class ClienteTransmision implements ProveedorTransmision {
 
     // Lo que responde el servicio; los campos que sobran se ignoran.
-    private record Respuesta(String titulo, String url, String error) {
+    private record Respuesta(String titulo, String ruta, String error) {
     }
 
     private final HttpClient cliente = HttpClient.newBuilder()
@@ -32,11 +38,15 @@ public class ClienteTransmision implements ProveedorTransmision {
     private final String urlBase = System.getProperty(
             "uadebeats.transmision", "http://localhost:8766").replaceAll("/+$", "");
 
+    private final String urlPublica = System.getProperty(
+            "uadebeats.transmision.publica", urlBase).replaceAll("/+$", "");
+
     @Override
-    public Transmision buscar(String consulta) throws IOException {
+    public Transmision buscar(ConsultaTransmision consulta) throws IOException {
         HttpRequest pedido = HttpRequest.newBuilder(URI.create(urlBase
                         + "/transmision?q="
-                        + URLEncoder.encode(consulta, StandardCharsets.UTF_8)))
+                        + URLEncoder.encode(consulta.artista(), StandardCharsets.UTF_8)
+                        + "&inicio=" + consulta.inicio()))
                 .timeout(Duration.ofSeconds(20))
                 .build();
 
@@ -54,11 +64,11 @@ public class ClienteTransmision implements ProveedorTransmision {
 
         Respuesta datos = new Gson().fromJson(respuesta.body(), Respuesta.class);
 
-        if (respuesta.statusCode() != 200 || datos == null || datos.url() == null) {
+        if (respuesta.statusCode() != 200 || datos == null || datos.ruta() == null) {
             throw new IOException(datos != null && datos.error() != null
                     ? datos.error() : "El servicio de transmisiones no pudo responder.");
         }
 
-        return new Transmision(datos.titulo(), datos.url());
+        return new Transmision(datos.titulo(), urlPublica + datos.ruta());
     }
 }

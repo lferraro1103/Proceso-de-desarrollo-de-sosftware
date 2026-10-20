@@ -18,6 +18,7 @@ import excepciones.AccesoDenegadoException;
 import excepciones.PermisoDenegadoException;
 import excepciones.PersistenciaException;
 import gestor.GestorEventosEnVivo;
+import gestor.ConsultaTransmision;
 import gestor.ProveedorTransmision;
 import gestor.Transmision;
 import modelo.Artista;
@@ -132,7 +133,7 @@ public class ManejadorApi implements HttpHandler {
     private Object atenderTransmision(Cuenta cuenta, int idEvento)
             throws AccesoDenegadoException, IOException {
 
-        String consulta;
+        ConsultaTransmision consulta;
 
         synchronized (gestor) {
             Cuenta anterior = gestor.getCuentaActual();
