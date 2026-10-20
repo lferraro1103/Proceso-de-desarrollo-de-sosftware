@@ -17,6 +17,7 @@ Esta iteración reemplaza los archivos de texto por una base SQLite, agrega un s
 | Guardado | El gestor guarda después de cada cambio. Se quitan los botones y opciones de guardar y cargar. |
 | Contraseñas | Se guardan como hash PBKDF2 con sal por cuenta y nunca en texto plano. |
 | Calendarios | Una persona puede suscribir Google Calendar o Apple Calendar a un evento. El servidor publica el calendario de cada evento. |
+| Transmisiones | Un microservicio aparte (`TP/Grupo9_Servicio_Transmision`) busca en YouTube un recital del artista del evento. Quien ingresa a un evento en curso puede abrirlo desde la ventana o la consola. |
 | Avisos | Se elimina la implementación de ntfy. Queda la interfaz `Notificador` con la implementación inactiva. |
 
 ## 2. Modos de ejecución
@@ -124,13 +125,14 @@ Después de iniciar sesión, cada pedido lleva `Authorization: Bearer <token>`. 
 | `POST /api/eventos/{id}/ingresos` | Solicita el ingreso de un usuario |
 | `POST /api/eventos/{id}/expulsiones` | Expulsa a un usuario |
 | `GET /api/eventos/{id}/calendario` | Dirección del calendario del evento |
+| `GET /api/eventos/{id}/transmision` | Transmisión del evento en curso |
 
 | Código | Tipo | Excepción en el cliente |
 |---|---|---|
 | 409 | `acceso` | `AccesoDenegadoException` (regla del negocio) |
 | 403 y 401 | `permiso` y `sesion` | `PermisoDenegadoException` |
 | 500 | `persistencia` | `PersistenciaException` |
-| 409 | `calendario` | `IOException` |
+| 409 | `externo` | `IOException` (calendario o servicio de transmisiones) |
 | 400 | `pedido` | `IllegalArgumentException` |
 | Sin conexión | | `ConexionException` |
 
@@ -156,6 +158,7 @@ Sin cambios respecto de la iteración 3, salvo que se quitan guardar y cargar da
 | Ver eventos | Todos | Solo los propios | Todos |
 | Ver capacidad de un evento | Sí | Solo los propios | Sí |
 | Agregar un evento a mi calendario | Sí | Solo los propios | Sí |
+| Ver la transmisión de un evento en curso | Solo si ingresó | Solo los propios | Sí |
 | Ver sus registros de acceso | Sí | No | No |
 | Crear un evento | No | A su nombre | Sí |
 | Iniciar, pausar, reanudar, finalizar y cancelar un evento | No | Solo los propios | Cualquiera |
@@ -174,7 +177,23 @@ El servidor publica cada evento en `/calendario/<código>/<id>.ics`. El código 
 
 Google y Apple se suscriben por https: Calendar convierte `webcal://` en `https://`, y Google además lee la dirección desde sus servidores. Por eso la dirección debe ser pública y con https. Se expone el puerto con un túnel (por ejemplo `cloudflared tunnel --url http://localhost:8765`) y se ejecuta con `-Duadebeats.url=https://<dirección del túnel>`. Con la dirección local se informa el motivo y no se abre nada.
 
-## 9. Diagramas
+## 9. Transmisiones
+
+El servicio `TP/Grupo9_Servicio_Transmision` (Node.js, ver su README) devuelve la dirección de un recital en YouTube a partir del nombre de un artista. El programa principal lo consulta a través de la interfaz `ProveedorTransmision`, implementada por `ClienteTransmision`, que toma la dirección del servicio de la propiedad `uadebeats.transmision` (`http://localhost:8766` por defecto).
+
+Con el evento en curso, la persona selecciona el evento y toca «Ver transmisión» (en consola, la opción «Ver la transmisión de un evento»): se abre el video en el navegador.
+
+| Regla | Detalle |
+|---|---|
+| Estado | Solo mientras el evento está en curso. |
+| Usuario | Tiene que haber ingresado al evento: la transmisión es lo que se obtiene al conectarse. |
+| Artista | Solo en sus propios eventos. |
+| Qué se busca | El nombre artístico del primer artista del evento o, si no tiene, el título. |
+| Cliente remoto | Pide la transmisión al servidor, que consulta el servicio fuera de su bloqueo para no frenar a los demás. |
+
+Para probarlo: iniciar el servicio (`node servidor.js`), registrar un artista con el nombre artístico buscado (por ejemplo «Sabrina Carpenter»), crear el evento a su nombre, iniciarlo, ingresar con un usuario y tocar «Ver transmisión».
+
+## 10. Diagramas
 
 Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_Pdf/fuentes` y los PDF listos para presentar, con su versión oscura, en `TP/Grupo9_POO_Diagramas_Pdf`.
 
@@ -191,7 +210,7 @@ Para regenerarlos, desde `TP/Grupo9_POO_Diagramas_Pdf/fuentes`:
 java -jar plantuml.jar -charset UTF-8 -tpdf *.puml
 ```
 
-## 10. Ejecución
+## 11. Ejecución
 
 Desde `TP/Grupo9_POO_EntregaFinal/Codigo`:
 
@@ -214,7 +233,7 @@ En Windows el separador del classpath es `;` en lugar de `:`. La opción `--enab
 
 Para usar el cliente desde otra PC, el servidor debe aceptar conexiones de la red (modo `servidor`, o el completo con `-Duadebeats.escuchar=todas`) y el puerto estar abierto en el firewall.
 
-## 11. Limitaciones conocidas
+## 12. Limitaciones conocidas
 
 | Limitación | Detalle |
 |---|---|
@@ -222,4 +241,5 @@ Para usar el cliente desde otra PC, el servidor debe aceptar conexiones de la re
 | Base anterior | Una base creada antes de guardar hashes no es compatible: hay que borrar `~/.uadebeats/uadebeats.db` para que se cree de nuevo con los datos de prueba. |
 | Sesiones | Viven en memoria y no vencen por tiempo. |
 | Concurrencia | Las operaciones están sincronizadas, pero la ventana del equipo servidor lee objetos del modelo sin bloqueo mientras un cliente remoto puede modificarlos. |
+| Transmisiones | El servicio lee la página de resultados de YouTube, que no es una API estable, y devuelve un recital del artista que puede ser grabado y no una transmisión en ese momento. |
 | Fin del evento | `fechaHoraFin` es la ventana en la que se permite ingresar y no la duración real del evento. Es un problema heredado del diseño original del modelo. |

@@ -9,6 +9,7 @@ import api.NuevoEventoDto;
 import api.NuevoUsuarioDto;
 import api.RegistroDto;
 import api.SesionDto;
+import api.TransmisionDto;
 import api.UrlDto;
 import api.UsuarioPedidoDto;
 import excepciones.AccesoDenegadoException;
@@ -16,6 +17,7 @@ import excepciones.ConexionException;
 import excepciones.PermisoDenegadoException;
 import gestor.Accion;
 import gestor.Permisos;
+import gestor.Transmision;
 import gestor.ServicioEventos;
 import gestor.VinculoCalendario;
 import modelo.Artista;
@@ -199,6 +201,17 @@ public class GestorRemoto implements ServicioEventos {
         }
 
         return false;
+    }
+
+    @Override
+    public Transmision obtenerTransmision(int idEvento)
+            throws AccesoDenegadoException, IOException {
+
+        TransmisionDto dto = Json.leer(
+                http.get("/api/eventos/" + idEvento + "/transmision"),
+                TransmisionDto.class);
+
+        return new Transmision(dto.titulo(), dto.url());
     }
 
     // Vuelve a pedir al servidor lo que la cuenta puede ver.

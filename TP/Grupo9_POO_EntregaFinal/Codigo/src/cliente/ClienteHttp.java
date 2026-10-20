@@ -110,7 +110,7 @@ class ClienteHttp {
         switch (error.tipo()) {
             case "acceso":
                 throw new AccesoDenegadoException(error.mensaje());
-            case "calendario":
+            case "externo":
                 throw new IOException(error.mensaje());
             case "permiso":
             case "sesion":

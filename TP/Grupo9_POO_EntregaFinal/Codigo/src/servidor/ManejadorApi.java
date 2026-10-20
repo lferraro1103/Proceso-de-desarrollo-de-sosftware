@@ -8,6 +8,7 @@ import api.NuevoArtistaDto;
 import api.NuevoEventoDto;
 import api.NuevoUsuarioDto;
 import api.SesionDto;
+import api.TransmisionDto;
 import api.UrlDto;
 import api.UsuarioPedidoDto;
 import com.google.gson.JsonParseException;
@@ -17,6 +18,8 @@ import excepciones.AccesoDenegadoException;
 import excepciones.PermisoDenegadoException;
 import excepciones.PersistenciaException;
 import gestor.GestorEventosEnVivo;
+import gestor.ProveedorTransmision;
+import gestor.Transmision;
 import modelo.Artista;
 import modelo.Cuenta;
 import modelo.DatosRecital;
@@ -46,6 +49,7 @@ import java.time.LocalDateTime;
  *   POST   /api/eventos/{id}/ingresos           solicitar ingreso
  *   POST   /api/eventos/{id}/expulsiones        expulsar usuario
  *   GET    /api/eventos/{id}/calendario         direccion del calendario
+ *   GET    /api/eventos/{id}/transmision        transmision del evento en curso
  *
  * Despues de iniciar sesion, cada pedido lleva "Authorization: Bearer <token>".
  */
@@ -54,10 +58,13 @@ public class ManejadorApi implements HttpHandler {
     private static final String PREFIJO = "/api/";
 
     private final GestorEventosEnVivo gestor;
+    private final ProveedorTransmision proveedorTransmision;
     private final Sesiones sesiones = new Sesiones();
 
-    public ManejadorApi(GestorEventosEnVivo gestor) {
+    public ManejadorApi(GestorEventosEnVivo gestor,
+                        ProveedorTransmision proveedorTransmision) {
         this.gestor = gestor;
+        this.proveedorTransmision = proveedorTransmision;
     }
 
     @Override
@@ -74,7 +81,7 @@ public class ManejadorApi implements HttpHandler {
             } catch (PersistenciaException e) {
                 enviar(intercambio, 500, new ErrorDto("persistencia", e.getMessage()));
             } catch (IOException e) {
-                enviar(intercambio, 409, new ErrorDto("calendario", e.getMessage()));
+                enviar(intercambio, 409, new ErrorDto("externo", e.getMessage()));
             } catch (IllegalArgumentException | JsonParseException
                      | NullPointerException e) {
                 // Datos mal formados o que no corresponden a nada existente.
@@ -100,6 +107,13 @@ public class ManejadorApi implements HttpHandler {
         String token = token(intercambio);
         Cuenta cuenta = cuentaDe(token);
 
+        // La busqueda de la transmision va a un servicio externo y puede
+        // tardar: se hace fuera del bloqueo del gestor.
+        if (metodo.equals("GET") && partes.length == 3
+                && partes[0].equals("eventos") && partes[2].equals("transmision")) {
+            return atenderTransmision(cuenta, Integer.parseInt(partes[1]));
+        }
+
         // Todo el pedido corre dentro del bloqueo del gestor: la sesion de
         // esta cuenta se abre, se usa y se devuelve a como estaba, para no
         // pisar la de quien use el programa en este mismo equipo.
@@ -110,12 +124,37 @@ public class ManejadorApi implements HttpHandler {
             try {
                 return ejecutar(partes, metodo, cuerpo(intercambio));
             } finally {
-                if (anterior != null) {
-                    gestor.asumirSesion(anterior);
-                } else {
-                    gestor.cerrarSesion();
-                }
+                restaurarSesion(anterior);
             }
+        }
+    }
+
+    private Object atenderTransmision(Cuenta cuenta, int idEvento)
+            throws AccesoDenegadoException, IOException {
+
+        String consulta;
+
+        synchronized (gestor) {
+            Cuenta anterior = gestor.getCuentaActual();
+            gestor.asumirSesion(cuenta);
+
+            try {
+                consulta = gestor.consultaDeTransmision(idEvento);
+            } finally {
+                restaurarSesion(anterior);
+            }
+        }
+
+        Transmision transmision = proveedorTransmision.buscar(consulta);
+        return new TransmisionDto(transmision.titulo(), transmision.url());
+    }
+
+    // Devuelve la sesion del gestor a como estaba antes del pedido.
+    private void restaurarSesion(Cuenta anterior) {
+        if (anterior != null) {
+            gestor.asumirSesion(anterior);
+        } else {
+            gestor.cerrarSesion();
         }
     }
 

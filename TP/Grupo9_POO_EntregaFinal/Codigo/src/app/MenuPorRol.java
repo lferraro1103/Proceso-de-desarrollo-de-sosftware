@@ -134,6 +134,9 @@ public final class MenuPorRol {
             case VER_CAPACIDAD:
                 MenuAcciones.mostrarCapacidad(scanner, gestor);
                 break;
+            case VER_TRANSMISION:
+                MenuAcciones.verTransmision(scanner, gestor);
+                break;
             case VINCULAR_CALENDARIO:
                 MenuAcciones.vincularCalendario(scanner, gestor);
                 break;

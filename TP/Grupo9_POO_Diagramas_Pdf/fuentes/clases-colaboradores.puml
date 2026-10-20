@@ -18,6 +18,10 @@ interface PublicadorCalendario {
   +urlFeed(cuenta : Cuenta, evento : Evento) : String
 }
 
+interface ProveedorTransmision {
+  +buscar(consulta : String) : Transmision
+}
+
 interface VinculoCalendario {
   +getNombre() : String
   +vincular(urlFeed : String) : void
@@ -26,6 +30,9 @@ interface VinculoCalendario {
 class PersistenciaSqlite
 class NotificadorInactivo {
   en uso: no envia nada
+}
+class ClienteTransmision {
+  consulta el servicio aparte
 }
 class PublicadorHttp {
   exige direccion publica https
@@ -39,12 +46,14 @@ class VinculoApple {
 
 GestorEventosEnVivo --> Persistencia
 GestorEventosEnVivo --> PublicadorCalendario
+GestorEventosEnVivo --> ProveedorTransmision
 GestorEventosEnVivo --> ControlAcceso
 GestorEventosEnVivo ..> VinculoCalendario : recibe por parametro
 ControlAcceso --> Notificador
 PersistenciaSqlite ..|> Persistencia
 NotificadorInactivo ..|> Notificador
 PublicadorHttp ..|> PublicadorCalendario
+ClienteTransmision ..|> ProveedorTransmision
 VinculoGoogle ..|> VinculoCalendario
 VinculoApple ..|> VinculoCalendario
 @enduml
