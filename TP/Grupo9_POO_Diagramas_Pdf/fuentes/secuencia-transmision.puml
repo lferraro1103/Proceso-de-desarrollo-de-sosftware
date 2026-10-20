@@ -1,0 +1,41 @@
+@startuml
+!include estilo.iuml
+title Diagrama de secuencia: ver la transmision de un evento
+
+actor Persona
+participant Vista
+participant "GestorEventosEnVivo" as Gestor
+participant ClienteTransmision
+participant ServicioTransmision as Servicio
+participant Navegador
+
+Persona -> Vista : solicita el ingreso a un evento en curso
+Vista -> Gestor : solicitarIngreso(idUsuario, idEvento)
+Gestor --> Vista : RegistroAcceso autorizado
+Vista -> Gestor : obtenerTransmision(idEvento)
+Gestor -> Gestor : exige el permiso, el evento en curso\ny, para un usuario, haber ingresado
+Gestor -> ClienteTransmision : buscar(artista, inicio del evento, espectador)
+ClienteTransmision -> Servicio : GET /transmision?q&inicio&espectador
+alt hay un archivo propio en media/
+  Servicio -> Servicio : elige el archivo
+else no hay archivo
+  Servicio -> Servicio : busca un recital de YouTube\nque se pueda incrustar
+end
+Servicio -> Servicio : registra al espectador
+Servicio --> ClienteTransmision : titulo y ruta del reproductor
+ClienteTransmision --> Gestor : Transmision(titulo, url)
+Gestor --> Vista : Transmision
+Vista -> Navegador : abre la pagina del reproductor
+Navegador -> Servicio : GET /reproductor
+loop cada 4 segundos
+  Navegador -> Servicio : GET /latido
+  Servicio --> Navegador : vigente
+end
+Persona -> Vista : cierra sesion, la expulsan\no termina el evento
+Vista -> Gestor : cerrarSesion()
+Gestor -> ClienteTransmision : cerrar(espectador)
+ClienteTransmision -> Servicio : GET /salida?e
+Navegador -> Servicio : GET /latido
+Servicio --> Navegador : no vigente
+Navegador -> Navegador : detiene el video\n"Saliste del evento"
+@enduml

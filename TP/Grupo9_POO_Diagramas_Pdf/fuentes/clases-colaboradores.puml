@@ -32,14 +32,14 @@ class PersistenciaSqlite
 class NotificadorInactivo {
   en uso: no envia nada
 }
+class PublicadorHttp {
+  exige direccion publica https
+}
 class ClienteTransmision {
   consulta el servicio aparte
 }
 class ProcesoServicio {
   inicia y cierra el servicio de Node
-}
-class PublicadorHttp {
-  exige direccion publica https
 }
 class VinculoGoogle {
   abre la suscripcion de Google
@@ -47,13 +47,21 @@ class VinculoGoogle {
 class VinculoApple {
   abre la suscripcion webcal de Apple
 }
+class ConsultaTransmision {
+  artista, inicio, espectador
+}
+class Transmision {
+  titulo, url
+}
 
-GestorEventosEnVivo --> Persistencia
-GestorEventosEnVivo --> PublicadorCalendario
-GestorEventosEnVivo --> ProveedorTransmision
-GestorEventosEnVivo --> ControlAcceso
-GestorEventosEnVivo ..> VinculoCalendario : recibe por parametro
-ControlAcceso --> Notificador
+GestorEventosEnVivo "1" --> "1" Persistencia : persistencia
+GestorEventosEnVivo "1" --> "1" PublicadorCalendario : publicador
+GestorEventosEnVivo "1" --> "1" ProveedorTransmision : proveedorTransmision
+GestorEventosEnVivo "1" *-- "1" ControlAcceso
+ControlAcceso "1" --> "1" Notificador : notificador
+GestorEventosEnVivo ..> "0..1" VinculoCalendario : recibe por parametro
+ProveedorTransmision ..> ConsultaTransmision : recibe
+ProveedorTransmision ..> Transmision : devuelve
 PersistenciaSqlite ..|> Persistencia
 NotificadorInactivo ..|> Notificador
 PublicadorHttp ..|> PublicadorCalendario

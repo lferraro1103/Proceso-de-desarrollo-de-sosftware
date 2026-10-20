@@ -1,0 +1,29 @@
+@startuml
+!include estilo.iuml
+title Diagrama de despliegue
+
+node "PC del servidor" as servidor {
+  component "Main\n(modo completo o servidor)" as app
+  component "Servicio de transmisiones\n(Node.js, puerto 8766)" as servicio
+  database "SQLite\n~/.uadebeats/uadebeats.db" as db
+  artifact "media/\nvideos propios" as media
+}
+
+node "PC cliente" as cliente {
+  component "Main cliente\n(ventana o consola)" as clienteapp
+  component "Navegador" as navegador
+}
+
+cloud "YouTube" as youtube
+cloud "Google Calendar /\nApple Calendar" as calendario
+
+clienteapp "1..*" --> "1" app : HTTP + JSON\n/api/
+app "1" --> "1" db : JDBC
+app "1" --> "0..1" servicio : inicia y consulta\n(HTTP)
+servicio "1" --> "0..*" media : lee
+servicio "1" ..> "0..1" youtube : busqueda y\nreproductor incrustado
+navegador "1..*" --> "1" servicio : pagina del reproductor\n(HTTP, cada 4 s latido)
+navegador "1..*" ..> "0..1" youtube : video incrustado
+calendario "0..*" ..> "1" app : suscripcion\n/calendario/ (https)
+app ..> navegador : abre el reproductor
+@enduml

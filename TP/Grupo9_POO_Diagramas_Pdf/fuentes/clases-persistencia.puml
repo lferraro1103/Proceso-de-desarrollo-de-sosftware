@@ -40,12 +40,21 @@ class GestorEventosEnVivo {
   guarda despues de cada cambio
 }
 
-GestorEventosEnVivo --> Persistencia
+class Usuario
+class Artista
+class Evento
+class RegistroAcceso
+
+GestorEventosEnVivo "1" --> "1" Persistencia : persistencia
 PersistenciaSqlite ..|> Persistencia
-PersistenciaSqlite --> RepositorioUsuarios
-PersistenciaSqlite --> RepositorioArtistas
-PersistenciaSqlite --> RepositorioEventos
-PersistenciaSqlite --> RepositorioRegistros
-PersistenciaSqlite ..> ConexionSqlite
-DatosIniciales ..> GestorEventosEnVivo
+PersistenciaSqlite "1" *-- "1" RepositorioUsuarios
+PersistenciaSqlite "1" *-- "1" RepositorioArtistas
+PersistenciaSqlite "1" *-- "1" RepositorioEventos
+PersistenciaSqlite "1" *-- "1" RepositorioRegistros
+PersistenciaSqlite ..> "1" ConexionSqlite : abre una por operacion
+RepositorioUsuarios ..> "0..*" Usuario : lee y escribe
+RepositorioArtistas ..> "0..*" Artista : lee y escribe
+RepositorioEventos ..> "0..*" Evento : lee y escribe
+RepositorioRegistros ..> "0..*" RegistroAcceso : lee y escribe
+DatosIniciales ..> "1" GestorEventosEnVivo : siembra si la base esta vacia
 @enduml

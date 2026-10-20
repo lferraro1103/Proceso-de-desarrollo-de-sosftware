@@ -1,0 +1,56 @@
+@startuml
+!include estilo.iuml
+title Diagrama de clases: servicio de transmisiones (Node.js)
+
+class ServicioTransmision {
+  +GET /salud
+  +GET /transmision?q&inicio&espectador
+  +GET /reproductor
+  +GET /media/archivo
+  +GET /latido?e
+  +GET /salida?e
+  +GET /fallo?v y /exito?v
+}
+
+class Espectador {
+  -nombre : String   (CUENTA+id:evento)
+  -ultimoLatido : long
+}
+
+class VideoRecordado {
+  -id : String
+  -reproduce : boolean
+}
+
+class ArchivoPropio {
+  carpeta media/
+  mp4, webm y m4v
+}
+
+class Reproductor {
+  reproductor.html
+  sincronizado, sin pausar ni adelantar
+}
+
+class ClienteTransmision {
+  del programa principal
+}
+
+class ProcesoServicio {
+  del programa principal
+}
+
+class YouTube <<externo>> {
+  pagina de resultados / API
+  reproductor incrustado
+}
+
+ServicioTransmision "1" o-- "0..*" Espectador : mientras mira
+ServicioTransmision "1" o-- "0..*" VideoRecordado : fallo o exito
+ServicioTransmision "1" --> "0..*" ArchivoPropio : prioridad 1
+ServicioTransmision "1" ..> "0..1" YouTube : prioridad 2
+ServicioTransmision "1" --> "*" Reproductor : sirve
+Reproductor "1" ..> "1" Espectador : latido cada 4 s
+ClienteTransmision "*" ..> "1" ServicioTransmision : HTTP
+ProcesoServicio "1" ..> "0..1" ServicioTransmision : inicia y cierra
+@enduml

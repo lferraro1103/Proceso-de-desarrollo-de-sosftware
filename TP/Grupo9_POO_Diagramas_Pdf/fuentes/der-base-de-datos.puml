@@ -1,0 +1,70 @@
+@startuml
+!include estilo.iuml
+title Diagrama de la base de datos (SQLite)
+
+entity usuarios {
+  * id : INTEGER <<PK>>
+  --
+  * nombre_usuario : TEXT <<UNIQUE>>
+  * nombre : TEXT
+  * apellido : TEXT
+  * email : TEXT
+  * contrasena_hash : TEXT
+  * plan : TEXT
+  * activo : INTEGER
+  * tipo : TEXT
+}
+
+entity artistas {
+  * id : INTEGER <<PK>>
+  --
+  * nombre_usuario : TEXT <<UNIQUE>>
+  * contrasena_hash : TEXT
+  * nombre_artistico : TEXT
+  * genero_principal : TEXT
+  * biografia : TEXT
+  * verificado : INTEGER
+}
+
+entity eventos {
+  * id : INTEGER <<PK>>
+  --
+  * titulo : TEXT
+  * descripcion : TEXT
+  * fecha_hora_inicio : TEXT
+  * fecha_hora_fin : TEXT
+  * estado : TEXT
+  * capacidad_maxima : INTEGER
+  * plan_minimo : TEXT
+  * ubicacion : TEXT
+  * streaming : INTEGER
+  * exclusivo : INTEGER
+}
+
+entity evento_artistas {
+  * evento_id : INTEGER <<PK, FK>>
+  * artista_id : INTEGER <<PK, FK>>
+}
+
+entity evento_conectados {
+  * evento_id : INTEGER <<PK, FK>>
+  * usuario_id : INTEGER <<PK, FK>>
+}
+
+entity registros_acceso {
+  * id : INTEGER <<PK>>
+  --
+  * usuario_id : INTEGER <<FK>>
+  * evento_id : INTEGER <<FK>>
+  * fecha_hora_ingreso : TEXT
+  * exitoso : INTEGER
+  * motivo_rechazo : TEXT
+}
+
+eventos ||--o{ evento_artistas : "un evento tiene 0..* artistas"
+artistas ||--o{ evento_artistas : "un artista esta en 0..* eventos"
+eventos ||--o{ evento_conectados : "un evento tiene 0..* conectados"
+usuarios ||--o{ evento_conectados : "un usuario esta en 0..* eventos"
+usuarios ||--o{ registros_acceso : "un usuario genera 0..* registros"
+eventos ||--o{ registros_acceso : "un evento recibe 0..* registros"
+@enduml
