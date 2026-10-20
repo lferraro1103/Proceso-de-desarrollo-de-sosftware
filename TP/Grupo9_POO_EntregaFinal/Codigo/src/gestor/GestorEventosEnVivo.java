@@ -580,10 +580,11 @@ public class GestorEventosEnVivo implements ServicioEventos {
 
     /*
      * Verifica que la cuenta actual pueda ver la transmision del evento y
-     * devuelve que buscar: el artista principal o, si no tiene, el titulo.
+     * devuelve que buscar: el artista principal (o, si no tiene, el titulo) y
+     * cuando empezo el evento.
      * Tambien la usa el servidor antes de buscar fuera del bloqueo.
      */
-    public synchronized String consultaDeTransmision(int idEvento)
+    public synchronized ConsultaTransmision consultaDeTransmision(int idEvento)
             throws AccesoDenegadoException {
 
         sesion.exigir(Accion.VER_TRANSMISION);
@@ -608,9 +609,11 @@ public class GestorEventosEnVivo implements ServicioEventos {
                     "Debe ingresar al evento para ver la transmision.");
         }
 
-        return evento.getArtistas().isEmpty()
-                ? evento.getTitulo()
-                : evento.getArtistas().get(0).getNombreArtistico();
+        return new ConsultaTransmision(
+                evento.getArtistas().isEmpty()
+                        ? evento.getTitulo()
+                        : evento.getArtistas().get(0).getNombreArtistico(),
+                evento.getFechaHoraInicio());
     }
 
     private boolean estaConectado(Evento evento, Cuenta cuenta) {

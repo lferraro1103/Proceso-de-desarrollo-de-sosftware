@@ -1,12 +1,18 @@
 // Servicio de transmisiones de UADE Beats.
 //
-// Microservicio aparte del programa principal: dado el nombre de un artista
-// devuelve la direccion de un recital suyo en YouTube. No tiene dependencias:
-// usa el servidor HTTP y fetch que trae Node.
+// Microservicio aparte del programa principal. Dado el nombre de un artista y
+// la hora en que empezo el evento, busca un recital suyo en YouTube y lo
+// muestra en una pagina con el reproductor: sin controles para adelantar,
+// volver ni pausar, y arrancando en el minuto que corresponde, como si fuera
+// una transmision en vivo. No tiene dependencias: usa el servidor HTTP y
+// fetch que trae Node.
 //
-//   GET /salud                    -> { "estado": "ok" }
-//   GET /transmision?q=<artista>  -> { titulo, canal, duracion, enVivo, url, alternativas }
-//                                    404 si no encuentra ningun recital
+//   GET /salud
+//   GET /transmision?q=<artista>&inicio=<fecha ISO>
+//        -> { titulo, canal, duracion, enVivo, url, ruta, alternativas }
+//           ruta es la pagina del reproductor; 404 si no hay ningun recital
+//   GET /reproductor?v=<id>&alt=<ids>&inicio=<ms>&titulo=<texto>
+//        -> pagina HTML con el reproductor sincronizado
 //
 // Busca en la pagina de resultados de YouTube (sin clave de API) y elige el
 // resultado que mas parece un recital completo del artista. Si hay una
@@ -102,12 +108,13 @@ function puntuar(video) {
   return puntos;
 }
 
-async function buscarTransmision(artista) {
+// Videos del artista ordenados de mejor a peor. Se guardan unos minutos.
+async function buscarCandidatos(artista) {
   const clave = sinAcentos(artista);
   const guardado = cache.get(clave);
 
   if (guardado && Date.now() - guardado.hora < MINUTOS_CACHE * 60000) {
-    return guardado.resultado;
+    return guardado.candidatos;
   }
 
   const unicos = new Map();
@@ -119,24 +126,50 @@ async function buscarTransmision(artista) {
 
   // Solo se consideran videos que nombran al artista: sin eso, una busqueda
   // sin resultados devolveria cualquier transmision en vivo.
-  const ordenados = [...unicos.values()]
+  const candidatos = [...unicos.values()]
     .filter((video) => nombraAlArtista(video, artista))
     .map((video) => ({ video, puntos: puntuar(video) }))
     .sort((a, b) => b.puntos - a.puntos)
     .map(({ video }) => ({
+      id: video.id,
       titulo: video.titulo,
       canal: video.canal,
       duracion: video.enVivo ? "EN VIVO" : video.duracion,
+      minutos: minutos(video.duracion),
       enVivo: video.enVivo,
       url: "https://www.youtube.com/watch?v=" + video.id,
     }));
 
-  const resultado = ordenados.length
-    ? { ...ordenados[0], alternativas: ordenados.slice(1, 4) }
-    : null;
+  cache.set(clave, { hora: Date.now(), candidatos });
+  return candidatos;
+}
 
-  cache.set(clave, { hora: Date.now(), resultado });
-  return resultado;
+// Mejor video para el momento actual: si el evento empezo hace 30 minutos,
+// el video tiene que durar mas que eso. Si ninguno alcanza, el mas largo.
+async function buscarTransmision(artista, inicioMs) {
+  const candidatos = await buscarCandidatos(artista);
+
+  if (!candidatos.length) {
+    return null;
+  }
+
+  const transcurrido = Math.max(0, (Date.now() - inicioMs) / 60000);
+  const alcanzan = candidatos.filter((c) => c.enVivo || c.minutos > transcurrido + 3);
+  const lista = alcanzan.length
+    ? alcanzan
+    : [...candidatos].sort((a, b) => b.minutos - a.minutos);
+
+  const [mejor, ...resto] = lista;
+  // Varias de reserva: algunos videos no permiten reproducirse incrustados.
+  const alternativas = resto.slice(0, 7);
+
+  const ruta = "/reproductor?v=" + mejor.id
+    + "&alt=" + alternativas.map((a) => a.id).join(",")
+    + "&inicio=" + inicioMs
+    + "&titulo=" + encodeURIComponent(mejor.titulo);
+
+  const publico = ({ id, minutos, ...datos }) => datos;
+  return { ...publico(mejor), ruta, alternativas: alternativas.map(publico) };
 }
 
 // ---------- servidor ----------
@@ -146,11 +179,25 @@ function responder(res, codigo, cuerpo) {
   res.end(JSON.stringify(cuerpo));
 }
 
+const fs = require("fs");
+const path = require("path");
+
 const servidor = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
 
   if (url.pathname === "/salud") {
     return responder(res, 200, { estado: "ok" });
+  }
+
+  // Hora del servidor, para que la pagina no dependa del reloj de la PC.
+  if (url.pathname === "/hora") {
+    return responder(res, 200, { ahora: Date.now() });
+  }
+
+  // Pagina con el reproductor.
+  if (url.pathname === "/reproductor") {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    return res.end(fs.readFileSync(path.join(__dirname, "reproductor.html")));
   }
 
   if (url.pathname === "/transmision") {
@@ -160,9 +207,16 @@ const servidor = http.createServer(async (req, res) => {
       return responder(res, 400, { error: "Falta el parametro q con el nombre del artista." });
     }
 
+    // Cuando empezo el evento (hora local sin zona, como la envia el programa).
+    const inicioMs = new Date(url.searchParams.get("inicio") || Date.now()).getTime();
+
+    if (Number.isNaN(inicioMs)) {
+      return responder(res, 400, { error: "El parametro inicio no es una fecha valida." });
+    }
+
     try {
-      const resultado = await buscarTransmision(artista);
-      console.log(`[${new Date().toLocaleTimeString()}] "${artista}" -> ${resultado ? resultado.url : "sin resultados"}`);
+      const resultado = await buscarTransmision(artista, inicioMs);
+      console.log(`[${new Date().toLocaleTimeString()}] "${artista}" desde ${new Date(inicioMs).toLocaleTimeString()} -> ${resultado ? resultado.url : "sin resultados"}`);
 
       return resultado
         ? responder(res, 200, resultado)
@@ -178,5 +232,5 @@ const servidor = http.createServer(async (req, res) => {
 
 servidor.listen(PUERTO, () => {
   console.log(`Servicio de transmisiones en http://localhost:${PUERTO}`);
-  console.log(`Prueba: http://localhost:${PUERTO}/transmision?q=Sabrina+Carpenter`);
+  console.log(`Prueba: http://localhost:${PUERTO}/transmision?q=Sabrina+Carpenter&inicio=${new Date(Date.now() - 30 * 60000).toISOString()}`);
 });

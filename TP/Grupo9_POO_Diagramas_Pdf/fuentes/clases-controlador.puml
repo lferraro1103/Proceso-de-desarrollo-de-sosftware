@@ -39,7 +39,7 @@ class GestorEventosEnVivo {
   +autenticar(nombreUsuario, contrasena) : Cuenta
   +asumirSesion(cuenta : Cuenta) : void
   +urlCalendario(idEvento : int) : String
-  +consultaDeTransmision(idEvento : int) : String
+  +consultaDeTransmision(idEvento : int) : ConsultaTransmision
   +buscarEventoVisiblePara(cuenta : Cuenta, id : int) : Evento
   +cargarDatos() : void
   +guardarDatos() : void

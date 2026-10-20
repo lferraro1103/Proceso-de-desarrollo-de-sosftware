@@ -179,9 +179,9 @@ Google y Apple se suscriben por https: Calendar convierte `webcal://` en `https:
 
 ## 9. Transmisiones
 
-El servicio `TP/Grupo9_Servicio_Transmision` (Node.js, ver su README) devuelve la dirección de un recital en YouTube a partir del nombre de un artista. El programa principal lo consulta a través de la interfaz `ProveedorTransmision`, implementada por `ClienteTransmision`, que toma la dirección del servicio de la propiedad `uadebeats.transmision` (`http://localhost:8766` por defecto).
+El servicio `TP/Grupo9_Servicio_Transmision` (Node.js, ver su README) busca en YouTube un recital del artista y lo muestra en una página con el reproductor, que simula una transmisión en vivo: arranca en el minuto que corresponde según cuándo empezó el evento y no deja pausar, adelantar ni volver. El programa principal lo consulta a través de la interfaz `ProveedorTransmision`, implementada por `ClienteTransmision`, pasándole el artista y la hora de inicio del evento.
 
-Con el evento en curso, la persona selecciona el evento y toca «Ver transmisión» (en consola, la opción «Ver la transmisión de un evento»): se abre el video en el navegador.
+Con el evento en curso, la persona selecciona el evento y toca «Ver transmisión» (en consola, la opción «Ver la transmisión de un evento»): se abre la página del reproductor en el navegador.
 
 | Regla | Detalle |
 |---|---|
@@ -190,6 +190,7 @@ Con el evento en curso, la persona selecciona el evento y toca «Ver transmisió
 | Artista | Solo en sus propios eventos. |
 | Qué se busca | El nombre artístico del primer artista del evento o, si no tiene, el título. |
 | Cliente remoto | Pide la transmisión al servidor, que consulta el servicio fuera de su bloqueo para no frenar a los demás. |
+| Direcciones | `uadebeats.transmision` es con la que el programa llama al servicio (`http://localhost:8766`). `uadebeats.transmision.publica` es la que abre el navegador de cada persona; hay que cambiarla si los clientes están en otra PC y no ven `localhost`. |
 
 Para probarlo: iniciar el servicio (`node servidor.js`), registrar un artista con el nombre artístico buscado (por ejemplo «Sabrina Carpenter»), crear el evento a su nombre, iniciarlo, ingresar con un usuario y tocar «Ver transmisión».
 
@@ -241,5 +242,5 @@ Para usar el cliente desde otra PC, el servidor debe aceptar conexiones de la re
 | Base anterior | Una base creada antes de guardar hashes no es compatible: hay que borrar `~/.uadebeats/uadebeats.db` para que se cree de nuevo con los datos de prueba. |
 | Sesiones | Viven en memoria y no vencen por tiempo. |
 | Concurrencia | Las operaciones están sincronizadas, pero la ventana del equipo servidor lee objetos del modelo sin bloqueo mientras un cliente remoto puede modificarlos. |
-| Transmisiones | El servicio lee la página de resultados de YouTube, que no es una API estable, y devuelve un recital del artista que puede ser grabado y no una transmisión en ese momento. |
+| Transmisiones | El servicio lee la página de resultados de YouTube, que no es una API estable, y devuelve un recital del artista que puede ser grabado y no una transmisión en ese momento. Muchos recitales no permiten reproducirse fuera de YouTube: se prueban varios y, si ninguno sirve, se ofrece abrirlo en YouTube. |
 | Fin del evento | `fechaHoraFin` es la ventana en la que se permite ingresar y no la duración real del evento. Es un problema heredado del diseño original del modelo. |
