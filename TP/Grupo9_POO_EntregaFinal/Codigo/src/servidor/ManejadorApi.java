@@ -155,7 +155,7 @@ public class ManejadorApi implements HttpHandler {
         if (anterior != null) {
             gestor.asumirSesion(anterior);
         } else {
-            gestor.cerrarSesion();
+            gestor.soltarSesion();
         }
     }
 
@@ -174,6 +174,19 @@ public class ManejadorApi implements HttpHandler {
         }
 
         if (metodo.equals("DELETE")) {
+            String nombre = sesiones.cuentaDe(token(intercambio));
+
+            if (nombre != null) {
+                synchronized (gestor) {
+                    Cuenta cuenta = gestor.buscarCuentaPorNombreUsuario(nombre);
+
+                    // Quien cierra sesion deja de mirar sus transmisiones.
+                    if (cuenta != null) {
+                        gestor.cerrarTransmisionesDe(cuenta);
+                    }
+                }
+            }
+
             sesiones.cerrar(token(intercambio));
             throw new SinContenido();
         }

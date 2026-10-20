@@ -55,6 +55,7 @@
   const params = new URLSearchParams(location.search);
   const videos = [params.get("v"), ...(params.get("alt") || "").split(",")].filter(Boolean);
   const inicio = Number(params.get("inicio"));
+  const espectador = params.get("e");
   document.getElementById("titulo").textContent = params.get("titulo") || "";
 
   let desfase = 0;          // diferencia entre el reloj del servidor y el de esta pagina
@@ -149,6 +150,30 @@
       }
     }, 1000);
   }
+
+  // Latido: avisa al servicio que esta pagina sigue abierta. Si la persona salio del evento,
+  // el servicio responde que ya no esta vigente y se detiene el video.
+  function salirDelEvento(motivo) {
+    terminado = true;
+    if (jugador && jugador.destroy) jugador.destroy();
+    document.getElementById("etiqueta").textContent = "FINALIZADO";
+    document.getElementById("etiqueta").classList.add("fin");
+    document.getElementById("sonido").hidden = true;
+    mostrar(motivo || "Saliste del evento. La transmision se cerro.");
+    clearInterval(latido);
+  }
+
+  let fallos = 0;
+
+  const latido = espectador ? setInterval(() => {
+    fetch("/latido?e=" + encodeURIComponent(espectador))
+      .then((r) => r.json())
+      .then((d) => { fallos = 0; if (!d.vigente && !terminado) salirDelEvento(); })
+      .catch(() => {
+        // Sin respuesta del servicio (por ejemplo, el programa se cerro): se corta.
+        if (++fallos >= 3 && !terminado) salirDelEvento("Se perdio la conexion con el servicio.");
+      });
+  }, 4000) : null;
 
   window.onYouTubeIframeAPIReady = () => { apiLista = true; iniciar(); };
 

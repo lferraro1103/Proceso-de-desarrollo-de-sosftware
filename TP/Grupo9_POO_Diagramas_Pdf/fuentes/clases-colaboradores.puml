@@ -20,6 +20,7 @@ interface PublicadorCalendario {
 
 interface ProveedorTransmision {
   +buscar(consulta : ConsultaTransmision) : Transmision
+  +cerrar(espectador : String) : void
 }
 
 interface VinculoCalendario {
@@ -33,6 +34,9 @@ class NotificadorInactivo {
 }
 class ClienteTransmision {
   consulta el servicio aparte
+}
+class ProcesoServicio {
+  inicia y cierra el servicio de Node
 }
 class PublicadorHttp {
   exige direccion publica https

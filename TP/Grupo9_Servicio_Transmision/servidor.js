@@ -7,12 +7,22 @@
 // una transmision en vivo. No tiene dependencias: usa el servidor HTTP y
 // fetch que trae Node.
 //
-//   GET /salud
+//   GET /salud                    -> { estado, espectadores }
 //   GET /transmision?q=<artista>&inicio=<fecha ISO>
 //        -> { titulo, canal, duracion, enVivo, url, ruta, alternativas }
 //           ruta es la pagina del reproductor; 404 si no hay ningun recital
-//   GET /reproductor?v=<id>&alt=<ids>&inicio=<ms>&titulo=<texto>
+//   GET /reproductor?v=<id>&alt=<ids>&inicio=<ms>&titulo=<texto>&e=<espectador>
 //        -> pagina HTML con el reproductor sincronizado
+//   GET /latido?e=<espectador>    -> { vigente }   (la pagina lo pide cada pocos segundos)
+//   GET /salida?e=<patron>        -> { cerrados }  cierra espectadores (ver abajo)
+//
+// Espectadores: cada persona que mira una transmision es un espectador, con
+// un nombre como "USUARIO1:106" (cuenta y evento). Mientras su pagina este
+// abierta manda latidos; si deja de mandarlos (cerro la pestana) o el
+// programa pide su salida (cerro sesion, lo expulsaron, termino el evento),
+// se lo da de baja y la pagina detiene el video. El patron de /salida acepta
+// * como comodin: "USUARIO1:*" cierra todo de una cuenta, "*:106" todo de un
+// evento. Sin espectadores el servicio no hace nada ni guarda resultados.
 //
 // Busca en la pagina de resultados de YouTube (sin clave de API) y elige el
 // resultado que mas parece un recital completo del artista. Si hay una
@@ -28,6 +38,58 @@ const PALABRAS_RECITAL = ["concierto", "concert", "recital", "full show",
   "full set", "completo", "en vivo", "live", "festival", "tour"];
 
 const cache = new Map();
+
+// Espectadores activos: nombre -> hora del ultimo latido.
+const espectadores = new Map();
+const SEGUNDOS_SIN_LATIDO = 15;
+
+function cerrarEspectadores(patron) {
+  const regla = new RegExp("^" + patron.split("*").map((p) => p.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join(".*") + "$");
+  let cerrados = 0;
+
+  for (const nombre of espectadores.keys()) {
+    if (regla.test(nombre)) {
+      espectadores.delete(nombre);
+      cerrados++;
+    }
+  }
+
+  liberarSiNadieMira();
+  return cerrados;
+}
+
+// Sin espectadores no se guarda nada: se libera la memoria de las busquedas.
+function liberarSiNadieMira() {
+  if (espectadores.size === 0) {
+    cache.clear();
+  }
+}
+
+// Da de baja a quien dejo de mandar latidos (por ejemplo, cerro la pestana).
+setInterval(() => {
+  const limite = Date.now() - SEGUNDOS_SIN_LATIDO * 1000;
+
+  for (const [nombre, ultimo] of espectadores) {
+    if (ultimo < limite) {
+      espectadores.delete(nombre);
+      console.log(`[${new Date().toLocaleTimeString()}] espectador ${nombre} sin latidos: baja`);
+    }
+  }
+
+  liberarSiNadieMira();
+}, 5000).unref();
+
+// Si el programa que lo inicio ya no existe, este servicio termina.
+if (process.env.PADRE) {
+  setInterval(() => {
+    try {
+      process.kill(Number(process.env.PADRE), 0);
+    } catch (e) {
+      console.log("El programa principal termino: cierro el servicio.");
+      process.exit(0);
+    }
+  }, 5000).unref();
+}
 
 // ---------- busqueda en YouTube ----------
 
@@ -146,7 +208,7 @@ async function buscarCandidatos(artista) {
 
 // Mejor video para el momento actual: si el evento empezo hace 30 minutos,
 // el video tiene que durar mas que eso. Si ninguno alcanza, el mas largo.
-async function buscarTransmision(artista, inicioMs) {
+async function buscarTransmision(artista, inicioMs, espectador) {
   const candidatos = await buscarCandidatos(artista);
 
   if (!candidatos.length) {
@@ -164,6 +226,7 @@ async function buscarTransmision(artista, inicioMs) {
   const alternativas = resto.slice(0, 7);
 
   const ruta = "/reproductor?v=" + mejor.id
+    + (espectador ? "&e=" + encodeURIComponent(espectador) : "")
     + "&alt=" + alternativas.map((a) => a.id).join(",")
     + "&inicio=" + inicioMs
     + "&titulo=" + encodeURIComponent(mejor.titulo);
@@ -186,7 +249,26 @@ const servidor = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
 
   if (url.pathname === "/salud") {
-    return responder(res, 200, { estado: "ok" });
+    return responder(res, 200, { estado: "ok", espectadores: espectadores.size });
+  }
+
+  // La pagina avisa que sigue abierta y se entera si ya no debe reproducir.
+  if (url.pathname === "/latido") {
+    const nombre = url.searchParams.get("e") || "";
+    const vigente = espectadores.has(nombre);
+
+    if (vigente) {
+      espectadores.set(nombre, Date.now());
+    }
+
+    return responder(res, 200, { vigente });
+  }
+
+  // Cierra espectadores: uno exacto o varios con comodin.
+  if (url.pathname === "/salida") {
+    const cerrados = cerrarEspectadores(url.searchParams.get("e") || "");
+    console.log(`[${new Date().toLocaleTimeString()}] salida "${url.searchParams.get("e")}": ${cerrados} cerrado(s)`);
+    return responder(res, 200, { cerrados });
   }
 
   // Hora del servidor, para que la pagina no dependa del reloj de la PC.
@@ -214,8 +296,16 @@ const servidor = http.createServer(async (req, res) => {
       return responder(res, 400, { error: "El parametro inicio no es una fecha valida." });
     }
 
+    const espectador = (url.searchParams.get("espectador") || "").trim();
+
     try {
-      const resultado = await buscarTransmision(artista, inicioMs);
+      const resultado = await buscarTransmision(artista, inicioMs, espectador);
+
+      // Quien pide la transmision pasa a ser un espectador activo.
+      if (resultado && espectador) {
+        espectadores.set(espectador, Date.now());
+      }
+
       console.log(`[${new Date().toLocaleTimeString()}] "${artista}" desde ${new Date(inicioMs).toLocaleTimeString()} -> ${resultado ? resultado.url : "sin resultados"}`);
 
       return resultado

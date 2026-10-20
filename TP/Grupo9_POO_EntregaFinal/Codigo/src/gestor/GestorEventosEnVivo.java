@@ -515,9 +515,26 @@ public class GestorEventosEnVivo implements ServicioEventos {
         sesion.iniciar(cuenta);
     }
 
-    // Cierra la sesion actual.
+    /*
+     * Cierra la sesion actual. Quien sale deja de mirar: se cierran sus
+     * transmisiones.
+     */
     @Override
     public synchronized void cerrarSesion() {
+        Cuenta actual = sesion.getCuentaActual();
+
+        if (actual != null) {
+            cerrarTransmisionesDe(actual);
+        }
+
+        sesion.cerrar();
+    }
+
+    /*
+     * Deja sin sesion al gestor, sin cerrar transmisiones. Lo usa el servidor
+     * al terminar cada pedido, que no es una salida de la persona.
+     */
+    public synchronized void soltarSesion() {
         sesion.cerrar();
     }
 
@@ -613,7 +630,18 @@ public class GestorEventosEnVivo implements ServicioEventos {
                 evento.getArtistas().isEmpty()
                         ? evento.getTitulo()
                         : evento.getArtistas().get(0).getNombreArtistico(),
-                evento.getFechaHoraInicio());
+                evento.getFechaHoraInicio(),
+                espectador(actual, idEvento));
+    }
+
+    // Nombre con el que el servicio de transmisiones identifica a quien mira.
+    private static String espectador(Cuenta cuenta, int idEvento) {
+        return cuenta.getTipoUsuario() + "" + cuenta.getId() + ":" + idEvento;
+    }
+
+    // Cierra las transmisiones abiertas por una cuenta.
+    public void cerrarTransmisionesDe(Cuenta cuenta) {
+        proveedorTransmision.cerrar(cuenta.getTipoUsuario() + "" + cuenta.getId() + ":*");
     }
 
     private boolean estaConectado(Evento evento, Cuenta cuenta) {
@@ -676,6 +704,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
     @Override
     public synchronized void finalizarEvento(int idEvento) throws AccesoDenegadoException {
         buscarEventoParaCambio(idEvento, Accion.FINALIZAR_EVENTO).finalizarEvento();
+        proveedorTransmision.cerrar("*:" + idEvento);
         guardarDatos();
     }
 
@@ -691,6 +720,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
         }
 
         evento.cancelarEvento();
+        proveedorTransmision.cerrar("*:" + idEvento);
         guardarDatos();
     }
 
@@ -775,6 +805,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
         }
 
         usuario.desactivar();
+        cerrarTransmisionesDe(usuario);
 
         for (Evento evento : eventos) {
             if (evento.getUsuariosConectados().contains(usuario)) {
@@ -812,6 +843,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
 
             evento.expulsarUsuario(usuario);
             controlAcceso.registrarExpulsion(usuario, evento);
+            proveedorTransmision.cerrar(espectador(usuario, idEvento));
             guardarDatos();
             return usuario;
         }

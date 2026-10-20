@@ -46,7 +46,9 @@ public class ClienteTransmision implements ProveedorTransmision {
         HttpRequest pedido = HttpRequest.newBuilder(URI.create(urlBase
                         + "/transmision?q="
                         + URLEncoder.encode(consulta.artista(), StandardCharsets.UTF_8)
-                        + "&inicio=" + consulta.inicio()))
+                        + "&inicio=" + consulta.inicio()
+                        + "&espectador=" + URLEncoder.encode(
+                                consulta.espectador(), StandardCharsets.UTF_8)))
                 .timeout(Duration.ofSeconds(20))
                 .build();
 
@@ -70,5 +72,17 @@ public class ClienteTransmision implements ProveedorTransmision {
         }
 
         return new Transmision(datos.titulo(), urlPublica + datos.ruta());
+    }
+
+    @Override
+    public void cerrar(String espectador) {
+        HttpRequest pedido = HttpRequest.newBuilder(URI.create(urlBase
+                        + "/salida?e=" + URLEncoder.encode(espectador, StandardCharsets.UTF_8)))
+                .timeout(Duration.ofSeconds(3))
+                .build();
+
+        // Asincrono: quien sale no tiene que esperar al servicio.
+        cliente.sendAsync(pedido, HttpResponse.BodyHandlers.discarding())
+                .exceptionally(e -> null);
     }
 }
