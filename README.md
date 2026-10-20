@@ -90,14 +90,14 @@ Un intento de ingreso con un usuario o un evento inexistente se informa al momen
 
 ### Datos de prueba
 
-Si la base está vacía, el programa carga ocho usuarios, cuatro artistas, seis eventos en distintos estados y dieciséis accesos coherentes entre sí. Con ellos se pueden probar todos los casos de ingreso a un evento.
+Si la base está vacía, el programa carga ocho usuarios, cinco artistas, siete eventos en distintos estados y dieciséis accesos coherentes entre sí. Con ellos se pueden probar todos los casos de ingreso a un evento.
 
 | Cuenta | Rol | Contraseña |
 |---|---|---|
 | `admin` | Administrador | `admin123` |
 | `lgabian`, `lferraro`, `ncaggia`, `mrossi`, `jperez`, `sdiaz` | Usuario | `<cuenta>2024` |
 | `tgomez` | Usuario inactivo, no puede iniciar sesión | `tgomez2024` |
-| `bandahorizonte`, `djprisma`, `lunanocturna`, `losdelsur` | Artista | `horizonte2024`, `prisma2024`, `luna2024` y `sur2024` |
+| `bandahorizonte`, `djprisma`, `lunanocturna`, `losdelsur`, `sunrust` | Artista | `horizonte2024`, `prisma2024`, `luna2024`, `sur2024` y `sunrust2024` |
 
 | Evento | Estado | Plan mínimo | Conectados |
 |---|---|---|---|
@@ -107,6 +107,7 @@ Si la base está vacía, el programa carga ocho usuarios, cuatro artistas, seis 
 | 103 Luna en Vivo (Acústico) | Programado | Free | Ninguno |
 | 104 Festival de Verano 2025 | Finalizado | Free | Ninguno |
 | 105 Fiesta Electrónica Cancelada | Cancelado | Premium | Ninguno |
+| 106 Sunrust - Transmisión permanente | En curso, sin fin (hasta 2099) | Free | Ninguno |
 
 ## 6. API
 
@@ -203,6 +204,8 @@ El servicio de Node arranca solo con el programa en los modos completo y servido
 | Cierre por salida | El gestor avisa al servicio cuando una persona cierra sesión, es expulsada o desactivada, o cuando el evento finaliza o se cancela. La página detiene el video y muestra que la transmisión se cerró. |
 | Cierre por abandono | La página manda un latido cada pocos segundos; si se cierra la pestaña, a los 15 segundos el espectador se da de baja. |
 | Sin espectadores | El servicio no hace trabajo de fondo ni guarda resultados. |
+
+El evento 106 de los datos de prueba, «Sunrust - Transmisión permanente», está siempre en curso: empezó en el pasado y termina en 2099, por lo que siempre se puede ingresar, y su video se repite en bucle según el tiempo transcurrido. Sirve para tener una demostración siempre lista. Usa el recital libre de la carpeta `media/` del servicio, que se baja con `TP/Grupo9_Servicio_Transmision/descargar-demo.sh`.
 
 Para probarlo: iniciar el programa (el servicio arranca solo), registrar un artista con el nombre artístico buscado (por ejemplo «Sabrina Carpenter»), crear el evento a su nombre, iniciarlo, ingresar con un usuario y tocar «Ver transmisión».
 

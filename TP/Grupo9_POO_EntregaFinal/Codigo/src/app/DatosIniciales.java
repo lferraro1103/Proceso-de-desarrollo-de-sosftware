@@ -73,6 +73,9 @@ public final class DatosIniciales {
         artistas.add(new Artista(4, "losdelsur", Contrasenas.hashear("sur2024"),
                 "Los del Sur", "Folklore",
                 "Conjunto de folklore con giras por todo el pais.", true));
+        artistas.add(new Artista(5, "sunrust", Contrasenas.hashear("sunrust2024"),
+                "Sunrust", "Rock",
+                "Banda de Port Orchard, Washington.", true));
 
         RecitalEnVivo evento100 = new RecitalEnVivo(100, new DatosRecital(
                 "Rock en Vivo",
@@ -138,6 +141,19 @@ public final class DatosIniciales {
                 "Club Prisma", false, true));
         evento105.agregarArtista(artistas.get(1));
         eventos.add(evento105);
+
+        // Evento permanente para la demostracion: siempre en curso. El inicio queda
+        // en el pasado y el fin en 2099, por lo que nunca se cierra la ventana de
+        // ingreso, y la transmision se repite en bucle segun el tiempo transcurrido.
+        RecitalEnVivo evento106 = new RecitalEnVivo(106, new DatosRecital(
+                "Sunrust - Transmision permanente",
+                "Recital en vivo que nunca termina, siempre listo para la demostracion",
+                LocalDateTime.of(2026, 1, 1, 0, 0),
+                LocalDateTime.of(2099, 12, 31, 23, 59),
+                EstadoEvento.EN_CURSO, 1000, PlanSuscripcion.FREE,
+                "Port Orchard, WA", true, false));
+        evento106.agregarArtista(artistas.get(4));
+        eventos.add(evento106);
 
         // Registros de acceso: ingresos autorizados, rechazos y expulsiones.
         registros.add(RegistroAcceso.reconstruirRegistro(
