@@ -282,7 +282,7 @@ async function llamarApi(recurso, parametros) {
 // Directos y recitales largos que YouTube deja reproducir incrustados.
 async function buscarConApi(artista) {
   const buscar = async (extra) => (await llamarApi("search", {
-    part: "snippet", type: "video", videoEmbeddable: "true", maxResults: "15",
+    part: "snippet", type: "video", videoEmbeddable: "true", videoSyndicated: "true", maxResults: "15",
     q: artista + " concierto en vivo", ...extra,
   })).items.map((item) => item.id.videoId);
 

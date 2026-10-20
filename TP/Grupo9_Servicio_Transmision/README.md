@@ -74,4 +74,5 @@ La búsqueda con la API cuesta 200 de las 10.000 unidades diarias gratuitas, y l
 
 - Usa la página de resultados de YouTube sin clave de API. Si YouTube cambia su formato hay que ajustar la lectura.
 - Devuelve un recital del artista, que puede ser grabado y no necesariamente transmitirse en ese momento.
+- YouTube puede mostrar «Sign in to confirm you're not a bot» dentro del reproductor incrustado según la red, el navegador y si hay sesión iniciada (suele pasar con VPN o proxy). Es una verificación de YouTube y el servicio no la puede saltear: hay que mirar desde una red sin VPN y con la sesión de YouTube iniciada en ese navegador.
 - Sin clave de la API, muchos recitales no permiten reproducirse fuera de YouTube (o YouTube pide iniciar sesión según la red) y hay que probar varios. La clave de la API filtra solo los que sí se pueden incrustar. La búsqueda con la API no se probó con una clave real.
