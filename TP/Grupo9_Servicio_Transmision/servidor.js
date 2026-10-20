@@ -55,15 +55,15 @@ const PALABRAS_RECITAL = ["concierto", "concert", "recital", "full show",
 
 const cache = new Map();
 
-// Lo que se aprendio de los videos: cuales el reproductor incrustado pudo
-// reproducir y cuales no. Se guarda en ~/.uadebeats para no repetir pruebas.
+// Lo que se aprendio de los videos. Los que se reproducieron se guardan en
+// ~/.uadebeats para ofrecerlos primero. Los que fallaron solo se recuerdan
+// mientras el servicio este abierto: un fallo puede ser de la red de ese momento.
 const ARCHIVO_VIDEOS = require("path").join(require("os").homedir(), ".uadebeats", "transmision-videos.json");
 const noReproducibles = new Set();
 const reproducibles = new Set();
 
 try {
   const guardado = JSON.parse(require("fs").readFileSync(ARCHIVO_VIDEOS, "utf8"));
-  (guardado.no || []).forEach((id) => noReproducibles.add(id));
   (guardado.si || []).forEach((id) => reproducibles.add(id));
 } catch (e) {
   // Primera vez: no hay nada guardado.
@@ -73,7 +73,7 @@ function guardarVideos() {
   try {
     require("fs").mkdirSync(require("path").dirname(ARCHIVO_VIDEOS), { recursive: true });
     require("fs").writeFileSync(ARCHIVO_VIDEOS,
-      JSON.stringify({ si: [...reproducibles], no: [...noReproducibles] }));
+      JSON.stringify({ si: [...reproducibles] }));
   } catch (e) {
     console.error("No se pudo guardar la lista de videos:", e.message);
   }

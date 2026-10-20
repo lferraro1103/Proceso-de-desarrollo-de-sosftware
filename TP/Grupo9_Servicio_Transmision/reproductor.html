@@ -124,9 +124,16 @@
 
   let apiLista = false, indice = 0, yt = null, reportado = false;
 
-  function jugadorYoutube() {
-    if (!apiLista || yt) return;
+  // Un reproductor nuevo por cada video: despues de un error, YouTube deja el
+  // reproductor viejo en estado de error y los videos siguientes fallarian igual.
+  function crearJugadorYoutube() {
+    if (!document.getElementById("reproductor")) {
+      const div = document.createElement("div");
+      div.id = "reproductor";
+      document.getElementById("marco").insertBefore(div, document.getElementById("escudo"));
+    }
 
+    reportado = false;
     yt = new YT.Player("reproductor", {
       videoId: videos[indice],
       playerVars: {
@@ -151,18 +158,25 @@
         },
       },
     });
+  }
 
+  function jugadorYoutube() {
+    if (!apiLista || jugador) return;
+    crearJugadorYoutube();
+
+    // Las operaciones se hacen siempre sobre el reproductor actual (yt).
     jugador = {
-      tiempo: () => yt.getCurrentTime(),
-      duracion: () => (yt.getDuration ? yt.getDuration() : 0),
-      reproduciendo: () => yt.getPlayerState() === YT.PlayerState.PLAYING,
+      tiempo: () => (yt && yt.getCurrentTime ? yt.getCurrentTime() : 0),
+      duracion: () => (yt && yt.getDuration ? yt.getDuration() : 0),
+      reproduciendo: () => !!(yt && yt.getPlayerState && yt.getPlayerState() === YT.PlayerState.PLAYING),
       reproducir: () => {
+        if (!yt || !yt.getPlayerState) return;
         const e = yt.getPlayerState();
         if (e === YT.PlayerState.PAUSED || e === YT.PlayerState.CUED) yt.playVideo();
       },
-      ir: (t) => yt.seekTo(t, true),
-      activarSonido: () => { yt.unMute(); yt.setVolume(100); },
-      destruir: () => { if (yt.destroy) yt.destroy(); },
+      ir: (t) => { if (yt && yt.seekTo) yt.seekTo(t, true); },
+      activarSonido: () => { if (yt && yt.unMute) { yt.unMute(); yt.setVolume(100); } },
+      destruir: () => { if (yt && yt.destroy) yt.destroy(); },
     };
   }
 
@@ -170,8 +184,13 @@
   function siguienteVideo() {
     indice++;
     if (indice >= videos.length) { sinReproduccion(); return; }
-    reportado = false;
-    yt.loadVideoById({ videoId: videos[indice], startSeconds: esperado() });
+
+    const viejo = yt;
+    yt = null;
+    setTimeout(() => {
+      if (viejo && viejo.destroy) viejo.destroy();
+      crearJugadorYoutube();
+    }, 300);
   }
 
   function sinReproduccion() {
