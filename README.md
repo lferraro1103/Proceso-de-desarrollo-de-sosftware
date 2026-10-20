@@ -179,7 +179,7 @@ Google y Apple se suscriben por https: Calendar convierte `webcal://` en `https:
 
 ## 9. Transmisiones
 
-El servicio `TP/Grupo9_Servicio_Transmision` (Node.js, ver su README) busca en YouTube un recital del artista y lo muestra en una página con el reproductor, que simula una transmisión en vivo: arranca en el minuto que corresponde según cuándo empezó el evento y no deja pausar, adelantar ni volver. El programa principal lo consulta a través de la interfaz `ProveedorTransmision`, implementada por `ClienteTransmision`, pasándole el artista y la hora de inicio del evento.
+El servicio `TP/Grupo9_Servicio_Transmision` (Node.js, ver su README) muestra el recital del artista en una página a pantalla completa, que simula una transmisión en vivo. El video sale de un archivo propio de la carpeta `media/` del servicio (por ejemplo `sabrina-carpenter.mp4`), que el servicio transmite él mismo, o, si no hay, del reproductor incrustado de YouTube. La página arranca en el minuto que corresponde según cuándo empezó el evento y no deja pausar, adelantar ni volver. El programa principal lo consulta a través de la interfaz `ProveedorTransmision`, implementada por `ClienteTransmision`, pasándole el artista y la hora de inicio del evento.
 
 Un usuario entra a la transmisión al ingresar: al autorizarse su ingreso a un evento en curso, se abre sola la página del reproductor en el navegador. También puede volver a abrirla seleccionando el evento y tocando «Ver transmisión» (en consola, la opción «Ver la transmisión de un evento»). El botón queda apagado hasta seleccionar un evento en curso. Artistas y administrador usan ese mismo botón, sin necesidad de ingresar.
 
@@ -189,6 +189,7 @@ Un usuario entra a la transmisión al ingresar: al autorizarse su ingreso a un e
 | Usuario | Tiene que haber ingresado al evento: la transmisión es lo que se obtiene al conectarse. |
 | Artista | Solo en sus propios eventos. |
 | Quién la ve | Cada persona que la abre es un espectador del servicio, que se cierra al salir (ver arriba). |
+| Video | Un archivo `media/<artista>.mp4` se transmite desde el servicio. Sin archivo se usa el reproductor incrustado de YouTube, y los videos que sus dueños no permiten reproducir fuera de YouTube no se retransmiten. |
 | Qué se busca | El nombre artístico del primer artista del evento o, si no tiene, el título. |
 | Cliente remoto | Pide la transmisión al servidor, que consulta el servicio fuera de su bloqueo para no frenar a los demás. |
 | Direcciones | `uadebeats.transmision` es con la que el programa llama al servicio (`http://localhost:8766`). `uadebeats.transmision.publica` es la que abre el navegador de cada persona; hay que cambiarla si los clientes están en otra PC y no ven `localhost`. |
@@ -253,5 +254,5 @@ Para usar el cliente desde otra PC, el servidor debe aceptar conexiones de la re
 | Base anterior | Una base creada antes de guardar hashes no es compatible: hay que borrar `~/.uadebeats/uadebeats.db` para que se cree de nuevo con los datos de prueba. |
 | Sesiones | Viven en memoria y no vencen por tiempo. |
 | Concurrencia | Las operaciones están sincronizadas, pero la ventana del equipo servidor lee objetos del modelo sin bloqueo mientras un cliente remoto puede modificarlos. |
-| Transmisiones | El servicio lee la página de resultados de YouTube, que no es una API estable, y devuelve un recital del artista que puede ser grabado y no una transmisión en ese momento. Muchos recitales no permiten reproducirse fuera de YouTube: se prueban varios y, si ninguno sirve, se ofrece abrirlo en YouTube. |
+| Transmisiones | Sin video propio, el servicio lee la página de resultados de YouTube, que no es una API estable, y muchos recitales no permiten reproducirse fuera de YouTube. Para una demostración confiable hay que poner un video propio en `media/`. |
 | Fin del evento | `fechaHoraFin` es la ventana en la que se permite ingresar y no la duración real del evento. Es un problema heredado del diseño original del modelo. |

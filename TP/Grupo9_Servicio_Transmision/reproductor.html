@@ -6,64 +6,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; background: #0b0d14; color: #e8eaf0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-         min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-  header { width: 100%; max-width: 1100px; padding: 18px 20px 10px; display: flex; align-items: center; gap: 14px; }
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden;
+               font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #e8eaf0; }
+
+  /* El video ocupa toda la pantalla. */
+  #marco { position: fixed; inset: 0; background: #000; }
+  #video, #reproductor, #reproductor iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  #video { object-fit: contain; display: none; }
+
+  /* Capa transparente: bloquea clics y atajos sobre el video (pausa, adelantar). */
+  #escudo { position: absolute; inset: 0; z-index: 5; }
+
+  #cabecera { position: absolute; z-index: 8; top: 0; left: 0; right: 0; padding: 14px 20px;
+              display: flex; align-items: center; gap: 12px;
+              background: linear-gradient(rgba(0,0,0,.7), transparent); pointer-events: none;
+              transition: opacity .6s; }
   .marca { font-weight: 800; letter-spacing: .5px; color: #7aa2ff; }
   .vivo { background: #e5293e; color: #fff; font-size: 12px; font-weight: 800; padding: 3px 9px; border-radius: 4px;
           animation: latido 1.6s infinite; }
   .vivo.fin { background: #555; animation: none; }
   @keyframes latido { 50% { opacity: .55; } }
-  h1 { font-size: 18px; font-weight: 600; margin: 0; flex: 1; }
-  #marco { position: relative; width: 100%; max-width: 1100px; aspect-ratio: 16 / 9; background: #000;
-           border-radius: 10px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
-  #reproductor, #reproductor iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
-  /* Capa transparente: bloquea clics y atajos sobre el video (pausa, adelantar). */
-  #escudo { position: absolute; inset: 0; z-index: 5; }
-  #sonido { position: absolute; z-index: 10; left: 50%; bottom: 22px; transform: translateX(-50%);
-            background: #7aa2ff; color: #0b0d14; border: 0; border-radius: 999px; padding: 11px 22px;
-            font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 18px rgba(0,0,0,.5); }
-  #mensaje { position: absolute; inset: 0; z-index: 8; display: none; align-items: center; justify-content: center;
-             text-align: center; padding: 30px; background: rgba(11,13,20,.92); font-size: 22px; }
-  footer { width: 100%; max-width: 1100px; padding: 12px 20px 30px; font-size: 14px; color: #9aa3b8;
-           display: flex; justify-content: space-between; }
-  #reloj { font-variant-numeric: tabular-nums; color: #e8eaf0; }
+  #titulo { font-size: 16px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #reloj-caja { font-size: 13px; color: #c5cbdb; font-variant-numeric: tabular-nums; }
+
+  #sonido { position: absolute; z-index: 10; left: 50%; bottom: 7vh; transform: translateX(-50%);
+            background: #7aa2ff; color: #0b0d14; border: 0; border-radius: 999px; padding: 13px 26px;
+            font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 18px rgba(0,0,0,.6); }
+  #mensaje { position: absolute; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center;
+             flex-direction: column; text-align: center; padding: 30px; background: rgba(8,10,16,.94); font-size: 24px; }
+  #mensaje a { color: #7aa2ff; }
 </style>
 </head>
 <body>
-<header>
-  <span class="marca">UADE BEATS</span>
-  <span class="vivo" id="etiqueta">EN VIVO</span>
-  <h1 id="titulo"></h1>
-</header>
-
 <div id="marco">
+  <video id="video" playsinline disablepictureinpicture controlslist="nodownload noremoteplayback noplaybackrate"
+         oncontextmenu="return false"></video>
   <div id="reproductor"></div>
   <div id="escudo" oncontextmenu="return false"></div>
+
+  <div id="cabecera">
+    <span class="marca">UADE BEATS</span>
+    <span class="vivo" id="etiqueta">EN VIVO</span>
+    <span id="titulo"></span>
+    <span id="reloj-caja">minuto <span id="reloj">0:00</span></span>
+  </div>
+
   <div id="mensaje"></div>
-  <button id="sonido" hidden>Activar sonido</button>
+  <button id="sonido" hidden>Activar sonido y pantalla completa</button>
 </div>
 
-<footer>
-  <span>Transmision en directo: no se puede pausar, adelantar ni volver.</span>
-  <span>Minuto <span id="reloj">0:00</span></span>
-</footer>
-
-<script src="https://www.youtube.com/iframe_api"></script>
 <script>
-  // Parametros: v = video, alt = videos de reserva, inicio = cuando empezo el evento (ms).
+  // Parametros: src = video propio (archivo de media/), v = video de YouTube,
+  // alt = videos de reserva, inicio = cuando empezo el evento (ms), e = espectador.
   const params = new URLSearchParams(location.search);
+  const src = params.get("src");
   const videos = [params.get("v"), ...(params.get("alt") || "").split(",")].filter(Boolean);
   const inicio = Number(params.get("inicio"));
   const espectador = params.get("e");
   document.getElementById("titulo").textContent = params.get("titulo") || "";
 
   let desfase = 0;          // diferencia entre el reloj del servidor y el de esta pagina
-  let jugador = null;
-  let indice = 0;
+  let jugador = null;       // { tiempo, duracion, reproduciendo, reproducir, ir, activarSonido, destruir }
   let terminado = false;
+  let horaLista = false;
   const errores = [];       // codigos de error del reproductor, para diagnostico
-  let apiLista = false, horaLista = false;
 
   // Segundos que deberia llevar la transmision: ahora menos el inicio del evento.
   const esperado = () => Math.max(0, (Date.now() + desfase - inicio) / 1000);
@@ -81,101 +87,114 @@
     caja.style.display = texto ? "flex" : "none";
   }
 
-  function terminar() {
+  function detener(etiqueta, texto) {
     terminado = true;
-    document.getElementById("etiqueta").textContent = "FINALIZADO";
+    if (jugador) jugador.destruir();
+    document.getElementById("etiqueta").textContent = etiqueta;
     document.getElementById("etiqueta").classList.add("fin");
-    mostrar("La transmision finalizo.");
-    if (jugador) jugador.stopVideo();
+    document.getElementById("sonido").hidden = true;
+    mostrar(texto);
+    clearInterval(latido);
   }
 
-  // Ningun video se pudo incrustar: se ofrece abrir el primero en YouTube, en el minuto actual.
-  function sinReproduccion() {
-    const caja = document.getElementById("mensaje");
-    const enlace = document.createElement("a");
-    enlace.href = "https://www.youtube.com/watch?v=" + videos[0] + "&t=" + Math.floor(esperado()) + "s";
-    enlace.target = "_blank";
-    enlace.style.color = "#7aa2ff";
-    enlace.textContent = "Abrir la transmision en YouTube";
-    caja.innerHTML = "Los videos de este artista no permiten reproducirse aca.<br><br>";
-    caja.appendChild(enlace);
-    caja.style.display = "flex";
-    caja.style.flexDirection = "column";
+  // ---------- video propio: etiqueta <video> con el archivo servido por este servicio ----------
+
+  function jugadorPropio() {
+    const video = document.getElementById("video");
+    video.style.display = "block";
+    video.src = "/media/" + encodeURIComponent(src);
+    video.muted = true;
+    video.addEventListener("loadedmetadata", () => { video.currentTime = Math.min(esperado(), video.duration || esperado()); video.play(); });
+    video.addEventListener("error", () => { detener("ERROR", "No se pudo reproducir la transmision."); });
+    video.addEventListener("ended", () => detener("FINALIZADO", "La transmision finalizo."));
+
+    jugador = {
+      tiempo: () => video.currentTime,
+      duracion: () => video.duration || 0,
+      reproduciendo: () => !video.paused && !video.ended && video.readyState > 2,
+      reproducir: () => video.play(),
+      ir: (t) => { video.currentTime = t; },
+      activarSonido: () => { video.muted = false; video.volume = 1; },
+      destruir: () => { video.pause(); video.removeAttribute("src"); video.load(); video.style.display = "none"; },
+    };
+    document.getElementById("sonido").hidden = false;
   }
 
-  // Pasa al siguiente video cuando el actual no se puede reproducir (por ejemplo, embebido deshabilitado).
-  function siguienteVideo() {
-    indice++;
-    if (indice >= videos.length) { sinReproduccion(); return; }
-    jugador.loadVideoById({ videoId: videos[indice], startSeconds: esperado() });
-  }
+  // ---------- YouTube: reproductor incrustado ----------
 
-  function iniciar() {
-    if (!apiLista || !horaLista || jugador) return;
+  let apiLista = false, indice = 0, yt = null;
 
-    jugador = new YT.Player("reproductor", {
+  function jugadorYoutube() {
+    if (!apiLista || yt) return;
+
+    yt = new YT.Player("reproductor", {
       videoId: videos[indice],
       playerVars: {
         autoplay: 1, controls: 0, disablekb: 1, fs: 0, modestbranding: 1, rel: 0,
         iv_load_policy: 3, playsinline: 1, start: Math.floor(esperado()), origin: location.origin,
       },
       events: {
-        onReady: (e) => {
-          // Los navegadores solo dejan reproducir solo si esta silenciado.
-          e.target.mute();
-          e.target.playVideo();
-          document.getElementById("sonido").hidden = false;
-        },
-        onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) terminar(); },
+        // Los navegadores solo dejan reproducir solo si esta silenciado.
+        onReady: (e) => { e.target.mute(); e.target.playVideo(); document.getElementById("sonido").hidden = false; },
+        onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) detener("FINALIZADO", "La transmision finalizo."); },
         onError: (e) => { errores.push(videos[indice] + ":" + e.data); siguienteVideo(); },
       },
     });
 
+    jugador = {
+      tiempo: () => yt.getCurrentTime(),
+      duracion: () => (yt.getDuration ? yt.getDuration() : 0),
+      reproduciendo: () => yt.getPlayerState() === YT.PlayerState.PLAYING,
+      reproducir: () => {
+        const e = yt.getPlayerState();
+        if (e === YT.PlayerState.PAUSED || e === YT.PlayerState.CUED) yt.playVideo();
+      },
+      ir: (t) => yt.seekTo(t, true),
+      activarSonido: () => { yt.unMute(); yt.setVolume(100); },
+      destruir: () => { if (yt.destroy) yt.destroy(); },
+    };
+  }
+
+  // Pasa al siguiente video cuando el actual no se puede reproducir incrustado.
+  function siguienteVideo() {
+    indice++;
+    if (indice >= videos.length) { sinReproduccion(); return; }
+    yt.loadVideoById({ videoId: videos[indice], startSeconds: esperado() });
+  }
+
+  function sinReproduccion() {
+    const caja = document.getElementById("mensaje");
+    caja.innerHTML = "Los videos de este artista no permiten reproducirse fuera de YouTube.<br><br>"
+      + "Para transmitirlo desde aca, agregue un video propio a la carpeta media del servicio.";
+    caja.style.display = "flex";
+  }
+
+  window.onYouTubeIframeAPIReady = () => { apiLista = true; iniciar(); };
+
+  // ---------- comun ----------
+
+  function iniciar() {
+    if (!horaLista || jugador) return;
+
+    if (src) jugadorPropio();
+    else jugadorYoutube();
+
     // Cada segundo: mantiene el video en el minuto que corresponde.
     setInterval(() => {
-      if (terminado || !jugador || !jugador.getCurrentTime) return;
+      if (terminado || !jugador) return;
 
       const meta = esperado();
       document.getElementById("reloj").textContent = formato(meta);
 
-      const duracion = jugador.getDuration ? jugador.getDuration() : 0;
-      if (duracion > 0 && meta >= duracion) { terminar(); return; }
+      const duracion = jugador.duracion();
+      if (duracion > 0 && meta >= duracion) { detener("FINALIZADO", "La transmision finalizo."); return; }
 
-      const estado = jugador.getPlayerState();
-      if (estado === YT.PlayerState.PAUSED || estado === YT.PlayerState.CUED) jugador.playVideo();
+      if (!jugador.reproduciendo()) jugador.reproducir();
 
       // Si se adelanto o atraso (o el video se trabo), vuelve al minuto del directo.
-      if (estado === YT.PlayerState.PLAYING && Math.abs(jugador.getCurrentTime() - meta) > 4) {
-        jugador.seekTo(meta, true);
-      }
+      if (jugador.reproduciendo() && Math.abs(jugador.tiempo() - meta) > 4) jugador.ir(meta);
     }, 1000);
   }
-
-  // Latido: avisa al servicio que esta pagina sigue abierta. Si la persona salio del evento,
-  // el servicio responde que ya no esta vigente y se detiene el video.
-  function salirDelEvento(motivo) {
-    terminado = true;
-    if (jugador && jugador.destroy) jugador.destroy();
-    document.getElementById("etiqueta").textContent = "FINALIZADO";
-    document.getElementById("etiqueta").classList.add("fin");
-    document.getElementById("sonido").hidden = true;
-    mostrar(motivo || "Saliste del evento. La transmision se cerro.");
-    clearInterval(latido);
-  }
-
-  let fallos = 0;
-
-  const latido = espectador ? setInterval(() => {
-    fetch("/latido?e=" + encodeURIComponent(espectador))
-      .then((r) => r.json())
-      .then((d) => { fallos = 0; if (!d.vigente && !terminado) salirDelEvento(); })
-      .catch(() => {
-        // Sin respuesta del servicio (por ejemplo, el programa se cerro): se corta.
-        if (++fallos >= 3 && !terminado) salirDelEvento("Se perdio la conexion con el servicio.");
-      });
-  }, 4000) : null;
-
-  window.onYouTubeIframeAPIReady = () => { apiLista = true; iniciar(); };
 
   // Hora del servidor, para no depender de que el reloj de esta PC este bien.
   fetch("/hora").then((r) => r.json()).then((d) => {
@@ -184,14 +203,35 @@
     iniciar();
   });
 
+  // El clic habilita el sonido y la pantalla completa (los navegadores lo exigen).
   document.getElementById("sonido").addEventListener("click", (e) => {
-    jugador.unMute();
-    jugador.setVolume(100);
+    jugador.activarSonido();
     e.target.hidden = true;
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
   });
+
+  // Latido: avisa al servicio que esta pagina sigue abierta. Si la persona salio del evento,
+  // el servicio responde que ya no esta vigente y se detiene el video.
+  let fallos = 0;
+
+  const latido = espectador ? setInterval(() => {
+    fetch("/latido?e=" + encodeURIComponent(espectador))
+      .then((r) => r.json())
+      .then((d) => { fallos = 0; if (!d.vigente && !terminado) detener("FINALIZADO", "Saliste del evento. La transmision se cerro."); })
+      .catch(() => {
+        // Sin respuesta del servicio (por ejemplo, el programa se cerro): se corta.
+        if (++fallos >= 3 && !terminado) detener("FINALIZADO", "Se perdio la conexion con el servicio.");
+      });
+  }, 4000) : null;
 
   // Sin atajos de teclado.
   document.addEventListener("keydown", (e) => e.preventDefault());
+
+  if (!src) {
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(s);
+  }
 </script>
 </body>
 </html>
