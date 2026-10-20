@@ -137,7 +137,11 @@
         // Los navegadores solo dejan reproducir solo si esta silenciado.
         onReady: (e) => { e.target.mute(); e.target.playVideo(); document.getElementById("sonido").hidden = false; },
         onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) detener("FINALIZADO", "La transmision finalizo."); },
-        onError: (e) => { errores.push(videos[indice] + ":" + e.data); siguienteVideo(); },
+        onError: (e) => {
+          errores.push(videos[indice] + ":" + e.data);
+          fetch("/fallo?v=" + encodeURIComponent(videos[indice])).catch(() => {});
+          siguienteVideo();
+        },
       },
     });
 
@@ -164,8 +168,8 @@
 
   function sinReproduccion() {
     const caja = document.getElementById("mensaje");
-    caja.innerHTML = "Los videos de este artista no permiten reproducirse fuera de YouTube.<br><br>"
-      + "Para transmitirlo desde aca, agregue un video propio a la carpeta media del servicio.";
+    caja.innerHTML = "Ningun recital de este artista permite reproducirse fuera de YouTube.<br><br>"
+      + "Con una clave de la API de YouTube el servicio busca solo los que si lo permiten.";
     caja.style.display = "flex";
   }
 

@@ -8,12 +8,18 @@
 //
 // De donde sale el video, en este orden:
 //   1. Un archivo de la carpeta media/ cuyo nombre sea el del artista
-//      (por ejemplo sabrina-carpenter.mp4). El servicio lo transmite el mismo,
-//      con soporte de Range, sin depender de ningun sitio externo.
-//   2. Si no hay archivo, se prueban recitales de YouTube en el reproductor
-//      incrustado de YouTube, como lo permite YouTube. Los videos que sus
-//      duenos no dejan reproducir fuera de YouTube no se descargan ni se
-//      retransmiten: la pagina pasa al siguiente.
+//      (opcional: por ejemplo sabrina-carpenter.mp4). El servicio lo transmite
+//      el mismo, con soporte de Range.
+//   2. Un recital real de YouTube, mostrado en el reproductor incrustado que
+//      ofrece YouTube:
+//        - Con una clave (variable YOUTUBE_API_KEY o archivo
+//          ~/.uadebeats/youtube.key) usa la API oficial: busca primero un
+//          directo en este momento y luego recitales largos, y solo considera
+//          los videos que sus duenos dejan reproducir incrustados.
+//        - Sin clave, lee la pagina de resultados y prueba los videos uno por
+//          uno; los que no se pueden reproducir se recuerdan y se saltean.
+//      Los videos que sus duenos no dejan reproducir fuera de YouTube no se
+//      descargan ni se retransmiten.
 //
 //   GET /salud                    -> { estado, espectadores }
 //   GET /transmision?q=<artista>&inicio=<fecha ISO>
@@ -22,6 +28,7 @@
 //   GET /media/<archivo>          -> el video de la carpeta media/ (con Range)
 //   GET /reproductor?src=<archivo>|v=<id>&alt=<ids>&inicio=<ms>&titulo=<texto>&e=<espectador>
 //        -> pagina HTML con el reproductor sincronizado
+//   GET /fallo?v=<id>             -> el reproductor no pudo con ese video: se saltea
 //   GET /latido?e=<espectador>    -> { vigente }   (la pagina lo pide cada pocos segundos)
 //   GET /salida?e=<patron>        -> { cerrados }  cierra espectadores (ver abajo)
 //
@@ -33,9 +40,8 @@
 // * como comodin: "USUARIO1:*" cierra todo de una cuenta, "*:106" todo de un
 // evento. Sin espectadores el servicio no hace nada ni guarda resultados.
 //
-// Busca en la pagina de resultados de YouTube (sin clave de API) y elige el
-// resultado que mas parece un recital completo del artista. Si hay una
-// transmision en vivo en ese momento, la prefiere.
+// Entre los videos del artista elige el que mas parece un recital completo y,
+// si hay una transmision en vivo en ese momento, la prefiere.
 
 const http = require("http");
 
@@ -47,6 +53,9 @@ const PALABRAS_RECITAL = ["concierto", "concert", "recital", "full show",
   "full set", "completo", "en vivo", "live", "festival", "tour"];
 
 const cache = new Map();
+
+// Videos que el reproductor incrustado no pudo reproducir: no se vuelven a ofrecer.
+const noReproducibles = new Set();
 
 // Espectadores activos: nombre -> hora del ultimo latido.
 const espectadores = new Map();
@@ -234,6 +243,76 @@ function puntuar(video) {
   return puntos;
 }
 
+// ---------- API oficial de YouTube (opcional) ----------
+
+// La clave se toma de la variable YOUTUBE_API_KEY o, si no esta, del archivo
+// ~/.uadebeats/youtube.key (queda fuera del repositorio).
+function claveApi() {
+  if (process.env.YOUTUBE_API_KEY) return process.env.YOUTUBE_API_KEY;
+
+  try {
+    return require("fs").readFileSync(
+      require("path").join(require("os").homedir(), ".uadebeats", "youtube.key"), "utf8").trim();
+  } catch (e) {
+    return "";
+  }
+}
+
+// "PT1H10M19S" -> minutos.
+function minutosIso(duracion) {
+  const m = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(duracion || "") || [];
+  return Number(m[1] || 0) * 60 + Number(m[2] || 0) + Number(m[3] || 0) / 60;
+}
+
+async function llamarApi(recurso, parametros) {
+  const url = new URL("https://www.googleapis.com/youtube/v3/" + recurso);
+  Object.entries({ ...parametros, key: claveApi() })
+    .forEach(([clave, valor]) => url.searchParams.set(clave, valor));
+
+  const respuesta = await fetch(url);
+  const datos = await respuesta.json();
+
+  if (!respuesta.ok) {
+    throw new Error(datos.error?.message || "error " + respuesta.status);
+  }
+
+  return datos;
+}
+
+// Directos y recitales largos que YouTube deja reproducir incrustados.
+async function buscarConApi(artista) {
+  const buscar = async (extra) => (await llamarApi("search", {
+    part: "snippet", type: "video", videoEmbeddable: "true", maxResults: "15",
+    q: artista + " concierto en vivo", ...extra,
+  })).items.map((item) => item.id.videoId);
+
+  const ids = [...new Set([
+    ...await buscar({ eventType: "live" }),
+    ...await buscar({ videoDuration: "long" }),
+  ])];
+
+  if (!ids.length) return [];
+
+  const detalles = (await llamarApi("videos", {
+    part: "snippet,contentDetails,status", id: ids.join(","),
+  })).items;
+
+  return detalles
+    .filter((v) => v.status?.embeddable)
+    .map((v) => {
+      const enVivo = v.snippet.liveBroadcastContent === "live";
+      return {
+        id: v.id,
+        titulo: v.snippet.title,
+        canal: v.snippet.channelTitle,
+        duracion: enVivo ? "EN VIVO" : "",
+        minutos: enVivo ? 0 : minutosIso(v.contentDetails.duration),
+        enVivo,
+        url: "https://www.youtube.com/watch?v=" + v.id,
+      };
+    });
+}
+
 // Videos del artista ordenados de mejor a peor. Se guardan unos minutos.
 async function buscarCandidatos(artista) {
   const clave = sinAcentos(artista);
@@ -241,6 +320,24 @@ async function buscarCandidatos(artista) {
 
   if (guardado && Date.now() - guardado.hora < MINUTOS_CACHE * 60000) {
     return guardado.candidatos;
+  }
+
+  // Con clave de API: solo videos que se pueden reproducir incrustados.
+  if (claveApi()) {
+    try {
+      const desdeApi = (await buscarConApi(artista))
+        .filter((video) => nombraAlArtista(video, artista))
+        .map((video) => ({ video, puntos: puntuar(video) }))
+        .sort((a, b) => b.puntos - a.puntos)
+        .map(({ video }) => video);
+
+      if (desdeApi.length) {
+        cache.set(clave, { hora: Date.now(), candidatos: desdeApi });
+        return desdeApi;
+      }
+    } catch (e) {
+      console.error("API de YouTube:", e.message, "- se usa la busqueda comun");
+    }
   }
 
   const unicos = new Map();
@@ -292,7 +389,8 @@ async function buscarTransmision(artista, inicioMs, espectador) {
   }
 
   // 2. Recital de YouTube que permita reproducirse incrustado.
-  const candidatos = await buscarCandidatos(artista);
+  const candidatos = (await buscarCandidatos(artista))
+    .filter((c) => !noReproducibles.has(c.id));
 
   if (!candidatos.length) {
     return null;
@@ -305,8 +403,8 @@ async function buscarTransmision(artista, inicioMs, espectador) {
     : [...candidatos].sort((a, b) => b.minutos - a.minutos);
 
   const [mejor, ...resto] = lista;
-  // Varias de reserva: algunos videos no permiten reproducirse incrustados.
-  const alternativas = resto.slice(0, 7);
+  // Varias de reserva: muchos videos no permiten reproducirse incrustados.
+  const alternativas = resto.slice(0, 14);
 
   const ruta = "/reproductor?v=" + mejor.id + quien
     + "&alt=" + alternativas.map((a) => a.id).join(",")
@@ -341,6 +439,17 @@ const servidor = http.createServer(async (req, res) => {
     }
 
     return responder(res, 200, { vigente });
+  }
+
+  // La pagina avisa que un video no se pudo reproducir incrustado: no se ofrece mas.
+  if (url.pathname === "/fallo") {
+    const id = url.searchParams.get("v") || "";
+
+    if (/^[\w-]{11}$/.test(id)) {
+      noReproducibles.add(id);
+    }
+
+    return responder(res, 200, { omitidos: noReproducibles.size });
   }
 
   // Cierra espectadores: uno exacto o varios con comodin.
