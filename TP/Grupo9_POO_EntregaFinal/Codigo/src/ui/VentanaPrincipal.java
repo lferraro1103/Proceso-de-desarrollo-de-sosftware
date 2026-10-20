@@ -579,12 +579,17 @@ public class VentanaPrincipal extends JFrame {
             return;
         }
 
+        abrirTransmision(evento);
+    }
+
+    // Busca la transmision del evento y la abre en el navegador.
+    private void abrirTransmision(Evento evento) {
         try {
             Transmision transmision = gestor.obtenerTransmision(evento.getId());
             Navegador.abrir(transmision.url());
             mostrarInfo("Se abrio la transmision: " + transmision.titulo());
         } catch (AccesoDenegadoException | IOException e) {
-            mostrarError(e.getMessage());
+            mostrarError("No se pudo abrir la transmision: " + e.getMessage());
         }
     }
 
@@ -908,6 +913,11 @@ public class VentanaPrincipal extends JFrame {
 
         if (registro.isExitoso()) {
             mostrarExito("Ingreso autorizado a \"" + evento.getTitulo() + "\".");
+
+            // Quien ingresa a su nombre entra directamente a la transmision.
+            if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO) {
+                abrirTransmision(evento);
+            }
         } else {
             mostrarError("Ingreso rechazado: " + registro.getMotivoRechazo());
         }

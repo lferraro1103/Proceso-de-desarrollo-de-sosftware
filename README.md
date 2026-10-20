@@ -181,7 +181,7 @@ Google y Apple se suscriben por https: Calendar convierte `webcal://` en `https:
 
 El servicio `TP/Grupo9_Servicio_Transmision` (Node.js, ver su README) busca en YouTube un recital del artista y lo muestra en una página con el reproductor, que simula una transmisión en vivo: arranca en el minuto que corresponde según cuándo empezó el evento y no deja pausar, adelantar ni volver. El programa principal lo consulta a través de la interfaz `ProveedorTransmision`, implementada por `ClienteTransmision`, pasándole el artista y la hora de inicio del evento.
 
-Con el evento en curso, la persona selecciona el evento y toca «Ver transmisión» (en consola, la opción «Ver la transmisión de un evento»): se abre la página del reproductor en el navegador.
+Un usuario entra a la transmisión al ingresar: al autorizarse su ingreso a un evento en curso, se abre sola la página del reproductor en el navegador. También puede volver a abrirla seleccionando el evento y tocando «Ver transmisión» (en consola, la opción «Ver la transmisión de un evento»). El botón queda apagado hasta seleccionar un evento en curso. Artistas y administrador usan ese mismo botón, sin necesidad de ingresar.
 
 | Regla | Detalle |
 |---|---|
