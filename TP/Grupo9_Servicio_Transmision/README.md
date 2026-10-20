@@ -30,12 +30,12 @@ Mientras nadie pide una transmisión no hace nada ni guarda nada: es solo un pro
 
 La página de `/reproductor` simula una transmisión en vivo:
 
-- **Minuto del directo:** arranca en el minuto que corresponde. Si el evento empezó a las 22:00 y son las 22:30, el video empieza en el minuto 30. Usa la hora del servidor, no la de la PC de quien mira.
+- **Minuto del directo:** arranca en el minuto que corresponde. Si el evento empezó a las 22:00 y son las 22:30, el video empieza en el minuto 30. Usa la hora del servidor, no la de la PC de quien mira. La página no muestra cuánto va.
+- **Bucle:** si el video dura menos que el evento, vuelve a empezar solo, en el minuto que corresponde.
 - **Pantalla completa:** el video ocupa toda la ventana. El botón «Activar sonido y pantalla completa» activa el sonido y pasa el navegador a pantalla completa (los navegadores exigen un clic para ambas cosas).
 - **Sin controles:** no muestra la barra de tiempo, tiene una capa que bloquea los clics y desactiva el teclado.
-- **Sin adelantar, volver ni pausar:** cada segundo compara el video con el minuto esperado. Si se atrasó, se adelantó o se pausó, lo devuelve al minuto del directo y lo reanuda.
+- **Sin adelantar, volver ni pausar:** en un video propio, cualquier movimiento del tiempo se deshace en el acto. En YouTube, cada segundo se compara el video con el minuto esperado y, si se atrasó, se adelantó o se pausó, se lo devuelve y se lo reanuda.
 - **Sonido:** arranca silenciado porque los navegadores no permiten reproducir con sonido sin un clic. Un botón lo activa.
-- **Fin:** si el video termina antes de lo esperado, avisa que la transmisión finalizó.
 - **Reserva:** con YouTube, si un video no permite reproducirse en páginas ajenas, pasa solo al siguiente. Si ninguno se puede, avisa que hace falta un video propio en `media/`.
 
 ## Espectadores
@@ -54,7 +54,7 @@ Al darse de baja, la página detiene y elimina el reproductor y avisa que la tra
 
 Siempre es un recital real. En este orden:
 
-1. **Archivo propio (opcional).** Si en la carpeta `media/` hay un archivo con el nombre del artista, por ejemplo `sabrina-carpenter.mp4` (también `.webm` y `.m4v`), el servicio lo transmite él mismo, con soporte de `Range`. La carpeta está ignorada por git. Solo sirve si ya tenés un recital que puedas usar (propio, con licencia o autorizado); no viene ningún archivo.
+1. **Archivo propio.** Si en la carpeta `media/` hay un archivo con el nombre del artista, por ejemplo `sabrina-carpenter.mp4` (también `.webm` y `.m4v`), el servicio lo transmite él mismo, con soporte de `Range`. La carpeta está ignorada por git. No viene ningún archivo: hay que poner un recital que se pueda usar (propio, con licencia o autorizado). Para una demostración sirve un recital con licencia abierta de archive.org, por ejemplo «Sunrust | Live Concert» (`https://archive.org/details/sunrust-2023-08-17`, dedicado al dominio público con CC0; 114 minutos, 480p), guardado como `media/sunrust.mp4` y usado con un artista de nombre artístico «Sunrust».
 2. **Recital de YouTube**, en el reproductor incrustado que ofrece YouTube.
    - **Con clave de la API de YouTube** (recomendado): busca primero un **directo en este momento** y después recitales largos, y solo considera los videos que sus dueños dejan reproducir incrustados. Así casi siempre hay uno que se reproduce.
    - **Sin clave:** lee la página de resultados y prueba hasta quince videos. Muchos recitales no permiten reproducirse fuera de YouTube; los que fallan se recuerdan y no se vuelven a ofrecer, pero puede que haya que esperar a que pase por varios.
