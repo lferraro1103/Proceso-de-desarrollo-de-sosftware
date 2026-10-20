@@ -188,11 +188,22 @@ Un usuario entra a la transmisión al ingresar: al autorizarse su ingreso a un e
 | Estado | Solo mientras el evento está en curso. |
 | Usuario | Tiene que haber ingresado al evento: la transmisión es lo que se obtiene al conectarse. |
 | Artista | Solo en sus propios eventos. |
+| Quién la ve | Cada persona que la abre es un espectador del servicio, que se cierra al salir (ver arriba). |
 | Qué se busca | El nombre artístico del primer artista del evento o, si no tiene, el título. |
 | Cliente remoto | Pide la transmisión al servidor, que consulta el servicio fuera de su bloqueo para no frenar a los demás. |
 | Direcciones | `uadebeats.transmision` es con la que el programa llama al servicio (`http://localhost:8766`). `uadebeats.transmision.publica` es la que abre el navegador de cada persona; hay que cambiarla si los clientes están en otra PC y no ven `localhost`. |
 
-Para probarlo: iniciar el servicio (`node servidor.js`), registrar un artista con el nombre artístico buscado (por ejemplo «Sabrina Carpenter»), crear el evento a su nombre, iniciarlo, ingresar con un usuario y tocar «Ver transmisión».
+El servicio de Node arranca solo con el programa en los modos completo y servidor, como proceso hijo, y se cierra cuando el programa termina. No hace nada hasta que alguien pide una transmisión, y cada transmisión se cierra cuando la persona sale.
+
+| Qué | Cómo |
+|---|---|
+| Inicio | `ProcesoServicio` lo arranca con `node servidor.js` (busca Node en el PATH y en las carpetas habituales, y el script subiendo por las carpetas). Si ya hay uno funcionando, lo usa. Si no encuentra Node, avisa y sigue. Propiedades opcionales: `uadebeats.node` y `uadebeats.servicio`. |
+| Qué espectador es | Cada transmisión se pide con un nombre de espectador (cuenta y evento), por ejemplo `USUARIO1:106`. |
+| Cierre por salida | El gestor avisa al servicio cuando una persona cierra sesión, es expulsada o desactivada, o cuando el evento finaliza o se cancela. La página detiene el video y muestra que la transmisión se cerró. |
+| Cierre por abandono | La página manda un latido cada pocos segundos; si se cierra la pestaña, a los 15 segundos el espectador se da de baja. |
+| Sin espectadores | El servicio no hace trabajo de fondo ni guarda resultados. |
+
+Para probarlo: iniciar el programa (el servicio arranca solo), registrar un artista con el nombre artístico buscado (por ejemplo «Sabrina Carpenter»), crear el evento a su nombre, iniciarlo, ingresar con un usuario y tocar «Ver transmisión».
 
 ## 10. Diagramas
 

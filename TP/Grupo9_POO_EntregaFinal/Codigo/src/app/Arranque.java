@@ -5,6 +5,7 @@ import gestor.ProveedorTransmision;
 import notificacion.NotificadorInactivo;
 import persistencia.PersistenciaSqlite;
 import transmision.ClienteTransmision;
+import transmision.ProcesoServicio;
 import servidor.CodigosCalendario;
 import servidor.ConfiguracionServidor;
 import servidor.ManejadorApi;
@@ -58,6 +59,10 @@ final class Arranque {
                     + " ya esta en uso (¿hay otro programa abierto?). "
                     + "Use -Duadebeats.puerto=<otro puerto>.", e);
         }
+
+        // El servicio de transmisiones arranca con el programa y no hace nada
+        // hasta que alguien pide una transmision.
+        ProcesoServicio.iniciar();
 
         return gestor;
     }

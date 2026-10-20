@@ -63,6 +63,7 @@ package "Servicio aparte en Node" {
 interface ServicioEventos
 class GestorEventosEnVivo
 class ClienteTransmision
+class ProcesoServicio
 
 GestorRemoto ..|> ServicioEventos
 GestorEventosEnVivo ..|> ServicioEventos
@@ -85,4 +86,5 @@ ClienteHttp ..> ManejadorApi : HTTP + JSON
 ManejadorApi --> ClienteTransmision
 GestorEventosEnVivo --> ClienteTransmision
 ClienteTransmision ..> ServicioTransmision : HTTP
+ProcesoServicio ..> ServicioTransmision : inicia y cierra
 @enduml

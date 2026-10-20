@@ -16,4 +16,12 @@ public interface ProveedorTransmision {
      * Falla con IOException si no hay ninguna o el servicio no responde.
      */
     Transmision buscar(ConsultaTransmision consulta) throws IOException;
+
+    /*
+     * Cierra la transmision de uno o varios espectadores. El nombre acepta *
+     * como comodin: "USUARIO1:*" son todas las de una cuenta y "*:106" todas
+     * las de un evento. No espera respuesta ni falla: si el servicio no
+     * responde, las paginas se cierran solas al dejar de enviar latidos.
+     */
+    void cerrar(String espectador);
 }
