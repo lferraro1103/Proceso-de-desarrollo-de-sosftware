@@ -38,6 +38,9 @@ package "Interfaz grafica (Swing)" {
   class Logo {
     icono dibujado por codigo
   }
+  class Navegador {
+    abre una direccion en el navegador
+  }
 }
 
 class DatosIniciales
@@ -45,21 +48,24 @@ interface ServicioEventos
 class GestorEventosEnVivo
 class GestorRemoto
 
-App --> Arranque : completo y servidor
-App --> GestorRemoto : cliente
-App --> MenuPorRol
-App --> AppSwing
-Arranque --> GestorEventosEnVivo
-Arranque --> DatosIniciales
-MenuPorRol --> MenuAcciones
-MenuAcciones --> ConsoleIO
-AppSwing --> VentanaLogin
-VentanaLogin --> VentanaPrincipal
-VentanaLogin --> Logo
-VentanaPrincipal --> ModeloTabla
-VentanaPrincipal --> Logo
-MenuAcciones ..> ServicioEventos
-VentanaPrincipal ..> ServicioEventos
+App "1" --> "0..1" Arranque : completo y servidor
+App "1" --> "0..1" GestorRemoto : cliente
+App "1" --> "0..1" MenuPorRol : consola
+App "1" --> "0..1" AppSwing : ventana
+Arranque "1" --> "1" GestorEventosEnVivo : crea
+Arranque "1" ..> "0..1" DatosIniciales : si la base esta vacia
+MenuPorRol "1" --> "1" MenuAcciones
+MenuAcciones "1" --> "1" ConsoleIO
+MenuAcciones ..> "1" Navegador
+AppSwing "1" --> "1" VentanaLogin
+VentanaLogin "1" --> "0..1" VentanaPrincipal : tras iniciar sesion
+VentanaLogin "1" --> "1" Logo
+VentanaPrincipal "1" *-- "4" ModeloTabla : usuarios, artistas, eventos y registros
+VentanaPrincipal "1" --> "1" Logo
+VentanaPrincipal ..> "1" Navegador
+MenuAcciones "1" --> "1" ServicioEventos : gestor
+VentanaPrincipal "1" --> "1" ServicioEventos : gestor
+VentanaLogin "1" --> "1" ServicioEventos : gestor
 GestorEventosEnVivo ..|> ServicioEventos
 GestorRemoto ..|> ServicioEventos
 @enduml

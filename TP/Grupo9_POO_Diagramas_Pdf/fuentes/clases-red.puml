@@ -5,12 +5,14 @@ title Diagrama de clases: servidor, API y cliente remoto
 package "Cliente" {
   class GestorRemoto {
     implementa ServicioEventos
-    copia local de lo que ve la cuenta
+    -conSesion : boolean
   }
   class ClienteHttp {
+    -token : String
     token y errores del servidor
   }
   class EstadoLocal {
+    copia de solo lectura
     objetos del modelo a partir de EstadoDto
   }
 }
@@ -34,7 +36,7 @@ package "Servidor" {
     /calendario/
   }
   class Sesiones {
-    token de cada cliente
+    token -> cuenta
   }
   class Instantanea {
     filtra lo visible segun el rol
@@ -55,8 +57,8 @@ package "Servidor" {
 
 package "Servicio aparte en Node" {
   class ServicioTransmision {
-    servidor.js: busca recitales en YouTube
-    GET /transmision?q=artista
+    servidor.js
+    GET /transmision, /reproductor, /latido, /salida
   }
 }
 
@@ -67,24 +69,25 @@ class ProcesoServicio
 
 GestorRemoto ..|> ServicioEventos
 GestorEventosEnVivo ..|> ServicioEventos
-GestorRemoto --> ClienteHttp
-GestorRemoto --> EstadoLocal
-ClienteHttp ..> Json
-EstadoLocal ..> EstadoDto
-ServidorHttp --> ManejadorApi
-ServidorHttp --> ManejadorCalendario
-ManejadorApi --> Sesiones
-ManejadorApi --> Instantanea
-ManejadorApi --> GestorEventosEnVivo
-Instantanea --> Conversor
-Instantanea ..> EstadoDto
-ManejadorCalendario --> CodigosCalendario
-ManejadorCalendario --> GestorEventosEnVivo
-PublicadorHttp --> CodigosCalendario
-PublicadorHttp --> ConfiguracionServidor
-ClienteHttp ..> ManejadorApi : HTTP + JSON
-ManejadorApi --> ClienteTransmision
-GestorEventosEnVivo --> ClienteTransmision
-ClienteTransmision ..> ServicioTransmision : HTTP
-ProcesoServicio ..> ServicioTransmision : inicia y cierra
+GestorRemoto "1" --> "1" ClienteHttp : http
+GestorRemoto "1" *-- "0..1" EstadoLocal : estado
+EstadoLocal ..> "1" EstadoDto : se arma con
+ClienteHttp ..> "1" Json
+ClienteHttp "*" ..> "1" ManejadorApi : HTTP + JSON
+ServidorHttp "1" --> "1" ManejadorApi
+ServidorHttp "1" --> "1" ManejadorCalendario
+ServidorHttp "1" --> "1" ConfiguracionServidor
+ManejadorApi "1" *-- "1" Sesiones
+ManejadorApi "1" --> "1" Instantanea
+ManejadorApi "1" --> "1" GestorEventosEnVivo : gestor
+ManejadorApi "1" --> "1" ClienteTransmision : proveedor
+Instantanea ..> "1" Conversor
+Instantanea ..> "1" EstadoDto : arma
+ManejadorCalendario "1" --> "1" CodigosCalendario
+ManejadorCalendario "1" --> "1" GestorEventosEnVivo
+PublicadorHttp "1" --> "1" CodigosCalendario
+PublicadorHttp "1" --> "1" ConfiguracionServidor
+GestorEventosEnVivo "1" --> "1" ClienteTransmision : proveedorTransmision
+ClienteTransmision "*" ..> "1" ServicioTransmision : HTTP
+ProcesoServicio "1" ..> "0..1" ServicioTransmision : inicia y cierra
 @enduml

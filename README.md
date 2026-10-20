@@ -215,10 +215,23 @@ Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_
 
 | Diagrama | Contenido |
 |---|---|
-| Diagrama de clase | Seis páginas: modelo, controlador, colaboradores, persistencia, red y vistas |
-| Diagrama de secuencia | Solicitar ingreso con el gestor local y desde un cliente remoto |
+| Diagrama de clase completo | Una sola página con todas las clases e interfaces de todos los paquetes, con sus relaciones, cardinalidades y roles |
+| Diagrama de clase | Siete páginas, una por parte, con más detalle de atributos y métodos: modelo, controlador, colaboradores, persistencia, red, servicio de transmisiones y vistas |
+| Diagrama de secuencia | Tres páginas: solicitar ingreso con el gestor local, desde un cliente remoto y ver la transmisión de un evento |
+| Diagrama de base de datos | Las seis tablas con claves primarias y foráneas y cardinalidades |
+| Diagrama de despliegue | Qué corre en la PC del servidor y en la PC cliente, y cómo se conectan |
+
+Todas las relaciones llevan su multiplicidad en cada extremo y, cuando aporta, el nombre del rol. Se usan composición (rombo lleno) cuando el objeto no existe sin su dueño, agregación (rombo vacío) para las colecciones, flechas sólidas para las asociaciones, punteadas para las dependencias y triángulos huecos para la herencia y la implementación de interfaces.
+
+![Diagrama de clases completo](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.png)
+
+![Diagrama de la base de datos](TP/Grupo9_POO_Diagramas_Pdf/imagenes/der-base-de-datos.png)
+
+![Diagrama de despliegue](TP/Grupo9_POO_Diagramas_Pdf/imagenes/despliegue.png)
 
 ![Diagrama de secuencia de solicitar ingreso](TP/Grupo9_POO_Diagramas_Pdf/imagenes/secuencia-solicitar-ingreso.png)
+
+![Diagrama de secuencia de ver la transmisión](TP/Grupo9_POO_Diagramas_Pdf/imagenes/secuencia-transmision.png)
 
 Para regenerarlos, desde `TP/Grupo9_POO_Diagramas_Pdf/fuentes`:
 

@@ -36,27 +36,32 @@ interface ServicioComandos {
 }
 
 class GestorEventosEnVivo {
+  -usuariosRegistrados : List<Usuario>
+  -artistasRegistrados : List<Artista>
+  -eventos : List<Evento>
   +autenticar(nombreUsuario, contrasena) : Cuenta
   +asumirSesion(cuenta : Cuenta) : void
   +urlCalendario(idEvento : int) : String
   +consultaDeTransmision(idEvento : int) : ConsultaTransmision
-  +buscarEventoVisiblePara(cuenta : Cuenta, id : int) : Evento
   +cargarDatos() : void
   +guardarDatos() : void
 }
 
 class ControlAcceso {
+  -registros : List<RegistroAcceso>
   +procesarIngreso(usuario : Usuario, evento : Evento) : RegistroAcceso
   +registrarExpulsion(usuario : Usuario, evento : Evento) : void
 }
 
 class ControlSesion {
+  -cuentaActual : Cuenta
   +iniciar(cuenta : Cuenta) : void
   +exigir(accion : Accion) : void
   +permite(accion : Accion) : boolean
 }
 
 class Permisos {
+  -permitidas : Map<TipoUsuario, Set<Accion>>
   +permite(tipo : TipoUsuario, accion : Accion) : boolean
 }
 
@@ -64,16 +69,29 @@ enum Accion {
   SOLICITAR_INGRESO
   EXPULSAR_USUARIO
   VINCULAR_CALENDARIO
+  VER_TRANSMISION
   ...
 }
 
+class Usuario
+class Artista
+class Evento
+class Cuenta
+class RegistroAcceso
+enum TipoUsuario
 
 ServicioEventos --|> ServicioSesion
 ServicioEventos --|> ServicioConsultas
 ServicioEventos --|> ServicioComandos
 GestorEventosEnVivo ..|> ServicioEventos
-GestorEventosEnVivo --> ControlAcceso
-GestorEventosEnVivo --> ControlSesion
-ControlSesion --> Permisos
-Permisos --> Accion
+GestorEventosEnVivo "1" o-- "0..*" Usuario : usuariosRegistrados
+GestorEventosEnVivo "1" o-- "0..*" Artista : artistasRegistrados
+GestorEventosEnVivo "1" o-- "0..*" Evento : eventos
+GestorEventosEnVivo "1" *-- "1" ControlAcceso : controlAcceso
+GestorEventosEnVivo "1" *-- "1" ControlSesion : sesion
+ControlAcceso "1" o-- "0..*" RegistroAcceso : registros
+ControlSesion "1" --> "0..1" Cuenta : cuentaActual
+ControlSesion "1" *-- "1" Permisos : permisos
+Permisos "1" --> "1..*" Accion : permitidas por rol
+Permisos "1" ..> "3" TipoUsuario : un conjunto por rol
 @enduml

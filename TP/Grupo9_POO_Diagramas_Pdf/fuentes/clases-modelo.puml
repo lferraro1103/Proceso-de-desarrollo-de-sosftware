@@ -5,7 +5,7 @@ title Diagrama de clases: modelo
 abstract class Cuenta {
   -id : int
   -nombreUsuario : String
-  -contrasena : String
+  -hashContrasena : String
   -activo : boolean
   -tipoUsuario : TipoUsuario
   +iniciarSesion() : void
@@ -119,14 +119,17 @@ class RegistroAcceso {
 
 Cuenta <|-- Usuario
 Cuenta <|-- Artista
-Cuenta --> TipoUsuario
-Usuario --> PlanSuscripcion : plan
+Cuenta "*" --> "1" TipoUsuario : rol
+Usuario "*" --> "1" PlanSuscripcion : planSuscripcion
 Evento <|-- RecitalEnVivo
-Evento --> EstadoEvento : estado
-Evento "0..*" o-- "0..*" Artista : artistas
-RecitalEnVivo "1" o-- "0..*" Usuario : conectados
-RecitalEnVivo --> PlanSuscripcion : planMinimoRequerido
+Evento "*" --> "1" EstadoEvento : estado
+Evento "0..*" -- "0..*" Artista : artistas / eventosCreados
+RecitalEnVivo "0..*" o-- "0..*" Usuario : usuariosConectados
+RecitalEnVivo "*" --> "1" PlanSuscripcion : planMinimoRequerido
 RecitalEnVivo ..> DatosRecital : se construye con
-AccesoEvento --> Evento
-RegistroAcceso --> Evento
+AccesoEvento "*" --> "1" Usuario : usuario
+AccesoEvento "*" --> "1" Evento : evento
+AccesoEvento "*" --> "1" PlanSuscripcion : planRequerido
+RegistroAcceso "*" --> "1" Usuario : usuario
+RegistroAcceso "*" --> "1" Evento : evento
 @enduml
