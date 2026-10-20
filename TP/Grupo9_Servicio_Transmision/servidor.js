@@ -29,6 +29,7 @@
 //   GET /reproductor?src=<archivo>|v=<id>&alt=<ids>&inicio=<ms>&titulo=<texto>&e=<espectador>
 //        -> pagina HTML con el reproductor sincronizado
 //   GET /fallo?v=<id>             -> el reproductor no pudo con ese video: se saltea
+//   GET /exito?v=<id>             -> ese video si se reproduce: se ofrece primero
 //   GET /latido?e=<espectador>    -> { vigente }   (la pagina lo pide cada pocos segundos)
 //   GET /salida?e=<patron>        -> { cerrados }  cierra espectadores (ver abajo)
 //
@@ -54,8 +55,29 @@ const PALABRAS_RECITAL = ["concierto", "concert", "recital", "full show",
 
 const cache = new Map();
 
-// Videos que el reproductor incrustado no pudo reproducir: no se vuelven a ofrecer.
+// Lo que se aprendio de los videos: cuales el reproductor incrustado pudo
+// reproducir y cuales no. Se guarda en ~/.uadebeats para no repetir pruebas.
+const ARCHIVO_VIDEOS = require("path").join(require("os").homedir(), ".uadebeats", "transmision-videos.json");
 const noReproducibles = new Set();
+const reproducibles = new Set();
+
+try {
+  const guardado = JSON.parse(require("fs").readFileSync(ARCHIVO_VIDEOS, "utf8"));
+  (guardado.no || []).forEach((id) => noReproducibles.add(id));
+  (guardado.si || []).forEach((id) => reproducibles.add(id));
+} catch (e) {
+  // Primera vez: no hay nada guardado.
+}
+
+function guardarVideos() {
+  try {
+    require("fs").mkdirSync(require("path").dirname(ARCHIVO_VIDEOS), { recursive: true });
+    require("fs").writeFileSync(ARCHIVO_VIDEOS,
+      JSON.stringify({ si: [...reproducibles], no: [...noReproducibles] }));
+  } catch (e) {
+    console.error("No se pudo guardar la lista de videos:", e.message);
+  }
+}
 
 // Espectadores activos: nombre -> hora del ultimo latido.
 const espectadores = new Map();
@@ -389,8 +411,10 @@ async function buscarTransmision(artista, inicioMs, espectador) {
   }
 
   // 2. Recital de YouTube que permita reproducirse incrustado.
+  // Los que ya se vieron reproducir van primero; los que fallaron, no se ofrecen.
   const candidatos = (await buscarCandidatos(artista))
-    .filter((c) => !noReproducibles.has(c.id));
+    .filter((c) => !noReproducibles.has(c.id))
+    .sort((a, b) => Number(reproducibles.has(b.id)) - Number(reproducibles.has(a.id)));
 
   if (!candidatos.length) {
     return null;
@@ -447,9 +471,24 @@ const servidor = http.createServer(async (req, res) => {
 
     if (/^[\w-]{11}$/.test(id)) {
       noReproducibles.add(id);
+      reproducibles.delete(id);
+      guardarVideos();
     }
 
     return responder(res, 200, { omitidos: noReproducibles.size });
+  }
+
+  // La pagina avisa que un video si se reproduce: se ofrece primero la proxima vez.
+  if (url.pathname === "/exito") {
+    const id = url.searchParams.get("v") || "";
+
+    if (/^[\w-]{11}$/.test(id) && !reproducibles.has(id)) {
+      reproducibles.add(id);
+      noReproducibles.delete(id);
+      guardarVideos();
+    }
+
+    return responder(res, 200, { conocidos: reproducibles.size });
   }
 
   // Cierra espectadores: uno exacto o varios con comodin.

@@ -122,7 +122,7 @@
 
   // ---------- YouTube: reproductor incrustado ----------
 
-  let apiLista = false, indice = 0, yt = null;
+  let apiLista = false, indice = 0, yt = null, reportado = false;
 
   function jugadorYoutube() {
     if (!apiLista || yt) return;
@@ -136,7 +136,14 @@
       events: {
         // Los navegadores solo dejan reproducir solo si esta silenciado.
         onReady: (e) => { e.target.mute(); e.target.playVideo(); document.getElementById("sonido").hidden = false; },
-        onStateChange: (e) => { if (e.data === YT.PlayerState.ENDED) detener("FINALIZADO", "La transmision finalizo."); },
+        onStateChange: (e) => {
+          if (e.data === YT.PlayerState.ENDED) detener("FINALIZADO", "La transmision finalizo.");
+          // Primera vez que reproduce: se recuerda que este video sirve.
+          if (e.data === YT.PlayerState.PLAYING && !reportado) {
+            reportado = true;
+            fetch("/exito?v=" + encodeURIComponent(videos[indice])).catch(() => {});
+          }
+        },
         onError: (e) => {
           errores.push(videos[indice] + ":" + e.data);
           fetch("/fallo?v=" + encodeURIComponent(videos[indice])).catch(() => {});
@@ -163,6 +170,7 @@
   function siguienteVideo() {
     indice++;
     if (indice >= videos.length) { sinReproduccion(); return; }
+    reportado = false;
     yt.loadVideoById({ videoId: videos[indice], startSeconds: esperado() });
   }
 
