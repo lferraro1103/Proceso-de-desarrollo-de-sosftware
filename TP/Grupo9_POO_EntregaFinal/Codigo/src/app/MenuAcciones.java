@@ -421,6 +421,11 @@ public final class MenuAcciones {
         // Muestra el resultado final al usuario de consola.
         if (registro.isExitoso()) {
             System.out.println("Ingreso autorizado.");
+
+            // Quien ingresa a su nombre entra directamente a la transmision.
+            if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO) {
+                mostrarTransmision(gestor, idEvento);
+            }
         } else {
             System.out.println("Ingreso rechazado: "
                     + registro.getMotivoRechazo());
@@ -558,7 +563,11 @@ public final class MenuAcciones {
                                       ServicioEventos gestor) {
 
         int idEvento = ConsoleIO.leerEntero(scanner, "Ingrese ID de evento: ");
+        mostrarTransmision(gestor, idEvento);
+    }
 
+    // Imprime la transmision del evento y la abre en el navegador.
+    private static void mostrarTransmision(ServicioEventos gestor, int idEvento) {
         try {
             Transmision transmision = gestor.obtenerTransmision(idEvento);
             System.out.println("Transmision: " + transmision.titulo());
