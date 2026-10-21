@@ -91,12 +91,18 @@ public final class PruebasIteracion4 {
         GestorEventosEnVivo gestor = new GestorEventosEnVivo(persistencia, new NotificadorInactivo(),
                 (cuenta, evento) -> "https://ejemplo.local/calendario/" + evento.getId() + ".ics",
                 sinRed());
-        gestor.registrarUsuario(usuario(1, TipoUsuario.USUARIO));
-        gestor.registrarUsuario(usuario(2, TipoUsuario.ADMINISTRADOR));
-        gestor.registrarArtista(artista(10));
-        gestor.registrarArtista(artista(11));
-        gestor.crearEvento(evento(100), gestor.buscarArtistaPorId(10));
-        gestor.crearEvento(evento(101), gestor.buscarArtistaPorId(11));
+        // Datos de partida cargados con la misma operacion que usa la persistencia.
+        Artista artista10 = artista(10);
+        Artista artista11 = artista(11);
+        RecitalEnVivo evento100 = evento(100);
+        RecitalEnVivo evento101 = evento(101);
+        evento100.agregarArtista(artista10);
+        evento101.agregarArtista(artista11);
+        gestor.reemplazarDatos(
+                List.of(usuario(1, TipoUsuario.USUARIO), usuario(2, TipoUsuario.ADMINISTRADOR)),
+                List.of(artista10, artista11),
+                List.of(evento100, evento101),
+                List.of());
         return gestor;
     }
 
