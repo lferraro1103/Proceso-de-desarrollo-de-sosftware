@@ -1,5 +1,6 @@
-package gestor;
+package servicio;
 
+import puertos.Transmision;
 import excepciones.AccesoDenegadoException;
 import modelo.Artista;
 import modelo.Evento;

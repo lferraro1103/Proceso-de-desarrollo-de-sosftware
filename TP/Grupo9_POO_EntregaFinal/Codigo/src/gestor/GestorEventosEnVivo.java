@@ -1,5 +1,15 @@
 package gestor;
 
+import puertos.ConsultaTransmision;
+import puertos.Notificador;
+import puertos.Persistencia;
+import puertos.ProveedorTransmision;
+import puertos.PublicadorCalendario;
+import puertos.Transmision;
+import puertos.VinculoCalendario;
+import seguridad.Accion;
+import seguridad.ControlSesion;
+import servicio.ServicioEventos;
 import excepciones.AccesoDenegadoException;
 import excepciones.PermisoDenegadoException;
 import excepciones.PersistenciaException;

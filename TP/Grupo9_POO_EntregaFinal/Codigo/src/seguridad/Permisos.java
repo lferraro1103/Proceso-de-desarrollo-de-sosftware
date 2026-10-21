@@ -1,4 +1,4 @@
-package gestor;
+package seguridad;
 
 import modelo.TipoUsuario;
 

@@ -2,7 +2,7 @@ package ui;
 
 import excepciones.AccesoDenegadoException;
 import excepciones.ErrorDeServicioException;
-import gestor.ServicioEventos;
+import servicio.ServicioEventos;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;

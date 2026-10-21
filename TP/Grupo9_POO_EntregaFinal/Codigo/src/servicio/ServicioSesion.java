@@ -1,5 +1,6 @@
-package gestor;
+package servicio;
 
+import seguridad.Accion;
 import excepciones.AccesoDenegadoException;
 import modelo.Cuenta;
 

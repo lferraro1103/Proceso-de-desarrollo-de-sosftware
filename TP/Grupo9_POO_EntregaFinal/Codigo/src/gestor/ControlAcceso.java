@@ -1,5 +1,6 @@
 package gestor;
 
+import puertos.Notificador;
 import excepciones.AccesoDenegadoException;
 import modelo.AccesoEvento;
 import modelo.Evento;

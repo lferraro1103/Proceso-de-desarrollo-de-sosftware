@@ -1,4 +1,4 @@
-package gestor;
+package puertos;
 
 /*
  * Transmision de un evento: el titulo del video y la direccion donde verlo.

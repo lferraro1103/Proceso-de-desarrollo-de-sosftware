@@ -1,12 +1,12 @@
-package app;
+package consola;
 
 import excepciones.AccesoDenegadoException;
 import excepciones.ErrorDeServicioException;
 import calendario.VinculoApple;
 import calendario.VinculoGoogle;
-import gestor.ServicioEventos;
-import gestor.Transmision;
-import gestor.VinculoCalendario;
+import servicio.ServicioEventos;
+import puertos.Transmision;
+import puertos.VinculoCalendario;
 import modelo.Artista;
 import modelo.Cuenta;
 import modelo.DatosRecital;

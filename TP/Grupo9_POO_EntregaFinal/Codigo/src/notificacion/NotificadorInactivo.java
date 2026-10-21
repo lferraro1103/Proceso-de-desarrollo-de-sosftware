@@ -1,6 +1,6 @@
 package notificacion;
 
-import gestor.Notificador;
+import puertos.Notificador;
 import modelo.Usuario;
 
 /*

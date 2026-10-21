@@ -5,7 +5,7 @@ import api.EstadoDto;
 import api.EventoDto;
 import api.RegistroDto;
 import api.UsuarioDto;
-import gestor.Accion;
+import seguridad.Accion;
 import gestor.GestorEventosEnVivo;
 import modelo.Artista;
 import modelo.Cuenta;
