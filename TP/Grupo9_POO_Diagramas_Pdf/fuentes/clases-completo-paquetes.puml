@@ -1,0 +1,357 @@
+@startuml
+!include estilo.iuml
+title Diagrama de clases completo por paquetes: UADE Beats
+
+package "modelo" {
+  abstract class Cuenta {
+    -id : int
+    -nombreUsuario : String
+    -hashContrasena : String
+    -activo : boolean
+    +validarContrasena(contrasena : String) : boolean
+    +activar() : void
+    +desactivar() : void
+  }
+  class Usuario {
+    -nombre : String
+    -apellido : String
+    -email : String
+    +tieneAccesoPrioritario() : boolean
+  }
+  class Artista {
+    -nombreArtistico : String
+    -generoPrincipal : String
+    -biografia : String
+    -verificado : boolean
+    +crearEvento(evento : Evento) : void
+  }
+  abstract class Evento {
+    -id : int
+    -titulo : String
+    -descripcion : String
+    -fechaHoraInicio : LocalDateTime
+    -fechaHoraFin : LocalDateTime
+    -capacidadMaxima : int
+    +iniciarEvento() : void
+    +pausarEvento() : void
+    +reanudarEvento() : void
+    +finalizarEvento() : void
+    +cancelarEvento() : void
+    {abstract} +permitirIngreso(usuario : Usuario) : void
+    {abstract} +expulsarUsuario(usuario : Usuario) : void
+  }
+  class RecitalEnVivo {
+    -ubicacion : String
+    -esStreaming : boolean
+    -exclusivo : boolean
+    +verificarCapacidad() : boolean
+    +validarDisponibilidad(momento : LocalDateTime) : void
+  }
+  enum TipoUsuario {
+    USUARIO
+    ADMINISTRADOR
+    ARTISTA
+  }
+  enum PlanSuscripcion {
+    FREE
+    PREMIUM
+    ARTIST_PASS
+  }
+  enum EstadoEvento {
+    PROGRAMADO
+    EN_ESPERA
+    EN_CURSO
+    PAUSADO
+    FINALIZADO
+    CANCELADO
+  }
+  class DatosRecital
+  class AccesoEvento {
+    +validarAutorizacion() : void
+    +validarPlan() : void
+  }
+  class RegistroAcceso {
+    -fechaHoraIngreso : LocalDateTime
+    -exitoso : boolean
+    -motivoRechazo : String
+  }
+  class Contrasenas {
+    {static} +hashear(contrasena : String) : String
+    {static} +verificar(contrasena, hash) : boolean
+  }
+}
+
+package "excepciones" {
+  class AccesoDenegadoException
+  class PermisoDenegadoException
+  abstract class ErrorDeServicioException
+  class PersistenciaException
+  class ConexionException
+}
+
+package "servicio" {
+  interface ServicioSesion
+  interface ServicioConsultas
+  interface ServicioComandos
+  interface ServicioEventos
+}
+
+package "gestor" {
+  class GestorEventosEnVivo {
+    -usuariosRegistrados : List<Usuario>
+    -artistasRegistrados : List<Artista>
+    -eventos : List<Evento>
+    +autenticar(nombreUsuario, contrasena) : Cuenta
+    +solicitarIngreso(idUsuario, idEvento) : RegistroAcceso
+    +obtenerTransmision(idEvento) : Transmision
+    +vincularCalendario(idEvento, vinculo) : void
+  }
+  class ControlAcceso {
+    +procesarIngreso(usuario, evento) : RegistroAcceso
+    +registrarExpulsion(usuario, evento) : void
+  }
+  class ControlTransmision {
+    +consultaPara(cuenta, evento) : ConsultaTransmision
+    +buscar(consulta) : Transmision
+    +cerrarDe(cuenta) : void
+  }
+  class PoliticasVisibilidad {
+    +esVisible(cuenta, evento) : boolean
+  }
+  interface PoliticaVisibilidadEvento
+  class VisibilidadGeneral
+  class VisibilidadArtista
+}
+
+package "seguridad" {
+  class ControlSesion {
+    +exigir(accion : Accion) : void
+  }
+  class Permisos
+  enum Accion {
+    SOLICITAR_INGRESO
+    VINCULAR_CALENDARIO
+    VER_TRANSMISION
+    ...
+  }
+}
+
+package "puertos" {
+  interface Persistencia
+  interface Notificador
+  interface PublicadorCalendario
+  interface ProveedorTransmision
+  interface VinculoCalendario
+  class ConsultaTransmision
+  class Transmision
+}
+
+package "persistencia" {
+  class PersistenciaSqlite
+  class ConexionSqlite
+  class RepositorioUsuarios
+  class RepositorioArtistas
+  class RepositorioEventos
+  class RepositorioRegistros
+}
+
+package "notificacion" {
+  class NotificadorInactivo
+}
+
+package "calendario" {
+  class VinculoGoogle
+  class VinculoApple
+  class FormatoIcs
+}
+
+package "transmision" {
+  class ClienteTransmision
+  class ProcesoServicio
+}
+
+package "servidor" {
+  class ServidorHttp
+  class ConfiguracionServidor
+  class ManejadorApi
+  class ManejadorCalendario
+  class Sesiones
+  class Instantanea
+  class Conversor
+  class PublicadorHttp
+  class CodigosCalendario
+}
+
+package "api (DTO)" {
+  class Json
+  class EstadoDto
+  class CuentaDto
+  class UsuarioDto
+  class ArtistaDto
+  class EventoDto
+  class RegistroDto
+  class SesionDto
+  class TransmisionDto
+}
+
+package "cliente" {
+  class GestorRemoto
+  class ClienteHttp
+  class EstadoLocal
+}
+
+package "app" {
+  class App
+  class Arranque
+  class DatosIniciales
+}
+
+package "consola" {
+  class MenuPorRol
+  class MenuAcciones
+  class ConsoleIO
+}
+
+package "ui" {
+  class AppSwing
+  class VentanaLogin
+  class VentanaPrincipal
+  class Formularios
+  class ModeloTabla
+  class Logo
+  class Navegador
+}
+
+class "Servicio de transmisiones\n(Node.js)" as Node <<externo>>
+
+' ---------- modelo ----------
+Cuenta <|-- Usuario
+Cuenta <|-- Artista
+Cuenta "*" --> "1" TipoUsuario : rol
+Usuario "*" --> "1" PlanSuscripcion : plan
+Evento <|-- RecitalEnVivo
+Evento "*" --> "1" EstadoEvento : estado
+Evento "0..*" -- "0..*" Artista : artistas
+RecitalEnVivo "0..*" o-- "0..*" Usuario : usuariosConectados
+RecitalEnVivo "*" --> "1" PlanSuscripcion : planMinimo
+RecitalEnVivo ..> DatosRecital
+AccesoEvento "*" --> "1" Usuario
+AccesoEvento "*" --> "1" Evento
+RegistroAcceso "*" --> "1" Usuario
+RegistroAcceso "*" --> "1" Evento
+Cuenta ..> Contrasenas
+
+' ---------- excepciones ----------
+ErrorDeServicioException <|-- PersistenciaException
+ErrorDeServicioException <|-- ConexionException
+
+' ---------- gestor ----------
+ServicioEventos --|> ServicioSesion
+ServicioEventos --|> ServicioConsultas
+ServicioEventos --|> ServicioComandos
+GestorEventosEnVivo ..|> ServicioEventos
+GestorRemoto ..|> ServicioEventos
+GestorEventosEnVivo "1" o-- "0..*" Usuario
+GestorEventosEnVivo "1" o-- "0..*" Artista
+GestorEventosEnVivo "1" o-- "0..*" Evento
+GestorEventosEnVivo "1" *-- "1" ControlAcceso
+GestorEventosEnVivo "1" *-- "1" ControlSesion
+GestorEventosEnVivo "1" *-- "1" ControlTransmision
+GestorEventosEnVivo "1" *-- "1" PoliticasVisibilidad : visibilidad
+ControlTransmision "1" --> "1" ProveedorTransmision
+PoliticasVisibilidad "1" *-- "3" PoliticaVisibilidadEvento : porRol
+VisibilidadGeneral ..|> PoliticaVisibilidadEvento
+VisibilidadArtista ..|> PoliticaVisibilidadEvento
+ControlAcceso "1" o-- "0..*" RegistroAcceso
+ControlAcceso "1" --> "1" Notificador
+ControlSesion "1" --> "0..1" Cuenta : cuentaActual
+ControlSesion "1" *-- "1" Permisos
+Permisos "1" --> "1..*" Accion
+GestorEventosEnVivo "1" --> "1" Persistencia
+GestorEventosEnVivo "1" --> "1" PublicadorCalendario
+GestorEventosEnVivo ..> "0..1" VinculoCalendario
+ProveedorTransmision ..> ConsultaTransmision
+ProveedorTransmision ..> Transmision
+GestorEventosEnVivo ..> PermisoDenegadoException
+GestorEventosEnVivo ..> AccesoDenegadoException
+GestorEventosEnVivo ..> PersistenciaException
+
+' ---------- persistencia ----------
+PersistenciaSqlite ..|> Persistencia
+PersistenciaSqlite "1" *-- "1" RepositorioUsuarios
+PersistenciaSqlite "1" *-- "1" RepositorioArtistas
+PersistenciaSqlite "1" *-- "1" RepositorioEventos
+PersistenciaSqlite "1" *-- "1" RepositorioRegistros
+PersistenciaSqlite ..> "1" ConexionSqlite
+RepositorioUsuarios ..> "0..*" Usuario
+RepositorioArtistas ..> "0..*" Artista
+RepositorioEventos ..> "0..*" Evento
+RepositorioRegistros ..> "0..*" RegistroAcceso
+
+' ---------- avisos, calendario y transmision ----------
+NotificadorInactivo ..|> Notificador
+VinculoGoogle ..|> VinculoCalendario
+VinculoApple ..|> VinculoCalendario
+PublicadorHttp ..|> PublicadorCalendario
+ClienteTransmision ..|> ProveedorTransmision
+ManejadorCalendario ..> FormatoIcs
+ClienteTransmision "*" ..> "1" Node : HTTP
+ProcesoServicio "1" ..> "0..1" Node : inicia y cierra
+
+' ---------- servidor ----------
+ServidorHttp "1" --> "1" ManejadorApi
+ServidorHttp "1" --> "1" ManejadorCalendario
+ServidorHttp "1" --> "1" ConfiguracionServidor
+ManejadorApi "1" *-- "1" Sesiones
+ManejadorApi "1" --> "1" Instantanea
+ManejadorApi "1" --> "1" GestorEventosEnVivo
+ManejadorApi "1" --> "1" ProveedorTransmision
+Instantanea ..> Conversor
+Instantanea ..> EstadoDto
+Conversor ..> UsuarioDto
+Conversor ..> EventoDto
+ManejadorCalendario "1" --> "1" CodigosCalendario
+ManejadorCalendario "1" --> "1" GestorEventosEnVivo
+PublicadorHttp "1" --> "1" CodigosCalendario
+PublicadorHttp "1" --> "1" ConfiguracionServidor
+
+' ---------- API y cliente ----------
+EstadoDto "1" *-- "1" CuentaDto
+EstadoDto "1" *-- "0..*" UsuarioDto
+EstadoDto "1" *-- "0..*" ArtistaDto
+EstadoDto "1" *-- "0..*" EventoDto
+EstadoDto "1" *-- "0..*" RegistroDto
+SesionDto "1" *-- "1" CuentaDto
+GestorRemoto "1" --> "1" ClienteHttp
+GestorRemoto "1" *-- "0..1" EstadoLocal
+EstadoLocal ..> EstadoDto
+ClienteHttp ..> Json
+ClienteHttp ..> ConexionException
+ClienteHttp "*" ..> "1" ManejadorApi : HTTP + JSON
+GestorRemoto ..> TransmisionDto
+
+' ---------- arranque y vistas ----------
+App "1" --> "0..1" Arranque
+App "1" --> "0..1" GestorRemoto
+App "1" --> "0..1" MenuPorRol
+App "1" --> "0..1" AppSwing
+Arranque "1" --> "1" GestorEventosEnVivo
+Arranque "1" --> "1" ServidorHttp
+Arranque ..> ProcesoServicio
+Arranque ..> "0..1" DatosIniciales
+DatosIniciales ..> GestorEventosEnVivo
+MenuPorRol "1" --> "1" MenuAcciones
+MenuAcciones "1" --> "1" ConsoleIO
+MenuAcciones "1" --> "1" ServicioEventos
+MenuAcciones ..> Navegador
+AppSwing "1" --> "1" VentanaLogin
+VentanaLogin "1" --> "0..1" VentanaPrincipal
+VentanaLogin "1" --> "1" Logo
+VentanaLogin "1" --> "1" ServicioEventos
+VentanaPrincipal "1" *-- "4" ModeloTabla
+VentanaPrincipal "1" *-- "1" Formularios
+Formularios "1" --> "1" ServicioEventos
+VentanaPrincipal "1" --> "1" Logo
+VentanaPrincipal "1" --> "1" ServicioEventos
+VentanaPrincipal ..> Navegador
+@enduml

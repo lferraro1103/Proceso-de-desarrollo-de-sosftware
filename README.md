@@ -66,6 +66,21 @@ Los parámetros se pasan como propiedades de Java (`-D`):
 
 ![Colaboradores del gestor](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-colaboradores.png)
 
+### Paquetes
+
+| Paquete | Contenido |
+|---|---|
+| `modelo` | Entidades y reglas de negocio |
+| `gestor` | `GestorEventosEnVivo`, `ControlAcceso`, `ControlTransmision` y las políticas de visibilidad |
+| `servicio` | Las interfaces que piden las vistas: `ServicioEventos` y sus tres partes |
+| `seguridad` | `ControlSesion`, `Permisos` y `Accion` |
+| `puertos` | Las interfaces que el gestor recibe (`Persistencia`, `Notificador`, `PublicadorCalendario`, `ProveedorTransmision`, `VinculoCalendario`) y los datos de la transmisión |
+| `persistencia`, `notificacion`, `calendario`, `transmision` | Implementaciones de esos puertos |
+| `servidor`, `api`, `cliente` | API HTTP, sus DTO y el cliente remoto |
+| `app` | Arranque y datos de prueba |
+| `consola` | Menús de consola |
+| `ui` | Ventanas Swing, sus formularios y el logo |
+
 ## 4. Elecciones y motivos
 
 | Tema | Elección | Alternativa descartada | Motivo |
@@ -243,7 +258,8 @@ Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_
 
 | Diagrama | Contenido |
 |---|---|
-| Diagrama de clase completo | Una sola página con todas las clases e interfaces de todos los paquetes, con sus relaciones, cardinalidades y roles |
+| Diagrama de clases completo (generado) | Todos los tipos con atributos y operaciones, generado desde el código con las herramientas de `tools/uml` (`clases-completo.puml`, `.svg` y `.png`) |
+| Diagrama de clase por paquetes | Una sola página con todas las clases e interfaces agrupadas por paquete, con sus relaciones, cardinalidades y roles (`clases-completo-paquetes.puml`) |
 | Diagrama de clase | Siete páginas, una por parte, con más detalle de atributos y métodos: modelo, controlador, colaboradores, persistencia, red, servicio de transmisiones y vistas |
 | Diagrama de secuencia | Tres páginas: solicitar ingreso con el gestor local, desde un cliente remoto y ver la transmisión de un evento |
 | Diagrama de base de datos | Las seis tablas con claves primarias y foráneas y cardinalidades |
@@ -251,7 +267,7 @@ Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_
 
 Todas las relaciones llevan su multiplicidad en cada extremo y, cuando aporta, el nombre del rol. Se usan composición (rombo lleno) cuando el objeto no existe sin su dueño, agregación (rombo vacío) para las colecciones, flechas sólidas para las asociaciones, punteadas para las dependencias y triángulos huecos para la herencia y la implementación de interfaces.
 
-![Diagrama de clases completo](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.png)
+![Diagrama de clases por paquetes](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes.png)
 
 ![Diagrama de la base de datos](TP/Grupo9_POO_Diagramas_Pdf/imagenes/der-base-de-datos.png)
 

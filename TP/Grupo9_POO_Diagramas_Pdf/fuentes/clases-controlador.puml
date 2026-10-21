@@ -43,6 +43,7 @@ class GestorEventosEnVivo {
   +asumirSesion(cuenta : Cuenta) : void
   +urlCalendario(idEvento : int) : String
   +consultaDeTransmision(idEvento : int) : ConsultaTransmision
+  -visibilidad : PoliticasVisibilidad
   +cargarDatos() : void
   +guardarDatos() : void
 }
@@ -51,6 +52,13 @@ class ControlAcceso {
   -registros : List<RegistroAcceso>
   +procesarIngreso(usuario : Usuario, evento : Evento) : RegistroAcceso
   +registrarExpulsion(usuario : Usuario, evento : Evento) : void
+}
+
+class ControlTransmision {
+  -proveedor : ProveedorTransmision
+  +consultaPara(cuenta : Cuenta, evento : Evento) : ConsultaTransmision
+  +buscar(consulta : ConsultaTransmision) : Transmision
+  +cerrarDe(cuenta : Cuenta) : void
 }
 
 class ControlSesion {
@@ -89,6 +97,7 @@ GestorEventosEnVivo "1" o-- "0..*" Artista : artistasRegistrados
 GestorEventosEnVivo "1" o-- "0..*" Evento : eventos
 GestorEventosEnVivo "1" *-- "1" ControlAcceso : controlAcceso
 GestorEventosEnVivo "1" *-- "1" ControlSesion : sesion
+GestorEventosEnVivo "1" *-- "1" ControlTransmision : controlTransmision
 ControlAcceso "1" o-- "0..*" RegistroAcceso : registros
 ControlSesion "1" --> "0..1" Cuenta : cuentaActual
 ControlSesion "1" *-- "1" Permisos : permisos
