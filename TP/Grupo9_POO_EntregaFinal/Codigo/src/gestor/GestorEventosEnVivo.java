@@ -25,8 +25,9 @@ import java.util.List;
  * guarda los cambios.
  *
  * Administra usuarios, artistas y eventos; delega los ingresos en
- * ControlAcceso y la sesion en ControlSesion, y recibe por constructor la
- * persistencia, el calendario y las transmisiones.
+ * ControlAcceso, las transmisiones en ControlTransmision y la sesion en
+ * ControlSesion, y recibe por constructor la persistencia, el calendario y el
+ * servicio de transmisiones.
  *
  * Sus operaciones publicas son synchronized porque pueden llegar desde la
  * ventana local y desde los hilos del servidor al mismo tiempo.
@@ -57,8 +58,8 @@ public class GestorEventosEnVivo implements ServicioEventos {
     // Contexto Strategy para el alcance de lectura; no reemplaza los permisos.
     private final PoliticasVisibilidad visibilidad = new PoliticasVisibilidad();
 
-    // Servicio que encuentra la transmision de cada evento.
-    private ProveedorTransmision proveedorTransmision;
+    // Reglas de las transmisiones y su servicio externo.
+    private ControlTransmision controlTransmision;
 
     // Constructor: inicializa las colecciones y recibe sus colaboradores.
     public GestorEventosEnVivo(Persistencia persistencia,
@@ -68,7 +69,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
 
         this.persistencia = persistencia;
         this.publicador = publicador;
-        this.proveedorTransmision = proveedorTransmision;
+        controlTransmision = new ControlTransmision(proveedorTransmision);
         eventos = new ArrayList<>();
         usuariosRegistrados = new ArrayList<>();
         artistasRegistrados = new ArrayList<>();
@@ -412,7 +413,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
         Cuenta actual = sesion.getCuentaActual();
 
         if (actual != null) {
-            cerrarTransmisionesDe(actual);
+            controlTransmision.cerrarDe(actual);
         }
 
         sesion.cerrar();
@@ -480,14 +481,13 @@ public class GestorEventosEnVivo implements ServicioEventos {
     @Override
     public Transmision obtenerTransmision(int idEvento)
             throws AccesoDenegadoException, IOException {
-        return proveedorTransmision.buscar(consultaDeTransmision(idEvento));
+        return controlTransmision.buscar(consultaDeTransmision(idEvento));
     }
 
     /*
      * Verifica que la cuenta actual pueda ver la transmision del evento y
-     * devuelve que buscar: el artista principal (o, si no tiene, el titulo) y
-     * cuando empezo el evento.
-     * Tambien la usa el servidor antes de buscar fuera del bloqueo.
+     * devuelve que buscar. Tambien la usa el servidor antes de buscar fuera
+     * del bloqueo.
      */
     public synchronized ConsultaTransmision consultaDeTransmision(int idEvento)
             throws AccesoDenegadoException {
@@ -500,47 +500,12 @@ public class GestorEventosEnVivo implements ServicioEventos {
             throw new IllegalArgumentException("Evento inexistente.");
         }
 
-        if (evento.getEstado() != EstadoEvento.EN_CURSO) {
-            throw new AccesoDenegadoException("La transmision solo esta "
-                    + "disponible mientras el evento esta en curso. Estado "
-                    + "actual: " + evento.getEstado() + ".");
-        }
-
-        Cuenta actual = sesion.getCuentaActual();
-
-        if (actual.getTipoUsuario() == TipoUsuario.USUARIO
-                && !estaConectado(evento, actual)) {
-            throw new AccesoDenegadoException(
-                    "Debe ingresar al evento para ver la transmision.");
-        }
-
-        return new ConsultaTransmision(
-                evento.getArtistas().isEmpty()
-                        ? evento.getTitulo()
-                        : evento.getArtistas().get(0).getNombreArtistico(),
-                evento.getFechaHoraInicio(),
-                espectador(actual, idEvento));
-    }
-
-    // Nombre con el que el servicio de transmisiones identifica a quien mira
-    // un evento; "*" en lugar del evento abarca todos los de la cuenta.
-    private static String espectador(Cuenta cuenta, Object evento) {
-        return cuenta.getTipoUsuario() + "" + cuenta.getId() + ":" + evento;
+        return controlTransmision.consultaPara(sesion.getCuentaActual(), evento);
     }
 
     // Cierra las transmisiones abiertas por una cuenta.
     public void cerrarTransmisionesDe(Cuenta cuenta) {
-        proveedorTransmision.cerrar(espectador(cuenta, "*"));
-    }
-
-    // Cierra las transmisiones de todos los que miran un evento.
-    private void cerrarTransmisionesDeEvento(int idEvento) {
-        proveedorTransmision.cerrar("*:" + idEvento);
-    }
-
-    private boolean estaConectado(Evento evento, Cuenta cuenta) {
-        return evento.getUsuariosConectados().stream()
-                .anyMatch(usuario -> usuario.getId() == cuenta.getId());
+        controlTransmision.cerrarDe(cuenta);
     }
 
     /*
@@ -588,7 +553,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
     @Override
     public synchronized void finalizarEvento(int idEvento) throws AccesoDenegadoException {
         buscarEventoParaCambio(idEvento, Accion.FINALIZAR_EVENTO).finalizarEvento();
-        cerrarTransmisionesDeEvento(idEvento);
+        controlTransmision.cerrarDeEvento(idEvento);
         guardarDatos();
     }
 
@@ -604,7 +569,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
         }
 
         evento.cancelarEvento();
-        cerrarTransmisionesDeEvento(idEvento);
+        controlTransmision.cerrarDeEvento(idEvento);
         guardarDatos();
     }
 
@@ -684,7 +649,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
         }
 
         usuario.desactivar();
-        cerrarTransmisionesDe(usuario);
+        controlTransmision.cerrarDe(usuario);
 
         for (Evento evento : eventos) {
             if (evento.getUsuariosConectados().contains(usuario)) {
@@ -722,7 +687,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
 
             evento.expulsarUsuario(usuario);
             controlAcceso.registrarExpulsion(usuario, evento);
-            proveedorTransmision.cerrar(espectador(usuario, idEvento));
+            controlTransmision.cerrarDe(usuario, idEvento);
             guardarDatos();
             return usuario;
         }
