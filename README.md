@@ -178,7 +178,23 @@ El servidor publica cada evento en `/calendario/<código>/<id>.ics`. El código 
 
 Google y Apple se suscriben por https: Calendar convierte `webcal://` en `https://`, y Google además lee la dirección desde sus servidores. Por eso la dirección debe ser pública y con https. Se expone el puerto con un túnel (por ejemplo `cloudflared tunnel --url http://localhost:8765`) y se ejecuta con `-Duadebeats.url=https://<dirección del túnel>`. Con la dirección local se informa el motivo y no se abre nada.
 
-## 9. Transmisiones
+## 9. Interfaz de la ventana
+
+Mejoras de uso en la ventana Swing, sin clases nuevas (todas en `VentanaPrincipal`):
+
+| Mejora | Qué hace |
+|---|---|
+| Eventos «EN VIVO» | Los eventos en curso se muestran con «● EN VIVO» en rojo y negrita. |
+| Doble clic con acción según el rol | Un usuario entra al evento (si ya estaba conectado, abre la transmisión). Artista y administrador abren la transmisión del evento en curso o, si no está en curso, ven los conectados. |
+| Confirmaciones | Pregunta antes de finalizar o cancelar un evento, expulsar a un usuario o desactivar una cuenta. |
+| Actualización automática | Las tablas se refrescan solas cada 5 segundos, por lo que en modo cliente se ven los cambios de otros. Si no hay respuesta, lo informa en la barra de estado. |
+| Cursor de espera | Al buscar una transmisión se muestra «Buscando la transmisión…» y el cursor de espera. |
+| Buscador | Filtra la tabla de eventos por título, estado o artista mientras se escribe; «en vivo» encuentra los eventos en curso. |
+| Barra de estado | Los mensajes tienen color (verde para éxito, rojo para error) y se borran solos a los 8 segundos. |
+| Menos botones | Dos filas en lugar de tres; los calendarios están en un solo botón con menú. |
+| Filas alternadas | Las tablas alternan el fondo de las filas para leerlas mejor. |
+
+## 10. Transmisiones
 
 El servicio `TP/Grupo9_Servicio_Transmision` (Node.js, ver su README) muestra el recital del artista en una página a pantalla completa, que simula una transmisión en vivo. El video es un recital real de YouTube en el reproductor incrustado que ofrece YouTube: con una clave de la API busca un directo en este momento o un recital que permita incrustarse, y sin clave prueba varios resultados. Opcionalmente, un archivo propio de la carpeta `media/` se transmite desde el servicio. La página arranca en el minuto que corresponde según cuándo empezó el evento y no deja pausar, adelantar ni volver. El programa principal lo consulta a través de la interfaz `ProveedorTransmision`, implementada por `ClienteTransmision`, pasándole el artista y la hora de inicio del evento.
 
@@ -209,7 +225,7 @@ El evento 106 de los datos de prueba, «Sunrust - Transmisión permanente», est
 
 Para probarlo: iniciar el programa (el servicio arranca solo), registrar un artista con el nombre artístico buscado (por ejemplo «Sabrina Carpenter»), crear el evento a su nombre, iniciarlo, ingresar con un usuario y tocar «Ver transmisión».
 
-## 10. Diagramas
+## 11. Diagramas
 
 Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_Pdf/fuentes` y los PDF listos para presentar, con su versión oscura, en `TP/Grupo9_POO_Diagramas_Pdf`.
 
@@ -239,7 +255,7 @@ Para regenerarlos, desde `TP/Grupo9_POO_Diagramas_Pdf/fuentes`:
 java -jar plantuml.jar -charset UTF-8 -tpdf *.puml
 ```
 
-## 11. Ejecución
+## 12. Ejecución
 
 Desde `TP/Grupo9_POO_EntregaFinal/Codigo`:
 
@@ -262,7 +278,7 @@ En Windows el separador del classpath es `;` en lugar de `:`. La opción `--enab
 
 Para usar el cliente desde otra PC, el servidor debe aceptar conexiones de la red (modo `servidor`, o el completo con `-Duadebeats.escuchar=todas`) y el puerto estar abierto en el firewall.
 
-## 12. Limitaciones conocidas
+## 13. Limitaciones conocidas
 
 | Limitación | Detalle |
 |---|---|
