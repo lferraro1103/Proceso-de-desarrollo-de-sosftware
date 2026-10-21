@@ -27,8 +27,10 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -36,25 +38,35 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
 import javax.swing.table.TableColumn;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /*
  * Interfaz grafica con Swing.
@@ -98,11 +110,18 @@ public class VentanaPrincipal extends JFrame {
     private final JButton cancelar = new JButton("Cancelar");
     private final JButton verConectados = new JButton("Ver conectados");
     private final JButton verTransmision = new JButton("Ver transmision");
-    private final JButton calendarioGoogle = new JButton("Google Calendar");
-    private final JButton calendarioApple = new JButton("Apple Calendar");
+    private final JButton calendario = new JButton("Agregar a calendario \u25BE");
 
     // Etiqueta inferior para mostrar el resultado de la ultima accion.
     private JLabel estado;
+
+    // Borra el mensaje de la barra de estado a los pocos segundos.
+    private final javax.swing.Timer limpiarEstado = new javax.swing.Timer(
+            8000, e -> estado.setText(" "));
+
+    // Refresca las tablas solo cada pocos segundos, para ver los cambios de otros.
+    private final javax.swing.Timer refrescoAutomatico = new javax.swing.Timer(
+            5000, e -> actualizarAutomaticamente());
 
     // Indica si la ventana puede cerrar la sesion y volver al login.
     private boolean permiteCerrarSesion;
@@ -150,6 +169,16 @@ public class VentanaPrincipal extends JFrame {
 
         construirInterfaz();
         actualizarListas();
+
+        limpiarEstado.setRepeats(false);
+        refrescoAutomatico.start();
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                refrescoAutomatico.stop();
+                limpiarEstado.stop();
+            }
+        });
 
         mostrarInfo("Sesion iniciada como "
                 + gestor.getCuentaActual().getNombreUsuario()
@@ -208,6 +237,20 @@ public class VentanaPrincipal extends JFrame {
         // El tooltip muestra el contenido completo de la celda, por si el
         // texto no entra en el ancho de la columna.
         JTable tabla = new JTable(modelo) {
+            // Filas alternadas: con muchas filas se lee mejor.
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderizador,
+                                             int fila, int columna) {
+                Component celda = super.prepareRenderer(renderizador, fila, columna);
+
+                if (!isRowSelected(fila)) {
+                    celda.setBackground(fila % 2 == 0
+                            ? getBackground() : new Color(245, 247, 251));
+                }
+
+                return celda;
+            }
+
             @Override
             public String getToolTipText(MouseEvent evento) {
                 int fila = rowAtPoint(evento.getPoint());
@@ -254,6 +297,12 @@ public class VentanaPrincipal extends JFrame {
             Component celda = super.getTableCellRendererComponent(
                     tabla, valor, seleccionada, foco, fila, columna);
 
+            boolean enVivo = "EN_CURSO".equals(String.valueOf(valor));
+
+            // Un evento en curso se destaca con "EN VIVO" en negrita.
+            setText(enVivo ? "\u25CF EN VIVO" : String.valueOf(valor));
+            setFont(getFont().deriveFont(enVivo ? Font.BOLD : Font.PLAIN));
+
             if (!seleccionada) {
                 celda.setForeground(colorDeEstado(String.valueOf(valor)));
             }
@@ -264,7 +313,7 @@ public class VentanaPrincipal extends JFrame {
         private Color colorDeEstado(String estado) {
             switch (estado) {
                 case "EN_CURSO":
-                    return COLOR_EXITO;
+                    return COLOR_ERROR;
                 case "PAUSADO":
                     return new Color(168, 114, 26);
                 case "CANCELADO":
@@ -326,12 +375,13 @@ public class VentanaPrincipal extends JFrame {
         tablaEventos.getSelectionModel().addListSelectionListener(
                 e -> actualizarBotones());
 
-        // Doble clic sobre un evento muestra sus usuarios conectados.
+        // Doble clic: un usuario entra al evento; el resto abre su transmision
+        // o, si no esta en curso, ve los conectados.
         tablaEventos.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2 && verConectados.isEnabled()) {
-                    ejecutar(VentanaPrincipal.this::verConectados);
+                if (e.getClickCount() == 2 && eventoSeleccionado() != null) {
+                    ejecutar(VentanaPrincipal.this::accionPorDefecto);
                 }
             }
         });
@@ -359,8 +409,8 @@ public class VentanaPrincipal extends JFrame {
         agregarSiPermitido(filaEvento, Accion.FINALIZAR_EVENTO, finalizar);
         agregarSiPermitido(filaEvento, Accion.CANCELAR_EVENTO, cancelar);
 
-        // Segunda fila: gestion de usuarios en el evento.
-        JPanel filaGestion = crearFila("Gestion");
+        // Segunda fila: acceso, transmision y calendario del evento seleccionado.
+        JPanel filaGestion = crearFila("Acceso, transmision y calendario");
         agregarSiPermitido(filaGestion, Accion.SOLICITAR_INGRESO, crearBoton(
                 gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO
                         ? "Solicitar ingreso" : "Dar acceso",
@@ -369,17 +419,21 @@ public class VentanaPrincipal extends JFrame {
                 crearBoton("Expulsar usuario", this::expulsarUsuario));
         agregarSiPermitido(filaGestion, Accion.VER_CONECTADOS, verConectados);
         agregarSiPermitido(filaGestion, Accion.VER_TRANSMISION, verTransmision);
-        filaGestion.add(crearBoton("Actualizar", this::actualizarDesdeOrigen));
 
-        // Tercera fila: suscribir el calendario completo de la cuenta.
-        JPanel filaVinculo = crearFila(
-                "Agregar el evento seleccionado a mi calendario (se actualiza solo)");
-        calendarioGoogle.addActionListener(e -> ejecutar(
+        // Un solo boton con un menu para elegir el calendario.
+        JPopupMenu menuCalendario = new JPopupMenu();
+        JMenuItem google = new JMenuItem("Google Calendar");
+        JMenuItem apple = new JMenuItem("Apple Calendar");
+        google.addActionListener(e -> ejecutar(
                 () -> vincularCalendario(new VinculoGoogle())));
-        calendarioApple.addActionListener(e -> ejecutar(
+        apple.addActionListener(e -> ejecutar(
                 () -> vincularCalendario(new VinculoApple())));
-        agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, calendarioGoogle);
-        agregarSiPermitido(filaVinculo, Accion.VINCULAR_CALENDARIO, calendarioApple);
+        menuCalendario.add(google);
+        menuCalendario.add(apple);
+        calendario.addActionListener(e ->
+                menuCalendario.show(calendario, 0, calendario.getHeight()));
+        agregarSiPermitido(filaGestion, Accion.VINCULAR_CALENDARIO, calendario);
+        filaGestion.add(crearBoton("Actualizar", this::actualizarDesdeOrigen));
 
         JPanel acciones = new JPanel();
         acciones.setLayout(new BoxLayout(acciones, BoxLayout.Y_AXIS));
@@ -390,16 +444,54 @@ public class VentanaPrincipal extends JFrame {
         }
         acciones.add(filaGestion);
 
-        if (filaVinculo.getComponentCount() > 0) {
-            acciones.add(filaVinculo);
-        }
-
         // Hasta que se elija un evento, los botones de estado quedan apagados.
         actualizarBotones();
 
+        panel.add(crearBuscador(), BorderLayout.NORTH);
         panel.add(new JScrollPane(tablaEventos), BorderLayout.CENTER);
         panel.add(acciones, BorderLayout.SOUTH);
         return panel;
+    }
+
+    // Campo que filtra la tabla de eventos por titulo, estado o artista mientras se escribe.
+    private JPanel crearBuscador() {
+        JTextField buscador = new JTextField(22);
+        buscador.setToolTipText("Filtra por titulo, estado o artista");
+
+        buscador.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filtrarEventos(buscador.getText());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filtrarEventos(buscador.getText());
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filtrarEventos(buscador.getText());
+            }
+        });
+
+        JPanel barra = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        barra.add(new JLabel("Buscar:"));
+        barra.add(buscador);
+        return barra;
+    }
+
+    private void filtrarEventos(String texto) {
+        TableRowSorter<?> orden = (TableRowSorter<?>) tablaEventos.getRowSorter();
+
+        // Columnas: 1 titulo, 2 estado y 6 artistas. "en vivo" encuentra los
+        // eventos en curso, que en la tabla se muestran asi.
+        String buscado = texto.trim();
+        String patron = Pattern.quote(buscado)
+                + (buscado.equalsIgnoreCase("en vivo") ? "|EN_CURSO" : "");
+
+        orden.setRowFilter(buscado.isEmpty() ? null
+                : RowFilter.regexFilter("(?i)" + patron, 1, 2, 6));
     }
 
     private JPanel crearPanelRegistros() {
@@ -484,8 +576,7 @@ public class VentanaPrincipal extends JFrame {
         cancelar.setEnabled(estadoEvento != null && estadoEvento.permiteCancelar());
         verConectados.setEnabled(evento != null);
         verTransmision.setEnabled(estadoEvento == EstadoEvento.EN_CURSO);
-        calendarioGoogle.setEnabled(evento != null);
-        calendarioApple.setEnabled(evento != null);
+        calendario.setEnabled(evento != null);
 
         String ayuda = (evento == null)
                 ? "Seleccione un evento de la tabla."
@@ -493,7 +584,7 @@ public class VentanaPrincipal extends JFrame {
 
         for (JButton boton : new JButton[] {iniciar, pausar, reanudar,
                 finalizar, cancelar, verConectados, verTransmision,
-                calendarioGoogle, calendarioApple}) {
+                calendario}) {
             boton.setToolTipText(boton.isEnabled() ? null : ayuda);
         }
     }
@@ -535,6 +626,11 @@ public class VentanaPrincipal extends JFrame {
 
         if (seleccionado == null) {
             mostrarError("Seleccione un usuario.");
+            return;
+        }
+
+        if (seleccionado.isActivo() && !confirmar("\u00BFDesactivar la cuenta de "
+                + seleccionado.getNombreUsuario() + "? Se la desconecta de los eventos.")) {
             return;
         }
 
@@ -584,12 +680,79 @@ public class VentanaPrincipal extends JFrame {
 
     // Busca la transmision del evento y la abre en el navegador.
     private void abrirTransmision(Evento evento) {
+        // La busqueda puede tardar unos segundos: se avisa y se muestra el cursor de espera.
+        mostrarInfo("Buscando la transmision...");
+        estado.paintImmediately(estado.getVisibleRect());
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
         try {
             Transmision transmision = gestor.obtenerTransmision(evento.getId());
             Navegador.abrir(transmision.url());
             mostrarInfo("Se abrio la transmision: " + transmision.titulo());
         } catch (AccesoDenegadoException | IOException e) {
             mostrarError("No se pudo abrir la transmision: " + e.getMessage());
+        } finally {
+            setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    /*
+     * Accion del doble clic sobre un evento. Un usuario entra: si ya estaba
+     * conectado abre la transmision y si no, pide el ingreso (que la abre al
+     * autorizarse). El resto abre la transmision del evento en curso o, si no
+     * esta en curso, muestra los conectados.
+     */
+    private void accionPorDefecto() {
+        Evento evento = eventoSeleccionado();
+
+        if (evento == null) {
+            return;
+        }
+
+        if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO) {
+            if (estaConectado(evento)) {
+                abrirTransmision(evento);
+            } else {
+                solicitarIngreso();
+            }
+        } else if (evento.getEstado() == EstadoEvento.EN_CURSO) {
+            abrirTransmision(evento);
+        } else if (verConectados.isEnabled()) {
+            verConectados();
+        }
+    }
+
+    // Indica si la cuenta actual ya esta conectada al evento.
+    private boolean estaConectado(Evento evento) {
+        for (Usuario usuario : evento.getUsuariosConectados()) {
+            if (usuario.getId() == gestor.getCuentaActual().getId()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Pregunta antes de una accion que no se puede deshacer.
+    private boolean confirmar(String pregunta) {
+        return JOptionPane.showConfirmDialog(this, pregunta, "Confirmar",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)
+                == JOptionPane.YES_OPTION;
+    }
+
+    /*
+     * Refresco periodico de las tablas. Si no hay respuesta (por ejemplo, el
+     * servidor se apago) lo informa en la barra de estado, sin ventanas.
+     */
+    private void actualizarAutomaticamente() {
+        if (gestor.getCuentaActual() == null) {
+            return;
+        }
+
+        try {
+            actualizarDesdeOrigen();
+        } catch (PermisoDenegadoException | ErrorDeServicioException e) {
+            mostrarInfo("Sin actualizar: " + e.getMessage());
         }
     }
 
@@ -945,6 +1108,11 @@ public class VentanaPrincipal extends JFrame {
             return;
         }
 
+        if (!confirmar("\u00BFExpulsar a " + usuario.getNombreCompleto()
+                + " de \"" + evento.getTitulo() + "\"?")) {
+            return;
+        }
+
         Usuario usuarioExpulsado = gestor.expulsarUsuario(
                 evento.getId(), usuario.getId());
 
@@ -966,6 +1134,13 @@ public class VentanaPrincipal extends JFrame {
         }
 
         int idEvento = evento.getId();
+
+        if (("finalizar".equals(accion) || "cancelar".equals(accion))
+                && !confirmar("\u00BF" + accion.substring(0, 1).toUpperCase()
+                + accion.substring(1) + " el evento \"" + evento.getTitulo()
+                + "\"? No se puede deshacer.")) {
+            return;
+        }
 
         try {
             // El gestor centraliza las transiciones de estado (patron
@@ -1166,7 +1341,12 @@ public class VentanaPrincipal extends JFrame {
         for (int fila = 0; fila < modelo.getRowCount(); fila++) {
             if (id.equals(modelo.getValueAt(fila, 0))) {
                 int filaVista = tabla.convertRowIndexToView(fila);
-                tabla.setRowSelectionInterval(filaVista, filaVista);
+
+                // Si el filtro oculta la fila, no hay nada que seleccionar.
+                if (filaVista >= 0) {
+                    tabla.setRowSelectionInterval(filaVista, filaVista);
+                }
+
                 return;
             }
         }
@@ -1193,23 +1373,27 @@ public class VentanaPrincipal extends JFrame {
 
     // ---------------- mensajes ----------------
 
+    // Muestra un mensaje en la barra de estado y lo borra a los pocos segundos.
+    private void mostrarEnBarra(String mensaje, Color color) {
+        estado.setForeground(color);
+        estado.setText(mensaje);
+        limpiarEstado.restart();
+    }
+
     // Resultado correcto: se ve en la barra de estado, sin ventana emergente.
     private void mostrarExito(String mensaje) {
-        estado.setForeground(COLOR_EXITO);
-        estado.setText(mensaje);
+        mostrarEnBarra(mensaje, COLOR_EXITO);
     }
 
     // Informacion neutra en la barra de estado.
     private void mostrarInfo(String mensaje) {
-        estado.setForeground(Color.DARK_GRAY);
-        estado.setText(mensaje);
+        mostrarEnBarra(mensaje, Color.DARK_GRAY);
     }
 
     // Los errores se muestran tambien en una ventana para que no pasen
     // desapercibidos.
     private void mostrarError(String mensaje) {
-        estado.setForeground(COLOR_ERROR);
-        estado.setText(mensaje);
+        mostrarEnBarra(mensaje, COLOR_ERROR);
         JOptionPane.showMessageDialog(this, mensaje, "Atencion",
                 JOptionPane.WARNING_MESSAGE);
     }
