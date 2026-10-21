@@ -1,4 +1,16 @@
-# Iteración 4: base SQLite, API y modo cliente
+# Iteración 4 - UADE Beats
+
+Rama de desarrollo: `iteracion-4`.
+
+Se incorpora Strategy para la visibilidad de eventos, conservando permisos, transmisión y persistencia. El diagrama completo se contrastó con las 91 fuentes Java y sus 97 tipos propios. Las 110 comprobaciones de regresión cubren permisos, visibilidad, transmisión local/HTTP y SQLite.
+
+## Diagrama de clases completo
+
+- [PlantUML editable](TP/Grupo9_POO_Diagramas_Pdf/fuentes/clases-completo.puml).
+- [SVG ampliable](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.svg).
+- [PNG](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.png).
+
+Los tres archivos corresponden al mismo modelo, con conectores por segmentos rectos. La documentación y los informes están en [docs/iteracion-4/](docs/iteracion-4/README.md).
 
 ![Logo de UADE Beats](logo.png)
 

@@ -3,10 +3,12 @@ package gestor;
 import java.io.IOException;
 
 /*
- * Contrato para suscribir un calendario externo a la direccion de un evento.
+ * Strategy para suscribir un calendario externo a la direccion de un evento.
  *
  * Cada implementacion (Google, Apple) sabe como abrir su aplicacion con la
  * suscripcion ya armada.
+ * GestorEventosEnVivo y GestorRemoto reciben la estrategia por parametro:
+ * el algoritmo se elige en la vista sin condicionar el gestor por proveedor.
  */
 public interface VinculoCalendario {
 

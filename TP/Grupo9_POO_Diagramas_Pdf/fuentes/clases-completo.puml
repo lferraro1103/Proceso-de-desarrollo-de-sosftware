@@ -1,326 +1,1396 @@
+' UADE Beats - diagrama de clases basado en el código Java actual.
+' Verificado el 21/10/2026: AST y bytecode de 91 fuentes / 97 tipos propios.
+' Contiene todos los atributos y operaciones del inventario y 82 relaciones estructurales.
+' Incluye seis tipos del JDK como contexto de herencia/contratos; no son código propio.
+' Conectores por segmentos rectos. Archivo autónomo, sin includes externos.
+' Diagrama completo contrastado con el código Java: 97 tipos propios y 82 relaciones estructurales.
 @startuml
-!include estilo.iuml
-title Diagrama de clases completo: UADE Beats
+skinparam linetype polyline
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundcorner 0
+skinparam defaultFontName Arial
+skinparam defaultFontSize 16
+skinparam classFontSize 18
+skinparam classAttributeFontSize 15
+skinparam ArrowFontSize 14
+skinparam ArrowColor #334155
+skinparam ArrowThickness 1.2
+skinparam classAttributeIconSize 0
+skinparam classBackgroundColor #F8FAFC
+skinparam classBorderColor #334155
+skinparam classHeaderBackgroundColor #DBEAFE
+skinparam classStereotypeFontColor #475569
+skinparam packageStyle rectangle
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #CBD5E1
+skinparam nodesep 65
+skinparam ranksep 85
+hide circle
+hide empty members
 
-package "modelo" {
-  abstract class Cuenta {
-    -id : int
-    -nombreUsuario : String
-    -hashContrasena : String
-    -activo : boolean
-    +validarContrasena(contrasena : String) : boolean
-    +activar() : void
-    +desactivar() : void
-  }
-  class Usuario {
-    -nombre : String
-    -apellido : String
-    -email : String
-    +tieneAccesoPrioritario() : boolean
-  }
-  class Artista {
-    -nombreArtistico : String
-    -generoPrincipal : String
-    -biografia : String
-    -verificado : boolean
-    +crearEvento(evento : Evento) : void
-  }
-  abstract class Evento {
-    -id : int
-    -titulo : String
-    -descripcion : String
-    -fechaHoraInicio : LocalDateTime
-    -fechaHoraFin : LocalDateTime
-    -capacidadMaxima : int
-    +iniciarEvento() : void
-    +pausarEvento() : void
-    +reanudarEvento() : void
-    +finalizarEvento() : void
-    +cancelarEvento() : void
-    {abstract} +permitirIngreso(usuario : Usuario) : void
-    {abstract} +expulsarUsuario(usuario : Usuario) : void
-  }
-  class RecitalEnVivo {
-    -ubicacion : String
-    -esStreaming : boolean
-    -exclusivo : boolean
-    +verificarCapacidad() : boolean
-    +validarDisponibilidad(momento : LocalDateTime) : void
-  }
-  enum TipoUsuario {
-    USUARIO
-    ADMINISTRADOR
-    ARTISTA
-  }
-  enum PlanSuscripcion {
-    FREE
-    PREMIUM
-    ARTIST_PASS
-  }
-  enum EstadoEvento {
-    PROGRAMADO
-    EN_ESPERA
-    EN_CURSO
-    PAUSADO
-    FINALIZADO
-    CANCELADO
-  }
-  class DatosRecital
-  class AccesoEvento {
-    +validarAutorizacion() : void
-    +validarPlan() : void
-  }
-  class RegistroAcceso {
-    -fechaHoraIngreso : LocalDateTime
-    -exitoso : boolean
-    -motivoRechazo : String
-  }
-  class Contrasenas {
-    {static} +hashear(contrasena : String) : String
-    {static} +verificar(contrasena, hash) : boolean
-  }
+title Implementación completa: tipos, miembros declarados y relaciones
+caption UADE Beats | Iteración 4 | UML de implementación
+package "Entrada" {
+class "Main" as T0 {
+  --
+  +Main()
+  {static} +main(args : String[]) : void throws IOException
 }
-
-package "excepciones" {
-  class AccesoDenegadoException
-  class PermisoDenegadoException
-  abstract class ErrorDeServicioException
-  class PersistenciaException
-  class ConexionException
 }
-
-package "gestor" {
-  interface ServicioSesion
-  interface ServicioConsultas
-  interface ServicioComandos
-  interface ServicioEventos
-  class GestorEventosEnVivo {
-    -usuariosRegistrados : List<Usuario>
-    -artistasRegistrados : List<Artista>
-    -eventos : List<Evento>
-    +autenticar(nombreUsuario, contrasena) : Cuenta
-    +solicitarIngreso(idUsuario, idEvento) : RegistroAcceso
-    +obtenerTransmision(idEvento) : Transmision
-    +vincularCalendario(idEvento, vinculo) : void
-  }
-  class ControlAcceso {
-    +procesarIngreso(usuario, evento) : RegistroAcceso
-    +registrarExpulsion(usuario, evento) : void
-  }
-  class ControlSesion {
-    +exigir(accion : Accion) : void
-  }
-  class Permisos
-  enum Accion {
-    SOLICITAR_INGRESO
-    VINCULAR_CALENDARIO
-    VER_TRANSMISION
-    ...
-  }
-  interface Persistencia
-  interface Notificador
-  interface PublicadorCalendario
-  interface ProveedorTransmision
-  interface VinculoCalendario
-  class ConsultaTransmision
-  class Transmision
+package "api" {
+class "ArtistaDto" as T1 <<record>> {
+  -biografia : String {readOnly}
+  -generoPrincipal : String {readOnly}
+  -id : int {readOnly}
+  -nombreArtistico : String {readOnly}
+  -nombreUsuario : String {readOnly}
+  -verificado : boolean {readOnly}
+  --
+  +ArtistaDto(id : int, nombreUsuario : String, nombreArtistico :\n    String, generoPrincipal : String, biografia : String, verificado :\n    boolean)
+  +biografia() : String
+  +equals(o : Object) : boolean
+  +generoPrincipal() : String
+  +hashCode() : int
+  +id() : int
+  +nombreArtistico() : String
+  +nombreUsuario() : String
+  +toString() : String
+  +verificado() : boolean
 }
-
-package "persistencia" {
-  class PersistenciaSqlite
-  class ConexionSqlite
-  class RepositorioUsuarios
-  class RepositorioArtistas
-  class RepositorioEventos
-  class RepositorioRegistros
+class "CuentaDto" as T2 <<record>> {
+  -activo : boolean {readOnly}
+  -id : int {readOnly}
+  -nombreUsuario : String {readOnly}
+  -tipo : String {readOnly}
+  --
+  +CuentaDto(id : int, nombreUsuario : String, tipo : String, activo\n    : boolean)
+  +activo() : boolean
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +id() : int
+  +nombreUsuario() : String
+  +tipo() : String
+  +toString() : String
 }
-
-package "notificacion" {
-  class NotificadorInactivo
+class "ErrorDto" as T3 <<record>> {
+  -mensaje : String {readOnly}
+  -tipo : String {readOnly}
+  --
+  +ErrorDto(tipo : String, mensaje : String)
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +mensaje() : String
+  +tipo() : String
+  +toString() : String
 }
-
-package "calendario" {
-  class VinculoGoogle
-  class VinculoApple
-  class FormatoIcs
+class "EstadoDto" as T4 <<record>> {
+  -artistas : List<ArtistaDto> {readOnly}
+  -cuenta : CuentaDto {readOnly}
+  -eventos : List<EventoDto> {readOnly}
+  -registros : List<RegistroDto> {readOnly}
+  -usuarios : List<UsuarioDto> {readOnly}
+  --
+  +EstadoDto(cuenta : CuentaDto, usuarios : List<UsuarioDto>,\n    artistas : List<ArtistaDto>, eventos : List<EventoDto>, registros\n    : List<RegistroDto>)
+  +artistas() : List<ArtistaDto>
+  +cuenta() : CuentaDto
+  +equals(o : Object) : boolean
+  +eventos() : List<EventoDto>
+  +hashCode() : int
+  +registros() : List<RegistroDto>
+  +toString() : String
+  +usuarios() : List<UsuarioDto>
 }
-
-package "transmision" {
-  class ClienteTransmision
-  class ProcesoServicio
+class "EventoDto" as T5 <<record>> {
+  -artistas : List<Integer> {readOnly}
+  -capacidadMaxima : int {readOnly}
+  -conectados : List<Integer> {readOnly}
+  -descripcion : String {readOnly}
+  -estado : String {readOnly}
+  -exclusivo : boolean {readOnly}
+  -fin : String {readOnly}
+  -id : int {readOnly}
+  -inicio : String {readOnly}
+  -planMinimo : String {readOnly}
+  -streaming : boolean {readOnly}
+  -titulo : String {readOnly}
+  -ubicacion : String {readOnly}
+  --
+  +EventoDto(id : int, titulo : String, descripcion : String, inicio\n    : String, fin : String, estado : String, capacidadMaxima : int,\n    planMinimo : String, ubicacion : String, streaming : boolean,\n    exclusivo : boolean, artistas : List<Integer>, conectados :\n    List<Integer>)
+  +artistas() : List<Integer>
+  +capacidadMaxima() : int
+  +conectados() : List<Integer>
+  +descripcion() : String
+  +equals(o : Object) : boolean
+  +estado() : String
+  +exclusivo() : boolean
+  +fin() : String
+  +hashCode() : int
+  +id() : int
+  +inicio() : String
+  +planMinimo() : String
+  +streaming() : boolean
+  +titulo() : String
+  +toString() : String
+  +ubicacion() : String
 }
-
-package "servidor" {
-  class ServidorHttp
-  class ConfiguracionServidor
-  class ManejadorApi
-  class ManejadorCalendario
-  class Sesiones
-  class Instantanea
-  class Conversor
-  class PublicadorHttp
-  class CodigosCalendario
+class "IdDto" as T6 <<record>> {
+  -id : Integer {readOnly}
+  --
+  +IdDto(id : Integer)
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +id() : Integer
+  +toString() : String
 }
-
-package "api (DTO)" {
-  class Json
-  class EstadoDto
-  class CuentaDto
-  class UsuarioDto
-  class ArtistaDto
-  class EventoDto
-  class RegistroDto
-  class SesionDto
-  class TransmisionDto
+class "InicioSesionDto" as T7 <<record>> {
+  -contrasena : String {readOnly}
+  -nombreUsuario : String {readOnly}
+  --
+  +InicioSesionDto(nombreUsuario : String, contrasena : String)
+  +contrasena() : String
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +nombreUsuario() : String
+  +toString() : String
 }
-
-package "cliente" {
-  class GestorRemoto
-  class ClienteHttp
-  class EstadoLocal
+class "Json" as T8 <<final>> {
+  {static} -GSON : com.google.gson.Gson {readOnly}
+  --
+  -Json()
+  {static} +<T> leer(texto : String, tipo : Class<T>) : T
+  {static} +escribir(objeto : Object) : String
 }
-
+class "NuevoArtistaDto" as T9 <<record>> {
+  -biografia : String {readOnly}
+  -contrasena : String {readOnly}
+  -generoPrincipal : String {readOnly}
+  -nombreArtistico : String {readOnly}
+  -nombreUsuario : String {readOnly}
+  -verificado : boolean {readOnly}
+  --
+  +NuevoArtistaDto(nombreUsuario : String, contrasena : String,\n    nombreArtistico : String, generoPrincipal : String, biografia :\n    String, verificado : boolean)
+  +biografia() : String
+  +contrasena() : String
+  +equals(o : Object) : boolean
+  +generoPrincipal() : String
+  +hashCode() : int
+  +nombreArtistico() : String
+  +nombreUsuario() : String
+  +toString() : String
+  +verificado() : boolean
+}
+class "NuevoEventoDto" as T10 <<record>> {
+  -capacidadMaxima : int {readOnly}
+  -descripcion : String {readOnly}
+  -estado : String {readOnly}
+  -exclusivo : boolean {readOnly}
+  -fin : String {readOnly}
+  -idArtista : int {readOnly}
+  -inicio : String {readOnly}
+  -planMinimo : String {readOnly}
+  -streaming : boolean {readOnly}
+  -titulo : String {readOnly}
+  -ubicacion : String {readOnly}
+  --
+  +NuevoEventoDto(idArtista : int, titulo : String, descripcion :\n    String, inicio : String, fin : String, estado : String,\n    capacidadMaxima : int, planMinimo : String, ubicacion : String,\n    streaming : boolean, exclusivo : boolean)
+  +capacidadMaxima() : int
+  +descripcion() : String
+  +equals(o : Object) : boolean
+  +estado() : String
+  +exclusivo() : boolean
+  +fin() : String
+  +hashCode() : int
+  +idArtista() : int
+  +inicio() : String
+  +planMinimo() : String
+  +streaming() : boolean
+  +titulo() : String
+  +toString() : String
+  +ubicacion() : String
+}
+class "NuevoUsuarioDto" as T11 <<record>> {
+  -apellido : String {readOnly}
+  -contrasena : String {readOnly}
+  -email : String {readOnly}
+  -nombre : String {readOnly}
+  -nombreUsuario : String {readOnly}
+  -plan : String {readOnly}
+  --
+  +NuevoUsuarioDto(nombreUsuario : String, nombre : String, apellido\n    : String, email : String, contrasena : String, plan : String)
+  +apellido() : String
+  +contrasena() : String
+  +email() : String
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +nombre() : String
+  +nombreUsuario() : String
+  +plan() : String
+  +toString() : String
+}
+class "RegistroDto" as T12 <<record>> {
+  -exitoso : boolean {readOnly}
+  -fechaHoraIngreso : String {readOnly}
+  -idEvento : int {readOnly}
+  -idUsuario : int {readOnly}
+  -motivoRechazo : String {readOnly}
+  --
+  +RegistroDto(idUsuario : int, idEvento : int, fechaHoraIngreso :\n    String, exitoso : boolean, motivoRechazo : String)
+  +equals(o : Object) : boolean
+  +exitoso() : boolean
+  +fechaHoraIngreso() : String
+  +hashCode() : int
+  +idEvento() : int
+  +idUsuario() : int
+  +motivoRechazo() : String
+  +toString() : String
+}
+class "SesionDto" as T13 <<record>> {
+  -cuenta : CuentaDto {readOnly}
+  -token : String {readOnly}
+  --
+  +SesionDto(token : String, cuenta : CuentaDto)
+  +cuenta() : CuentaDto
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +toString() : String
+  +token() : String
+}
+class "TransmisionDto" as T14 <<record>> {
+  -titulo : String {readOnly}
+  -url : String {readOnly}
+  --
+  +TransmisionDto(titulo : String, url : String)
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +titulo() : String
+  +toString() : String
+  +url() : String
+}
+class "UrlDto" as T15 <<record>> {
+  -url : String {readOnly}
+  --
+  +UrlDto(url : String)
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +toString() : String
+  +url() : String
+}
+class "UsuarioDto" as T16 <<record>> {
+  -activo : boolean {readOnly}
+  -apellido : String {readOnly}
+  -email : String {readOnly}
+  -id : int {readOnly}
+  -nombre : String {readOnly}
+  -nombreUsuario : String {readOnly}
+  -plan : String {readOnly}
+  -tipo : String {readOnly}
+  --
+  +UsuarioDto(id : int, nombreUsuario : String, nombre : String,\n    apellido : String, email : String, plan : String, activo :\n    boolean, tipo : String)
+  +activo() : boolean
+  +apellido() : String
+  +email() : String
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +id() : int
+  +nombre() : String
+  +nombreUsuario() : String
+  +plan() : String
+  +tipo() : String
+  +toString() : String
+}
+class "UsuarioPedidoDto" as T17 <<record>> {
+  -idUsuario : int {readOnly}
+  --
+  +UsuarioPedidoDto(idUsuario : int)
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +idUsuario() : int
+  +toString() : String
+}
+}
 package "app" {
-  class App
-  class Arranque
-  class DatosIniciales
-  class MenuPorRol
-  class MenuAcciones
-  class ConsoleIO
-  class AppSwing
+class "App" as T18 {
+  {static} -MODO_CONSOLA : int {readOnly}
+  {static} -MODO_GRAFICO : int {readOnly}
+  --
+  +App()
+  {static} +main(args : String[]) : void throws IOException
+  {static} -direccionDelServidor(args : String[], scanner : Scanner)\n    : String
+  {static} -elegirModo(scanner : Scanner) : int
+  {static} -iniciarSesion(scanner : Scanner, gestor :\n    ServicioEventos) : boolean
+  {static} -servir() : void throws IOException
+  {static} -usar(scanner : Scanner, gestor : ServicioEventos) : void
 }
-
+class "AppSwing" as T19 {
+  --
+  +AppSwing()
+  {static} ~abrir(gestor : ServicioEventos) : void
+}
+class "Arranque" as T20 <<final>> {
+  --
+  -Arranque()
+  {static} ~iniciarServidor(aceptaRed : boolean) :\n    GestorEventosEnVivo throws IOException
+}
+class "ConsoleIO" as T21 <<final>> {
+  --
+  -ConsoleIO()
+  {static} +leerBooleano(scanner : Scanner, mensaje : String) :\n    boolean
+  {static} +leerEntero(scanner : Scanner, mensaje : String) : int
+}
+class "DatosIniciales" as T22 <<final>> {
+  --
+  -DatosIniciales()
+  {static} +sembrar(gestor : GestorEventosEnVivo) : void
+}
+class "MenuAcciones" as T23 <<final>> {
+  --
+  -MenuAcciones()
+  {static} +abrirInterfazGrafica(gestor : ServicioEventos) : void
+  {static} +cambiarEstadoEvento(scanner : Scanner, gestor :\n    ServicioEventos, accion : String) : void
+  {static} +cambiarEstadoUsuario(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} +crearEventoManual(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} +expulsarUsuario(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} +listarArtistas(gestor : ServicioEventos) : void
+  {static} +listarConectados(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} +listarEventos(gestor : ServicioEventos) : void
+  {static} +listarMisRegistros(gestor : ServicioEventos) : void
+  {static} +listarRegistros(gestor : ServicioEventos) : void
+  {static} +listarUsuarios(gestor : ServicioEventos) : void
+  {static} +login(scanner : Scanner, gestor : ServicioEventos) :\n    Cuenta
+  {static} +mostrarCapacidad(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} +registrarArtista(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} +registrarUsuario(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} +solicitarIngreso(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} +verTransmision(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} +vincularCalendario(scanner : Scanner, gestor :\n    ServicioEventos) : void
+  {static} -ejecutarCambioDeEstado(gestor : ServicioEventos,\n    idEvento : int, accion : String) : void throws\n    AccesoDenegadoException
+  {static} -leerCapacidadMaxima(scanner : Scanner) : int
+  {static} -leerContrasenaNueva(scanner : Scanner) : String
+  {static} -leerDuracionMinutos(scanner : Scanner) : int
+  {static} -leerNombreUsuarioNuevo(scanner : Scanner, gestor :\n    ServicioEventos) : String
+  {static} -listarEventosParaCambio(gestor : ServicioEventos, accion\n    : String) : boolean
+  {static} -listarUsuariosConectadosParaExpulsion(recital : Evento)\n    : boolean
+  {static} -mostrarTransmision(gestor : ServicioEventos, idEvento :\n    int) : void
+  {static} -obtenerNombreAccion(accion : String) : String
+  {static} -puedeAplicarAccion(evento : Evento, accion : String) :\n    boolean
+  {static} -seleccionarArtistaParaEvento(scanner : Scanner, gestor :\n    ServicioEventos) : Artista
+  {static} -seleccionarPlan(scanner : Scanner) : PlanSuscripcion
+}
+class "MenuPorRol" as T24 <<final>> {
+  --
+  -MenuPorRol()
+  {static} +ejecutar(scanner : Scanner, gestor : ServicioEventos) :\n    void
+  {static} -ejecutarAccion(accion : Accion, scanner : Scanner,\n    gestor : ServicioEventos) : void
+  {static} -mostrarMenu(gestor : ServicioEventos, acciones :\n    List<Accion>) : void
+}
+}
+package "calendario" {
+class "FormatoIcs" as T25 <<final>> {
+  {static} -FECHA : format.DateTimeFormatter {readOnly}
+  --
+  -FormatoIcs()
+  {static} +calendario(nombre : String, eventos : List<Evento>) :\n    String
+  {static} -agregarEvento(ics : StringBuilder, evento : Evento) :\n    void
+  {static} -escapar(texto : String) : String
+  {static} -linea(ics : StringBuilder, texto : String) : void
+}
+class "VinculoApple" as T26 {
+  --
+  +VinculoApple()
+  +getNombre() : String
+  +vincular(urlFeed : String) : void throws IOException
+}
+class "VinculoGoogle" as T27 {
+  {static} -BASE : String {readOnly}
+  --
+  +VinculoGoogle()
+  +getNombre() : String
+  +vincular(urlFeed : String) : void throws IOException
+}
+}
+package "cliente" {
+class "ClienteHttp" as T28 {
+  -cliente : java.net.http.HttpClient {readOnly}
+  -token : String
+  -urlBase : String {readOnly}
+  --
+  -enviar(metodo : String, ruta : String, cuerpo : Object) : String\n    throws AccesoDenegadoException, IOException
+  {static} -errorDe(respuesta : java.net.http.HttpResponse<String>)\n    : RuntimeException throws AccesoDenegadoException, IOException
+  ~ClienteHttp(urlBase : String)
+  ~delete(ruta : String) : String throws AccesoDenegadoException,\n    IOException
+  ~get(ruta : String) : String throws AccesoDenegadoException,\n    IOException
+  ~post(ruta : String, cuerpo : Object) : String throws\n    AccesoDenegadoException, IOException
+  ~setToken(token : String) : void
+}
+class "EstadoLocal" as T29 {
+  -artistas : List<Artista> {readOnly}
+  -cuenta : Cuenta {readOnly}
+  -eventos : List<Evento> {readOnly}
+  -registros : List<RegistroAcceso> {readOnly}
+  -usuarios : List<Usuario> {readOnly}
+  --
+  ~EstadoLocal(estado : EstadoDto)
+  ~construirRegistro(dto : RegistroDto) : RegistroAcceso
+  ~construirRegistro(dto : RegistroDto, usuariosPorId : Map<Integer,\n    Usuario>, eventosPorId : Map<Integer, Evento>) : RegistroAcceso
+  ~getArtistas() : List<Artista>
+  ~getCuenta() : Cuenta
+  ~getEventos() : List<Evento>
+  ~getRegistros() : List<RegistroAcceso>
+  ~getUsuarios() : List<Usuario>
+}
+class "GestorRemoto" as T30 {
+  -conSesion : boolean
+  -estado : EstadoLocal
+  -http : ClienteHttp {readOnly}
+  -permisos : Permisos {readOnly}
+  --
+  +GestorRemoto(urlServidor : String)
+  +accionesPermitidas() : List<Accion>
+  +actualizar() : void
+  +alternarActivo(idUsuario : int) : Usuario
+  +buscarArtistaPorId(id : int) : Artista
+  +buscarEventoVisible(id : int) : Evento
+  +buscarUsuarioPorId(id : int) : Usuario
+  +cancelarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +cerrarSesion() : void
+  +crearEvento(datos : DatosRecital, artista : Artista) :\n    RecitalEnVivo
+  +existeNombreUsuario(nombreUsuario : String) : boolean
+  +expulsarUsuario(idEvento : int, idUsuario : int) : Usuario
+  +finalizarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +getCuentaActual() : Cuenta
+  +iniciarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +iniciarSesion(nombreUsuario : String, contrasena : String) :\n    Cuenta throws AccesoDenegadoException
+  +listarArtistas() : List<Artista>
+  +listarEventosVisibles() : List<Evento>
+  +listarMisRegistros() : List<RegistroAcceso>
+  +listarRegistros() : List<RegistroAcceso>
+  +listarUsuarios() : List<Usuario>
+  +obtenerTransmision(idEvento : int) : Transmision throws\n    AccesoDenegadoException, IOException
+  +pausarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +puede(accion : Accion) : boolean
+  +reanudarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +registrarArtista(nombreUsuario : String, contrasena : String,\n    nombreArtistico : String, generoPrincipal : String, biografia :\n    String, verificado : boolean) : Artista
+  +registrarUsuario(nombreUsuario : String, nombre : String,\n    apellido : String, email : String, contrasena : String, plan :\n    PlanSuscripcion) : Usuario
+  +solicitarIngreso(idUsuario : int, idEvento : int) :\n    RegistroAcceso
+  +vincularCalendario(idEvento : int, vinculo : VinculoCalendario) :\n    void throws IOException
+  -cambiarEstado(idEvento : int, accion : String) : void throws\n    AccesoDenegadoException
+  -exigir(accion : Accion) : void
+  -pedirId(ruta : String, cuerpo : Object) : Integer
+}
+}
+package "excepciones" {
+class "AccesoDenegadoException" as T31 {
+  --
+  +AccesoDenegadoException(mensaje : String)
+}
+class "ConexionException" as T32 {
+  --
+  +ConexionException(mensaje : String, causa : Throwable)
+}
+class "ErrorDeServicioException" as T33 {
+  --
+  +ErrorDeServicioException(mensaje : String)
+  +ErrorDeServicioException(mensaje : String, causa : Throwable)
+}
+class "PermisoDenegadoException" as T34 {
+  --
+  +PermisoDenegadoException(mensaje : String)
+}
+class "PersistenciaException" as T35 {
+  --
+  +PersistenciaException(mensaje : String, causa : Throwable)
+}
+}
+package "gestor" {
+enum "Accion" as T36 <<enumeration>> {
+  ABRIR_INTERFAZ_GRAFICA
+  ACTIVAR_DESACTIVAR_USUARIO
+  CANCELAR_EVENTO
+  CREAR_EVENTO
+  EXPULSAR_USUARIO
+  FINALIZAR_EVENTO
+  INICIAR_EVENTO
+  PAUSAR_EVENTO
+  REANUDAR_EVENTO
+  REGISTRAR_ARTISTA
+  REGISTRAR_USUARIO
+  SOLICITAR_INGRESO
+  VER_ARTISTAS
+  VER_CAPACIDAD
+  VER_CONECTADOS
+  VER_EVENTOS
+  VER_MIS_REGISTROS
+  VER_REGISTROS
+  VER_TRANSMISION
+  VER_USUARIOS
+  VINCULAR_CALENDARIO
+  -etiqueta : String {readOnly}
+  --
+  +getEtiqueta() : String
+  -Accion(etiqueta : String)
+  {static} +valueOf(name : String) : Accion
+  {static} +values() : Accion[]
+}
+class "ConsultaTransmision" as T37 <<record>> {
+  -artista : String {readOnly}
+  -espectador : String {readOnly}
+  -inicio : LocalDateTime {readOnly}
+  --
+  +ConsultaTransmision(artista : String, inicio : LocalDateTime,\n    espectador : String)
+  +artista() : String
+  +equals(o : Object) : boolean
+  +espectador() : String
+  +hashCode() : int
+  +inicio() : LocalDateTime
+  +toString() : String
+}
+class "ControlAcceso" as T38 {
+  -notificador : Notificador
+  -registros : List<RegistroAcceso>
+  -siguienteIdAcceso : int
+  --
+  +ControlAcceso(notificador : Notificador)
+  +listar() : List<RegistroAcceso>
+  +procesarIngreso(usuario : Usuario, evento : Evento) :\n    RegistroAcceso
+  +reemplazar(registrosCargados : List<RegistroAcceso>) : void
+  +registrar(registro : RegistroAcceso) : void
+  +registrarExpulsion(usuario : Usuario, evento : Evento) : void
+  -avisar(usuario : Usuario, titulo : String, mensaje : String) :\n    void
+  -rechazar(usuario : Usuario, evento : Evento, motivo : String) :\n    RegistroAcceso
+}
+class "ControlSesion" as T39 {
+  -cuentaActual : Cuenta
+  -permisos : Permisos {readOnly}
+  --
+  +ControlSesion()
+  +accionesPermitidas() : List<Accion>
+  +cerrar() : void
+  +exigir(accion : Accion) : void
+  +exigirSiHaySesion(accion : Accion) : void
+  +getCuentaActual() : Cuenta
+  +iniciar(cuenta : Cuenta) : void
+  +permite(accion : Accion) : boolean
+}
+class "GestorEventosEnVivo" as T40 {
+  -artistasRegistrados : List<Artista>
+  -controlAcceso : ControlAcceso
+  -eventos : List<Evento>
+  -persistencia : Persistencia
+  -proveedorTransmision : ProveedorTransmision
+  -publicador : PublicadorCalendario
+  -sesion : ControlSesion
+  -usuariosRegistrados : List<Usuario>
+  -visibilidad : PoliticasVisibilidad {readOnly}
+  --
+  +GestorEventosEnVivo(persistencia : Persistencia, notificador :\n    Notificador, publicador : PublicadorCalendario,\n    proveedorTransmision : ProveedorTransmision)
+  +accionesPermitidas() : List<Accion>
+  +actualizar() : void
+  +alternarActivo(idUsuario : int) : Usuario
+  +asumirSesion(cuenta : Cuenta) : void
+  +autenticar(nombreUsuario : String, contrasena : String) : Cuenta\n    throws AccesoDenegadoException
+  +buscarArtistaPorId(id : int) : Artista
+  +buscarCuentaPorNombreUsuario(nombreUsuario : String) : Cuenta
+  +buscarEventoPorId(id : int) : Evento
+  +buscarEventoVisible(id : int) : Evento
+  +buscarEventoVisiblePara(cuenta : Cuenta, id : int) : Evento
+  +buscarUsuarioPorId(id : int) : Usuario
+  +cancelarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +cargarDatos() : void throws IOException
+  +cerrarSesion() : void
+  +cerrarTransmisionesDe(cuenta : Cuenta) : void
+  +consultaDeTransmision(idEvento : int) : ConsultaTransmision\n    throws AccesoDenegadoException
+  +crearEvento(datos : DatosRecital, artista : Artista) :\n    RecitalEnVivo
+  +crearEvento(evento : RecitalEnVivo) : void
+  +crearEvento(evento : RecitalEnVivo, artista : Artista) : void
+  +existeNombreUsuario(nombreUsuario : String) : boolean
+  +expulsarUsuario(idEvento : int, idUsuario : int) : Usuario
+  +finalizarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +getCuentaActual() : Cuenta
+  +guardarDatos() : void
+  +iniciarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +iniciarSesion(nombreUsuario : String, contrasena : String) :\n    Cuenta throws AccesoDenegadoException
+  +listarArtistas() : List<Artista>
+  +listarEventos() : List<Evento>
+  +listarEventosDisponibles() : List<Evento>
+  +listarEventosVisibles() : List<Evento>
+  +listarMisRegistros() : List<RegistroAcceso>
+  +listarRegistros() : List<RegistroAcceso>
+  +listarUsuarios() : List<Usuario>
+  +obtenerTransmision(idEvento : int) : Transmision throws\n    AccesoDenegadoException, IOException
+  +pausarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +puede(accion : Accion) : boolean
+  +reanudarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +reemplazarDatos(usuarios : List<Usuario>, artistas :\n    List<Artista>, eventosCargados : List<Evento>, registrosCargados :\n    List<RegistroAcceso>) : void
+  +registrarAcceso(registro : RegistroAcceso) : void
+  +registrarArtista(artista : Artista) : void
+  +registrarArtista(nombreUsuario : String, contrasena : String,\n    nombreArtistico : String, generoPrincipal : String, biografia :\n    String, verificado : boolean) : Artista
+  +registrarUsuario(nombreUsuario : String, nombre : String,\n    apellido : String, email : String, contrasena : String, plan :\n    PlanSuscripcion) : Usuario
+  +registrarUsuario(usuario : Usuario) : boolean
+  +solicitarIngreso(idUsuario : int, idEvento : int) :\n    RegistroAcceso
+  +soltarSesion() : void
+  +urlCalendario(idEvento : int) : String throws IOException
+  +vincularCalendario(idEvento : int, vinculo : VinculoCalendario) :\n    void throws IOException
+  -buscarEventoParaCambio(idEvento : int, accion : Accion) : Evento\n    throws AccesoDenegadoException
+  -esVisible(evento : Evento) : boolean
+  -esVisiblePara(actual : Cuenta, evento : Evento) : boolean
+  -estaConectado(evento : Evento, cuenta : Cuenta) : boolean
+  -reenlazarSesion() : void
+  -siguienteIdArtista() : int
+  -siguienteIdEvento() : int
+  -siguienteIdUsuario() : int
+  {static} -espectador(cuenta : Cuenta, idEvento : int) : String
+}
+interface "Notificador" as T41 <<interface>> {
+  --
+  +notificar(destinatario : Usuario, titulo : String, mensaje :\n    String) : void
+}
+class "Permisos" as T42 {
+  -permitidas : Map<TipoUsuario, Set<Accion>> {readOnly}
+  --
+  +Permisos()
+  +accionesPermitidas(tipo : TipoUsuario) : List<Accion>
+  +permite(tipo : TipoUsuario, accion : Accion) : boolean
+}
+interface "Persistencia" as T43 <<interface>> {
+  --
+  +cargar(gestor : GestorEventosEnVivo) : void throws IOException
+  +guardar(gestor : GestorEventosEnVivo) : void throws IOException
+}
+interface "PoliticaVisibilidadEvento" as T44 <<interface>> {
+  --
+  +esVisible(cuenta : Cuenta, evento : Evento) : boolean
+}
+class "PoliticasVisibilidad" as T45 <<final>> {
+  -porRol : Map<TipoUsuario, PoliticaVisibilidadEvento> {readOnly}
+  --
+  +PoliticasVisibilidad()
+  +esVisible(cuenta : Cuenta, evento : Evento) : boolean
+}
+interface "ProveedorTransmision" as T46 <<interface>> {
+  --
+  +buscar(consulta : ConsultaTransmision) : Transmision throws\n    IOException
+  +cerrar(espectador : String) : void
+}
+interface "PublicadorCalendario" as T47 <<interface>> {
+  --
+  +urlFeed(cuenta : Cuenta, evento : Evento) : String throws\n    IOException
+}
+interface "ServicioComandos" as T48 <<interface>> {
+  --
+  +alternarActivo(idUsuario : int) : Usuario
+  +cancelarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +crearEvento(datos : DatosRecital, artista : Artista) :\n    RecitalEnVivo
+  +expulsarUsuario(idEvento : int, idUsuario : int) : Usuario
+  +finalizarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +iniciarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +pausarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +reanudarEvento(idEvento : int) : void throws\n    AccesoDenegadoException
+  +registrarArtista(nombreUsuario : String, contrasena : String,\n    nombreArtistico : String, generoPrincipal : String, biografia :\n    String, verificado : boolean) : Artista
+  +registrarUsuario(nombreUsuario : String, nombre : String,\n    apellido : String, email : String, contrasena : String, plan :\n    PlanSuscripcion) : Usuario
+  +solicitarIngreso(idUsuario : int, idEvento : int) :\n    RegistroAcceso
+  +vincularCalendario(idEvento : int, vinculo : VinculoCalendario) :\n    void throws IOException
+}
+interface "ServicioConsultas" as T49 <<interface>> {
+  --
+  +actualizar() : void
+  +buscarArtistaPorId(id : int) : Artista
+  +buscarEventoVisible(id : int) : Evento
+  +buscarUsuarioPorId(id : int) : Usuario
+  +existeNombreUsuario(nombreUsuario : String) : boolean
+  +listarArtistas() : List<Artista>
+  +listarEventosVisibles() : List<Evento>
+  +listarMisRegistros() : List<RegistroAcceso>
+  +listarRegistros() : List<RegistroAcceso>
+  +listarUsuarios() : List<Usuario>
+  +obtenerTransmision(idEvento : int) : Transmision throws\n    AccesoDenegadoException, IOException
+}
+interface "ServicioEventos" as T50 <<interface>> {
+}
+interface "ServicioSesion" as T51 <<interface>> {
+  --
+  +accionesPermitidas() : List<Accion>
+  +cerrarSesion() : void
+  +getCuentaActual() : Cuenta
+  +iniciarSesion(nombreUsuario : String, contrasena : String) :\n    Cuenta throws AccesoDenegadoException
+  +puede(accion : Accion) : boolean
+}
+class "Transmision" as T52 <<record>> {
+  -titulo : String {readOnly}
+  -url : String {readOnly}
+  --
+  +Transmision(titulo : String, url : String)
+  +equals(o : Object) : boolean
+  +hashCode() : int
+  +titulo() : String
+  +toString() : String
+  +url() : String
+}
+interface "VinculoCalendario" as T53 <<interface>> {
+  --
+  +getNombre() : String
+  +vincular(urlFeed : String) : void throws IOException
+}
+class "VisibilidadArtista" as T54 <<final>> {
+  --
+  +VisibilidadArtista()
+  +esVisible(cuenta : Cuenta, evento : Evento) : boolean
+}
+class "VisibilidadGeneral" as T55 <<final>> {
+  --
+  +VisibilidadGeneral()
+  +esVisible(cuenta : Cuenta, evento : Evento) : boolean
+}
+}
+package "modelo" {
+class "AccesoEvento" as T56 {
+  -accesoPrioritario : boolean
+  -evento : Evento
+  -fechaRegistro : LocalDateTime
+  -habilitado : boolean
+  -id : int
+  -planRequerido : PlanSuscripcion
+  -tipoAcceso : String
+  -usuario : Usuario
+  --
+  +AccesoEvento(id : int, usuario : Usuario, evento : Evento,\n    fechaRegistro : LocalDateTime, habilitado : boolean, tipoAcceso :\n    String, planRequerido : PlanSuscripcion, accesoPrioritario :\n    boolean)
+  +cancelarAcceso() : void
+  +generarAcceso() : void
+  +getEvento() : Evento
+  +getFechaRegistro() : LocalDateTime
+  +getId() : int
+  +getPlanRequerido() : PlanSuscripcion
+  +getTipoAcceso() : String
+  +getUsuario() : Usuario
+  +isAccesoPrioritario() : boolean
+  +validarAutorizacion() : void throws AccesoDenegadoException
+  +validarIngreso() : boolean
+  +validarPlan() : void throws AccesoDenegadoException
+  +validarPlanUsuario() : boolean
+}
+class "Artista" as T57 {
+  -biografia : String
+  -eventosCreados : List<Evento>
+  -generoPrincipal : String
+  -nombreArtistico : String
+  -obras : List<String>
+  -redesSociales : Map<String, String>
+  -verificado : boolean
+  --
+  +Artista(id : int, nombreUsuario : String, hashContrasena :\n    String, nombreArtistico : String, generoPrincipal : String,\n    biografia : String, verificado : boolean)
+  +actualizarInformacionArtistica(nuevaBiografia : String) : String
+  +agregarObra(titulo : String) : void
+  +agregarRedSocial(red : String, url : String) : void
+  +crearEvento(evento : Evento) : void
+  +getBiografia() : String
+  +getEventosCreados() : List<Evento>
+  +getGeneroPrincipal() : String
+  +getNombreArtistico() : String
+  +isVerificado() : boolean
+  +toString() : String
+}
+class "Contrasenas" as T58 <<final>> {
+  {static} -AZAR : java.security.SecureRandom {readOnly}
+  {static} -BITS_HASH : int {readOnly}
+  {static} -BYTES_SAL : int {readOnly}
+  {static} -ITERACIONES : int {readOnly}
+  {static} -PREFIJO : String {readOnly}
+  --
+  -Contrasenas()
+  {static} +hashear(contrasena : String) : String
+  {static} +verificar(contrasena : String, hash : String) : boolean
+  {static} -calcular(contrasena : String, sal : byte[], iteraciones\n    : int) : byte[]
+}
+abstract class "Cuenta" as T59 {
+  -activo : boolean
+  -hashContrasena : String
+  -id : int
+  -nombreUsuario : String
+  -sesionIniciada : boolean
+  -tipoUsuario : TipoUsuario
+  --
+  #Cuenta(id : int, nombreUsuario : String, hashContrasena : String,\n    activo : boolean, tipoUsuario : TipoUsuario)
+  +activar() : void
+  +cerrarSesion() : void
+  +desactivar() : void
+  +getHashContrasena() : String
+  +getId() : int
+  +getNombreUsuario() : String
+  +getTipoUsuario() : TipoUsuario
+  +iniciarSesion() : void
+  +isActivo() : boolean
+  +isSesionIniciada() : boolean
+  +validarContrasena(contrasenaIngresada : String) : boolean
+}
+class "DatosRecital" as T60 {
+  -capacidadMaxima : int
+  -descripcion : String
+  -esStreaming : boolean
+  -estado : EstadoEvento
+  -exclusivo : boolean
+  -fechaHoraFin : LocalDateTime
+  -fechaHoraInicio : LocalDateTime
+  -planMinimoRequerido : PlanSuscripcion
+  -titulo : String
+  -ubicacion : String
+  --
+  +DatosRecital(titulo : String, descripcion : String,\n    fechaHoraInicio : LocalDateTime, fechaHoraFin : LocalDateTime,\n    estado : EstadoEvento, capacidadMaxima : int, planMinimoRequerido\n    : PlanSuscripcion, ubicacion : String, esStreaming : boolean,\n    exclusivo : boolean)
+  +getCapacidadMaxima() : int
+  +getDescripcion() : String
+  +getEstado() : EstadoEvento
+  +getFechaHoraFin() : LocalDateTime
+  +getFechaHoraInicio() : LocalDateTime
+  +getPlanMinimoRequerido() : PlanSuscripcion
+  +getTitulo() : String
+  +getUbicacion() : String
+  +isEsStreaming() : boolean
+  +isExclusivo() : boolean
+}
+enum "EstadoEvento" as T61 <<enumeration>> {
+  CANCELADO
+  EN_CURSO
+  EN_ESPERA
+  FINALIZADO
+  PAUSADO
+  PROGRAMADO
+  --
+  +admiteIngreso() : boolean
+  +estaCerrado() : boolean
+  +permiteCancelar() : boolean
+  +permiteFinalizar() : boolean
+  +permiteIniciar() : boolean
+  +permitePausar() : boolean
+  +permiteReanudar() : boolean
+  {static} +valueOf(name : String) : EstadoEvento
+  {static} +values() : EstadoEvento[]
+}
+abstract class "Evento" as T62 {
+  -artistas : List<Artista>
+  -capacidadMaxima : int
+  -descripcion : String
+  -estado : EstadoEvento
+  -fechaHoraFin : LocalDateTime
+  -fechaHoraInicio : LocalDateTime
+  -id : int
+  -titulo : String
+  --
+  +Evento(id : int, titulo : String, descripcion : String,\n    fechaHoraInicio : LocalDateTime, fechaHoraFin : LocalDateTime,\n    estado : EstadoEvento, capacidadMaxima : int)
+  +agregarArtista(artista : Artista) : void
+  +cancelarEvento() : void
+  +estaDentroDelHorario(momento : LocalDateTime) : boolean
+  +finalizarEvento() : void throws AccesoDenegadoException
+  +getArtistas() : List<Artista>
+  +getCapacidadMaxima() : int
+  +getDescripcion() : String
+  +getEstado() : EstadoEvento
+  +getFechaHoraFin() : LocalDateTime
+  +getFechaHoraInicio() : LocalDateTime
+  +getId() : int
+  +getNombresArtistas() : String
+  +getTitulo() : String
+  +iniciarEvento() : void throws AccesoDenegadoException
+  +mostrarEstado() : String
+  +pausarEvento() : void throws AccesoDenegadoException
+  +reanudarEvento() : void throws AccesoDenegadoException
+  +toString() : String
+  {abstract} #desconectarTodos() : void
+  {abstract} +expulsarUsuario(usuario : Usuario) : void
+  {abstract} +getCantidadConectados() : int
+  {abstract} +getPlanMinimoRequerido() : PlanSuscripcion
+  {abstract} +getUbicacion() : String
+  {abstract} +getUsuariosConectados() : Set<Usuario>
+  {abstract} +isExclusivo() : boolean
+  {abstract} +isStreaming() : boolean
+  {abstract} +permitirIngreso(usuario : Usuario) : void throws\n    AccesoDenegadoException
+}
+enum "PlanSuscripcion" as T63 <<enumeration>> {
+  ARTIST_PASS
+  FREE
+  PREMIUM
+  -nivel : int {readOnly}
+  --
+  +cubre(planRequerido : PlanSuscripcion) : boolean
+  +getNivel() : int
+  -PlanSuscripcion(nivel : int)
+  {static} +valueOf(name : String) : PlanSuscripcion
+  {static} +values() : PlanSuscripcion[]
+}
+class "RecitalEnVivo" as T64 {
+  -esStreaming : boolean
+  -exclusivo : boolean
+  -planMinimoRequerido : PlanSuscripcion
+  -ubicacion : String
+  -usuariosConectados : Set<Usuario>
+  --
+  #desconectarTodos() : void
+  +RecitalEnVivo(id : int, datos : DatosRecital)
+  +expulsarUsuario(usuario : Usuario) : void
+  +getCantidadConectados() : int
+  +getPlanMinimoRequerido() : PlanSuscripcion
+  +getUbicacion() : String
+  +getUsuariosConectados() : Set<Usuario>
+  +isExclusivo() : boolean
+  +isStreaming() : boolean
+  +permitirIngreso(usuario : Usuario) : void throws\n    AccesoDenegadoException
+  +restaurarConectado(usuario : Usuario) : void
+  +toString() : String
+  +validarDisponibilidad(momento : LocalDateTime) : void throws\n    AccesoDenegadoException
+  +verificarCapacidad() : boolean
+  {static} +desconocido() : RecitalEnVivo
+}
+class "RegistroAcceso" as T65 {
+  -evento : Evento
+  -exitoso : boolean
+  -fechaHoraIngreso : LocalDateTime
+  -fechaHoraSalida : LocalDateTime
+  -motivoRechazo : String
+  -usuario : Usuario
+  --
+  +RegistroAcceso(usuario : Usuario, evento : Evento, exitoso :\n    boolean, motivoRechazo : String)
+  +getEvento() : Evento
+  +getFechaHoraIngreso() : LocalDateTime
+  +getFechaHoraSalida() : LocalDateTime
+  +getMotivoRechazo() : String
+  +getUsuario() : Usuario
+  +isExitoso() : boolean
+  +registrarSalida() : void
+  +toString() : String
+  {static} +generarRegistro(usuario : Usuario, evento : Evento,\n    exitoso : boolean, motivoRechazo : String) : RegistroAcceso
+  {static} +reconstruirRegistro(usuario : Usuario, evento : Evento,\n    fechaHoraIngreso : LocalDateTime, exitoso : boolean, motivoRechazo\n    : String) : RegistroAcceso
+  {static} +registrarIntentoFallido(usuario : Usuario, evento :\n    Evento, motivoRechazo : String) : RegistroAcceso
+}
+enum "TipoUsuario" as T66 <<enumeration>> {
+  ADMINISTRADOR
+  ARTISTA
+  USUARIO
+  --
+  {static} +valueOf(name : String) : TipoUsuario
+  {static} +values() : TipoUsuario[]
+}
+class "Usuario" as T67 {
+  -apellido : String
+  -email : String
+  -nombre : String
+  -planSuscripcion : PlanSuscripcion
+  --
+  +Usuario(id : int, nombre : String, planSuscripcion :\n    PlanSuscripcion)
+  +Usuario(id : int, nombreUsuario : String, nombre : String,\n    apellido : String, email : String, hashContrasena : String,\n    planSuscripcion : PlanSuscripcion, activo : boolean)
+  +Usuario(id : int, nombreUsuario : String, nombre : String,\n    apellido : String, email : String, hashContrasena : String,\n    planSuscripcion : PlanSuscripcion, activo : boolean, tipoUsuario :\n    TipoUsuario)
+  +actualizarPerfil(nombre : String, apellido : String, email :\n    String) : void
+  +equals(obj : Object) : boolean
+  +getApellido() : String
+  +getEmail() : String
+  +getNombre() : String
+  +getNombreCompleto() : String
+  +getPlanSuscripcion() : PlanSuscripcion
+  +hashCode() : int
+  +tieneAccesoPrioritario() : boolean
+  +toString() : String
+  {static} +desconocido() : Usuario
+}
+}
+package "notificacion" {
+class "NotificadorInactivo" as T68 {
+  --
+  +NotificadorInactivo()
+  +notificar(destinatario : Usuario, titulo : String, mensaje :\n    String) : void
+}
+}
+package "persistencia" {
+class "ConexionSqlite" as T69 <<final>> {
+  {static} -TABLAS : String[] {readOnly}
+  --
+  -ConexionSqlite()
+  {static} ~abrir() : java.sql.Connection throws IOException
+}
+class "PersistenciaSqlite" as T70 {
+  -artistas : RepositorioArtistas {readOnly}
+  -eventos : RepositorioEventos {readOnly}
+  -registros : RepositorioRegistros {readOnly}
+  -usuarios : RepositorioUsuarios {readOnly}
+  --
+  +PersistenciaSqlite()
+  +cargar(gestor : GestorEventosEnVivo) : void throws IOException
+  +guardar(gestor : GestorEventosEnVivo) : void throws IOException
+  {static} -borrar(conexion : java.sql.Connection, tablas :\n    String[]) : void throws SQLException
+}
+class "RepositorioArtistas" as T71 <<final>> {
+  --
+  ~RepositorioArtistas()
+  ~cargarTodos(conexion : java.sql.Connection) : List<Artista>\n    throws SQLException
+  ~reemplazarTodos(conexion : java.sql.Connection, artistas :\n    List<Artista>) : void throws SQLException
+}
+class "RepositorioEventos" as T72 <<final>> {
+  --
+  ~RepositorioEventos()
+  ~cargarTodos(conexion : java.sql.Connection, artistas :\n    Map<Integer, Artista>, usuarios : Map<Integer, Usuario>) :\n    List<Evento> throws SQLException
+  ~reemplazarTodos(conexion : java.sql.Connection, eventos :\n    List<Evento>) : void throws SQLException
+}
+class "RepositorioRegistros" as T73 <<final>> {
+  --
+  ~RepositorioRegistros()
+  ~cargarTodos(conexion : java.sql.Connection, usuarios :\n    Map<Integer, Usuario>, eventos : Map<Integer, Evento>) :\n    List<RegistroAcceso> throws SQLException
+  ~reemplazarTodos(conexion : java.sql.Connection, registros :\n    List<RegistroAcceso>, idsUsuarios : Set<Integer>, idsEventos :\n    Set<Integer>) : void throws SQLException
+}
+class "RepositorioUsuarios" as T74 <<final>> {
+  --
+  ~RepositorioUsuarios()
+  ~cargarTodos(conexion : java.sql.Connection) : List<Usuario>\n    throws SQLException
+  ~reemplazarTodos(conexion : java.sql.Connection, usuarios :\n    List<Usuario>) : void throws SQLException
+}
+}
+package "servidor" {
+class "CodigosCalendario" as T75 {
+  -clave : byte[] {readOnly}
+  --
+  +CodigosCalendario()
+  +codigoDe(cuenta : Cuenta) : String
+}
+class "ConfiguracionServidor" as T76 <<final>> {
+  -aceptaRed : boolean {readOnly}
+  -puerto : int {readOnly}
+  -urlPublica : String {readOnly}
+  --
+  +ConfiguracionServidor(aceptaRedPorDefecto : boolean)
+  +esPublica() : boolean
+  +getDireccionDeEscucha() : java.net.InetAddress throws\n    UnknownHostException
+  +getPuerto() : int
+  +getUrlBase() : String
+}
+class "Conversor" as T77 <<final>> {
+  --
+  -Conversor()
+  {static} ~aDto(artista : Artista) : ArtistaDto
+  {static} ~aDto(cuenta : Cuenta) : CuentaDto
+  {static} ~aDto(evento : Evento) : EventoDto
+  {static} ~aDto(registro : RegistroAcceso) : RegistroDto
+  {static} ~aDto(usuario : Usuario) : UsuarioDto
+  {static} ~anonimo(usuario : Usuario) : UsuarioDto
+}
+class "Instantanea" as T78 <<final>> {
+  --
+  -Instantanea()
+  {static} ~de(gestor : GestorEventosEnVivo) : EstadoDto
+}
+class "ManejadorApi" as T79 {
+  {static} -PREFIJO : String {readOnly}
+  -gestor : GestorEventosEnVivo {readOnly}
+  -proveedorTransmision : ProveedorTransmision {readOnly}
+  -sesiones : Sesiones {readOnly}
+  --
+  +ManejadorApi(gestor : GestorEventosEnVivo, proveedorTransmision :\n    ProveedorTransmision)
+  +handle(intercambio : com.sun.net.httpserver.HttpExchange) : void\n    throws IOException
+  -atender(intercambio : com.sun.net.httpserver.HttpExchange) :\n    Object throws AccesoDenegadoException, IOException
+  -atenderSesion(intercambio : com.sun.net.httpserver.HttpExchange,\n    metodo : String) : Object throws AccesoDenegadoException,\n    IOException
+  -atenderTransmision(cuenta : Cuenta, idEvento : int) : Object\n    throws AccesoDenegadoException, IOException
+  -cuentaDe(token : String) : Cuenta
+  -ejecutar(partes : String[], metodo : String, cuerpo : String) :\n    Object throws AccesoDenegadoException, IOException
+  -ejecutarEventos(partes : String[], cuerpo : String) : Object\n    throws AccesoDenegadoException, IOException
+  -ejecutarUsuarios(partes : String[], cuerpo : String) : Object
+  -restaurarSesion(anterior : Cuenta) : void
+  {static} -cuerpo(intercambio :\n    com.sun.net.httpserver.HttpExchange) : String throws IOException
+  {static} -enviar(intercambio :\n    com.sun.net.httpserver.HttpExchange, codigo : int, cuerpo :\n    Object) : void throws IOException
+  {static} -mensaje(e : Exception) : String
+  {static} -token(intercambio : com.sun.net.httpserver.HttpExchange)\n    : String
+}
+class "ManejadorApi.NoAutenticado" as T80 {
+  --
+  ~NoAutenticado(mensaje : String)
+}
+class "ManejadorApi.NoEncontrada" as T81 {
+  --
+  ~NoEncontrada(mensaje : String)
+}
+class "ManejadorApi.SinContenido" as T82 {
+  --
+  -SinContenido()
+}
+class "ManejadorCalendario" as T83 {
+  -codigos : CodigosCalendario {readOnly}
+  -gestor : GestorEventosEnVivo {readOnly}
+  --
+  +ManejadorCalendario(gestor : GestorEventosEnVivo, codigos :\n    CodigosCalendario)
+  +handle(intercambio : com.sun.net.httpserver.HttpExchange) : void\n    throws IOException
+  -buscarEvento(codigo : String, texto : String) : Evento
+}
+class "PublicadorHttp" as T84 {
+  {static} ~PREFIJO : String {readOnly}
+  {static} ~SUFIJO : String {readOnly}
+  -codigos : CodigosCalendario {readOnly}
+  -configuracion : ConfiguracionServidor {readOnly}
+  --
+  +PublicadorHttp(configuracion : ConfiguracionServidor, codigos :\n    CodigosCalendario)
+  +urlFeed(cuenta : Cuenta, evento : Evento) : String throws\n    IOException
+}
+class "ServidorHttp" as T85 <<final>> {
+  --
+  -ServidorHttp()
+  {static} +iniciar(configuracion : ConfiguracionServidor,\n    manejadores : Map<String, com.sun.net.httpserver.HttpHandler>) :\n    void throws IOException
+  {static} -iniciarComoDaemon(servidor :\n    com.sun.net.httpserver.HttpServer) : void throws IOException
+}
+class "Sesiones" as T86 {
+  -azar : java.security.SecureRandom {readOnly}
+  -cuentasPorToken : Map<String, String> {readOnly}
+  --
+  ~Sesiones()
+  ~abrir(nombreUsuario : String) : String
+  ~cerrar(token : String) : void
+  ~cuentaDe(token : String) : String
+}
+}
+package "transmision" {
+class "ClienteTransmision" as T87 {
+  -cliente : java.net.http.HttpClient {readOnly}
+  -urlBase : String {readOnly}
+  -urlPublica : String {readOnly}
+  --
+  +ClienteTransmision()
+  +buscar(consulta : ConsultaTransmision) : Transmision throws\n    IOException
+  +cerrar(espectador : String) : void
+}
+class "ClienteTransmision.Respuesta" as T88 <<record>> {
+  -error : String {readOnly}
+  -ruta : String {readOnly}
+  -titulo : String {readOnly}
+  --
+  +equals(o : Object) : boolean
+  +error() : String
+  +hashCode() : int
+  +ruta() : String
+  +titulo() : String
+  +toString() : String
+  -Respuesta(titulo : String, ruta : String, error : String)
+}
+class "ProcesoServicio" as T89 <<final>> {
+  {static} -POSIBLES_NODE : String[] {readOnly}
+  --
+  -ProcesoServicio()
+  {static} +iniciar() : void
+  {static} -funciona(node : String) : boolean
+  {static} -localizarNode() : String
+  {static} -localizarScript() : java.nio.file.Path
+  {static} -respondeSalud(base : java.net.URI) : boolean
+}
+}
 package "ui" {
-  class VentanaLogin
-  class VentanaPrincipal
-  class ModeloTabla
-  class Logo
-  class Navegador
+class "Logo" as T90 <<final>> {
+  {static} -LADOS : int[] {readOnly}
+  --
+  -Logo()
+  {static} +aplicar(ventana : javax.swing.JFrame) : void
+  {static} +dibujar(lado : int) : java.awt.image.BufferedImage
+  {static} +icono(lado : int) : javax.swing.Icon
+  {static} +iconos() : List<java.awt.Image>
 }
-
-class "Servicio de transmisiones\n(Node.js)" as Node <<externo>>
-
-' ---------- modelo ----------
-Cuenta <|-- Usuario
-Cuenta <|-- Artista
-Cuenta "*" --> "1" TipoUsuario : rol
-Usuario "*" --> "1" PlanSuscripcion : plan
-Evento <|-- RecitalEnVivo
-Evento "*" --> "1" EstadoEvento : estado
-Evento "0..*" -- "0..*" Artista : artistas
-RecitalEnVivo "0..*" o-- "0..*" Usuario : usuariosConectados
-RecitalEnVivo "*" --> "1" PlanSuscripcion : planMinimo
-RecitalEnVivo ..> DatosRecital
-AccesoEvento "*" --> "1" Usuario
-AccesoEvento "*" --> "1" Evento
-RegistroAcceso "*" --> "1" Usuario
-RegistroAcceso "*" --> "1" Evento
-Cuenta ..> Contrasenas
-
-' ---------- excepciones ----------
-ErrorDeServicioException <|-- PersistenciaException
-ErrorDeServicioException <|-- ConexionException
-
-' ---------- gestor ----------
-ServicioEventos --|> ServicioSesion
-ServicioEventos --|> ServicioConsultas
-ServicioEventos --|> ServicioComandos
-GestorEventosEnVivo ..|> ServicioEventos
-GestorRemoto ..|> ServicioEventos
-GestorEventosEnVivo "1" o-- "0..*" Usuario
-GestorEventosEnVivo "1" o-- "0..*" Artista
-GestorEventosEnVivo "1" o-- "0..*" Evento
-GestorEventosEnVivo "1" *-- "1" ControlAcceso
-GestorEventosEnVivo "1" *-- "1" ControlSesion
-ControlAcceso "1" o-- "0..*" RegistroAcceso
-ControlAcceso "1" --> "1" Notificador
-ControlSesion "1" --> "0..1" Cuenta : cuentaActual
-ControlSesion "1" *-- "1" Permisos
-Permisos "1" --> "1..*" Accion
-GestorEventosEnVivo "1" --> "1" Persistencia
-GestorEventosEnVivo "1" --> "1" PublicadorCalendario
-GestorEventosEnVivo "1" --> "1" ProveedorTransmision
-GestorEventosEnVivo ..> "0..1" VinculoCalendario
-ProveedorTransmision ..> ConsultaTransmision
-ProveedorTransmision ..> Transmision
-GestorEventosEnVivo ..> PermisoDenegadoException
-GestorEventosEnVivo ..> AccesoDenegadoException
-GestorEventosEnVivo ..> PersistenciaException
-
-' ---------- persistencia ----------
-PersistenciaSqlite ..|> Persistencia
-PersistenciaSqlite "1" *-- "1" RepositorioUsuarios
-PersistenciaSqlite "1" *-- "1" RepositorioArtistas
-PersistenciaSqlite "1" *-- "1" RepositorioEventos
-PersistenciaSqlite "1" *-- "1" RepositorioRegistros
-PersistenciaSqlite ..> "1" ConexionSqlite
-RepositorioUsuarios ..> "0..*" Usuario
-RepositorioArtistas ..> "0..*" Artista
-RepositorioEventos ..> "0..*" Evento
-RepositorioRegistros ..> "0..*" RegistroAcceso
-
-' ---------- avisos, calendario y transmision ----------
-NotificadorInactivo ..|> Notificador
-VinculoGoogle ..|> VinculoCalendario
-VinculoApple ..|> VinculoCalendario
-PublicadorHttp ..|> PublicadorCalendario
-ClienteTransmision ..|> ProveedorTransmision
-ManejadorCalendario ..> FormatoIcs
-ClienteTransmision "*" ..> "1" Node : HTTP
-ProcesoServicio "1" ..> "0..1" Node : inicia y cierra
-
-' ---------- servidor ----------
-ServidorHttp "1" --> "1" ManejadorApi
-ServidorHttp "1" --> "1" ManejadorCalendario
-ServidorHttp "1" --> "1" ConfiguracionServidor
-ManejadorApi "1" *-- "1" Sesiones
-ManejadorApi "1" --> "1" Instantanea
-ManejadorApi "1" --> "1" GestorEventosEnVivo
-ManejadorApi "1" --> "1" ProveedorTransmision
-Instantanea ..> Conversor
-Instantanea ..> EstadoDto
-Conversor ..> UsuarioDto
-Conversor ..> EventoDto
-ManejadorCalendario "1" --> "1" CodigosCalendario
-ManejadorCalendario "1" --> "1" GestorEventosEnVivo
-PublicadorHttp "1" --> "1" CodigosCalendario
-PublicadorHttp "1" --> "1" ConfiguracionServidor
-
-' ---------- API y cliente ----------
-EstadoDto "1" *-- "1" CuentaDto
-EstadoDto "1" *-- "0..*" UsuarioDto
-EstadoDto "1" *-- "0..*" ArtistaDto
-EstadoDto "1" *-- "0..*" EventoDto
-EstadoDto "1" *-- "0..*" RegistroDto
-SesionDto "1" *-- "1" CuentaDto
-GestorRemoto "1" --> "1" ClienteHttp
-GestorRemoto "1" *-- "0..1" EstadoLocal
-EstadoLocal ..> EstadoDto
-ClienteHttp ..> Json
-ClienteHttp ..> ConexionException
-ClienteHttp "*" ..> "1" ManejadorApi : HTTP + JSON
-GestorRemoto ..> TransmisionDto
-
-' ---------- arranque y vistas ----------
-App "1" --> "0..1" Arranque
-App "1" --> "0..1" GestorRemoto
-App "1" --> "0..1" MenuPorRol
-App "1" --> "0..1" AppSwing
-Arranque "1" --> "1" GestorEventosEnVivo
-Arranque "1" --> "1" ServidorHttp
-Arranque ..> ProcesoServicio
-Arranque ..> "0..1" DatosIniciales
-DatosIniciales ..> GestorEventosEnVivo
-MenuPorRol "1" --> "1" MenuAcciones
-MenuAcciones "1" --> "1" ConsoleIO
-MenuAcciones "1" --> "1" ServicioEventos
-MenuAcciones ..> Navegador
-AppSwing "1" --> "1" VentanaLogin
-VentanaLogin "1" --> "0..1" VentanaPrincipal
-VentanaLogin "1" --> "1" Logo
-VentanaLogin "1" --> "1" ServicioEventos
-VentanaPrincipal "1" *-- "4" ModeloTabla
-VentanaPrincipal "1" --> "1" Logo
-VentanaPrincipal "1" --> "1" ServicioEventos
-VentanaPrincipal ..> Navegador
+class "ModeloTabla" as T91 {
+  -tipos : Class<?>[] {readOnly}
+  --
+  +ModeloTabla(columnas : String[], tipos : Class<?>[])
+  +getColumnClass(columna : int) : Class<?>
+  +isCellEditable(fila : int, columna : int) : boolean
+}
+class "Navegador" as T92 <<final>> {
+  --
+  -Navegador()
+  {static} +abrir(url : String) : void throws IOException
+}
+class "VentanaLogin" as T93 {
+  -campoContrasena : javax.swing.JPasswordField {readOnly}
+  -campoUsuario : javax.swing.JTextField {readOnly}
+  -gestor : ServicioEventos {readOnly}
+  -mensaje : javax.swing.JLabel {readOnly}
+  --
+  +VentanaLogin(gestor : ServicioEventos)
+  -construirInterfaz() : void
+  -iniciarSesion() : void
+}
+class "VentanaPrincipal" as T94 {
+  {static} -COLOR_ERROR : java.awt.Color {readOnly}
+  {static} -COLOR_EXITO : java.awt.Color {readOnly}
+  {static} -FORMATO_FECHA : format.DateTimeFormatter {readOnly}
+  -alternarActivo : javax.swing.JButton {readOnly}
+  -calendario : javax.swing.JButton {readOnly}
+  -cancelar : javax.swing.JButton {readOnly}
+  -estado : javax.swing.JLabel
+  -finalizar : javax.swing.JButton {readOnly}
+  -gestor : ServicioEventos
+  -iniciar : javax.swing.JButton {readOnly}
+  -limpiarEstado : javax.swing.Timer {readOnly}
+  -modeloArtistas : ModeloTabla
+  -modeloEventos : ModeloTabla
+  -modeloRegistros : ModeloTabla
+  -modeloUsuarios : ModeloTabla
+  -pausar : javax.swing.JButton {readOnly}
+  -permiteCerrarSesion : boolean
+  -reanudar : javax.swing.JButton {readOnly}
+  -refrescoAutomatico : javax.swing.Timer {readOnly}
+  -tablaEventos : javax.swing.JTable
+  -tablaUsuarios : javax.swing.JTable
+  -verConectados : javax.swing.JButton {readOnly}
+  -verTransmision : javax.swing.JButton {readOnly}
+  --
+  +VentanaPrincipal(gestor : ServicioEventos, permiteCerrarSesion :\n    boolean)
+  -abrirTransmision(evento : Evento) : void
+  -accionPorDefecto() : void
+  -actualizarAutomaticamente() : void
+  -actualizarBotonUsuario() : void
+  -actualizarBotones() : void
+  -actualizarDesdeOrigen() : void
+  -actualizarListas() : void
+  -agregarRegistros(registros : List<RegistroAcceso>) : void
+  -agregarSiPermitido(panel : javax.swing.JPanel, accion : Accion,\n    boton : javax.swing.JButton) : void
+  -alternarActivoSeleccionado() : void
+  -cambiarEstadoSeleccionado(accion : String) : void
+  -cerrarSesion() : void
+  -confirmar(pregunta : String) : boolean
+  -construirInterfaz() : void
+  -crearBoton(texto : String, accion : Runnable) :\n    javax.swing.JButton
+  -crearBuscador() : javax.swing.JPanel
+  -crearEvento() : void
+  -crearFila(titulo : String) : javax.swing.JPanel
+  -crearPanelArtistas() : javax.swing.JPanel
+  -crearPanelEventos() : javax.swing.JPanel
+  -crearPanelRegistros() : javax.swing.JPanel
+  -crearPanelUsuarios() : javax.swing.JPanel
+  -crearTabla(modelo : ModeloTabla, anchos : int[]) :\n    javax.swing.JTable
+  -ejecutar(accion : Runnable) : void
+  -estaConectado(evento : Evento) : boolean
+  -eventoSeleccionado() : Evento
+  -expulsarUsuario() : void
+  -filtrarEventos(texto : String) : void
+  -mostrarEnBarra(mensaje : String, color : java.awt.Color) : void
+  -mostrarError(mensaje : String) : void
+  -mostrarExito(mensaje : String) : void
+  -mostrarInfo(mensaje : String) : void
+  -obtenerIdDesdeTexto(texto : String) : int
+  -obtenerIdSeleccionado(tabla : javax.swing.JTable) : Integer
+  -pedir(titulo : String, formulario : VentanaPrincipal.Formulario,\n    validador : function.Supplier<String>) : boolean
+  -registrarArtista() : void
+  -registrarUsuario() : void
+  -reseleccionar(tabla : javax.swing.JTable, modelo : ModeloTabla,\n    id : Integer) : void
+  -seleccionarEvento() : Evento
+  -seleccionarOpcion(titulo : String, opciones : List<String>) :\n    String
+  -seleccionarUsuario() : Usuario
+  -seleccionarUsuarioConectado(evento : Evento) : Usuario
+  -solicitarIngreso() : void
+  -usuarioSeleccionado() : Usuario
+  -verConectados() : void
+  -verTransmision() : void
+  -vincularCalendario(vinculo : VinculoCalendario) : void
+  {static} -vacio(campo : javax.swing.JTextField) : boolean
+}
+class "VentanaPrincipal.Formulario" as T95 {
+  -fila : int
+  -panel : javax.swing.JPanel {readOnly}
+  --
+  -<T extends java.awt.Component> agregar(etiqueta : String, campo :\n    T) : T
+  -Formulario()
+  ~<T> combo(etiqueta : String, valores : T[]) :\n    javax.swing.JComboBox<T>
+  ~clave(etiqueta : String) : javax.swing.JPasswordField
+  ~marca(etiqueta : String) : javax.swing.JCheckBox
+  ~numero(etiqueta : String, inicial : int, minimo : int, maximo :\n    int) : javax.swing.JSpinner
+  ~panel() : javax.swing.JPanel
+  ~texto(etiqueta : String) : javax.swing.JTextField
+}
+class "VentanaPrincipal.RenderizadorEstado" as T96 {
+  --
+  +getTableCellRendererComponent(tabla : javax.swing.JTable, valor :\n    Object, seleccionada : boolean, foco : boolean, fila : int,\n    columna : int) : java.awt.Component
+  -RenderizadorEstado()
+  -colorDeEstado(estado : String) : java.awt.Color
+}
+}
+interface "com.sun.net.httpserver.HttpHandler" as J0 <<interface, JDK>>
+class "java.lang.Exception" as J1 <<JDK>>
+class "java.lang.RuntimeException" as J2 <<JDK>>
+class "javax.swing.JFrame" as J3 <<JDK>>
+class "javax.swing.table.DefaultTableCellRenderer" as J4 <<JDK>>
+class "javax.swing.table.DefaultTableModel" as J5 <<JDK>>
+T4 "0..*" --> "0..*" T1 : artistas
+T4 "0..*" --> "0..1" T2 : cuenta
+T4 "0..*" --> "0..*" T5 : eventos
+T4 "0..*" --> "0..*" T12 : registros
+T4 "0..*" --> "0..*" T16 : usuarios
+T13 "0..*" --> "0..1" T2 : cuenta
+T26 .up.|> T53
+T27 .up.|> T53
+T29 "0..*" --> "0..*" T57 : artistas
+T29 "0..*" --> "0..1" T59 : cuenta
+T29 "0..*" --> "0..*" T62 : eventos
+T29 "0..*" --> "0..*" T65 : registros
+T29 "0..*" --> "0..*" T67 : usuarios
+T30 .up.|> T50
+T30 "0..*" --> "0..1" T29 : estado
+T30 "0..1" *--> "1" T28 : http
+T30 "0..1" *--> "1" T42 : permisos
+T31 -up-|> J1
+T32 -up-|> T33
+T33 -up-|> J2
+T34 -up-|> J2
+T35 -up-|> T33
+T38 "0..*" --> "0..1" T41 : notificador
+T38 "0..*" --> "0..*" T65 : registros
+T39 "0..*" --> "0..1" T59 : cuentaActual
+T39 "0..1" *--> "1" T42 : permisos
+T40 .up.|> T50
+T40 "0..*" --> "0..*" T57 : artistasRegistrados
+T40 "0..1" *--> "1" T38 : controlAcceso
+T40 "0..*" --> "0..*" T62 : eventos
+T40 "0..*" --> "0..1" T43 : persistencia
+T40 "0..*" --> "0..1" T46 : proveedorTransmision
+T40 "0..*" --> "0..1" T47 : publicador
+T40 "0..1" *--> "1" T39 : sesion
+T40 "0..*" --> "0..*" T67 : usuariosRegistrados
+T40 "0..1" *--> "1" T45 : visibilidad
+T45 "0..1" *--> "3" T44 : porRol
+T50 -up-|> T48
+T50 -up-|> T49
+T50 -up-|> T51
+T54 .up.|> T44
+T55 .up.|> T44
+T56 "0..*" --> "0..1" T62 : evento
+T56 "0..*" --> "0..1" T67 : usuario
+T57 -up-|> T59
+T57 "0..*" --> "0..*" T62 : eventosCreados
+T62 "0..*" --> "0..*" T57 : artistas
+T64 -up-|> T62
+T64 "0..*" --> "0..*" T67 : usuariosConectados
+T65 "0..*" --> "0..1" T62 : evento
+T65 "0..*" --> "0..1" T67 : usuario
+T67 -up-|> T59
+T68 .up.|> T41
+T70 .up.|> T43
+T70 "0..1" *--> "1" T71 : artistas
+T70 "0..1" *--> "1" T72 : eventos
+T70 "0..1" *--> "1" T73 : registros
+T70 "0..1" *--> "1" T74 : usuarios
+T79 .up.|> J0
+T79 "0..*" --> "0..1" T40 : gestor
+T79 "0..*" --> "0..1" T46 : proveedorTransmision
+T79 "0..1" *--> "1" T86 : sesiones
+T80 -up-|> J2
+T81 -up-|> J2
+T82 -up-|> J2
+T83 .up.|> J0
+T83 "0..*" --> "0..1" T75 : codigos
+T83 "0..*" --> "0..1" T40 : gestor
+T84 .up.|> T47
+T84 "0..*" --> "0..1" T75 : codigos
+T84 "0..*" --> "0..1" T76 : configuracion
+T87 .up.|> T46
+T91 -up-|> J5
+T93 -up-|> J3
+T93 "0..*" --> "0..1" T50 : gestor
+T94 -up-|> J3
+T94 "0..*" --> "0..1" T50 : gestor
+T94 "0..*" --> "0..1" T91 : modeloArtistas
+T94 "0..*" --> "0..1" T91 : modeloEventos
+T94 "0..*" --> "0..1" T91 : modeloRegistros
+T94 "0..*" --> "0..1" T91 : modeloUsuarios
+T96 -up-|> J4
+legend bottom left
+  + público   - privado   # protegido   ~ paquete
+  Triángulo hueco: herencia (continua) / realización (discontinua)
+  Flecha abierta: navegabilidad | Rombo negro: propiedad compuesta
+  Multiplicidad en el extremo = objetos alcanzables desde el otro extremo
+endlegend
 @enduml

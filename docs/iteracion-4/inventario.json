@@ -1,0 +1,6038 @@
+{
+  "coverage": "AST == named bytecode types",
+  "sourceFiles": 91,
+  "declaredTypes": 97,
+  "classes": [
+    {
+      "name": "Main",
+      "package": "",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+Main()",
+        "{static} +main(args : String[]) : void throws IOException"
+      ],
+      "dependencies": [
+        "app.App",
+        "java.io.IOException",
+        "java.lang.String",
+        "void"
+      ]
+    },
+    {
+      "name": "api.ArtistaDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "biografia",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "generoPrincipal",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "id",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombreArtistico",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombreUsuario",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "verificado",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ArtistaDto(id : int, nombreUsuario : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean)",
+        "+biografia() : String",
+        "+equals(o : Object) : boolean",
+        "+generoPrincipal() : String",
+        "+hashCode() : int",
+        "+id() : int",
+        "+nombreArtistico() : String",
+        "+nombreUsuario() : String",
+        "+toString() : String",
+        "+verificado() : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.CuentaDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "activo",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "id",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombreUsuario",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "tipo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+CuentaDto(id : int, nombreUsuario : String, tipo : String, activo : boolean)",
+        "+activo() : boolean",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+id() : int",
+        "+nombreUsuario() : String",
+        "+tipo() : String",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.ErrorDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "mensaje",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "tipo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ErrorDto(tipo : String, mensaje : String)",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+mensaje() : String",
+        "+tipo() : String",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.EstadoDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "List<api.ArtistaDto>",
+          "final": true,
+          "enumConstant": false,
+          "name": "artistas",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "api.ArtistaDto"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "api.CuentaDto",
+          "final": true,
+          "enumConstant": false,
+          "name": "cuenta",
+          "static": false,
+          "references": [
+            "api.CuentaDto"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<api.EventoDto>",
+          "final": true,
+          "enumConstant": false,
+          "name": "eventos",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "api.EventoDto"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<api.RegistroDto>",
+          "final": true,
+          "enumConstant": false,
+          "name": "registros",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "api.RegistroDto"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<api.UsuarioDto>",
+          "final": true,
+          "enumConstant": false,
+          "name": "usuarios",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "api.UsuarioDto"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+EstadoDto(cuenta : api.CuentaDto, usuarios : List<api.UsuarioDto>, artistas : List<api.ArtistaDto>, eventos : List<api.EventoDto>, registros : List<api.RegistroDto>)",
+        "+artistas() : List<api.ArtistaDto>",
+        "+cuenta() : api.CuentaDto",
+        "+equals(o : Object) : boolean",
+        "+eventos() : List<api.EventoDto>",
+        "+hashCode() : int",
+        "+registros() : List<api.RegistroDto>",
+        "+toString() : String",
+        "+usuarios() : List<api.UsuarioDto>"
+      ],
+      "dependencies": [
+        "api.ArtistaDto",
+        "api.CuentaDto",
+        "api.EventoDto",
+        "api.RegistroDto",
+        "api.UsuarioDto",
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String",
+        "java.util.List"
+      ]
+    },
+    {
+      "name": "api.EventoDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "List<Integer>",
+          "final": true,
+          "enumConstant": false,
+          "name": "artistas",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "java.lang.Integer"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "capacidadMaxima",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<Integer>",
+          "final": true,
+          "enumConstant": false,
+          "name": "conectados",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "java.lang.Integer"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "descripcion",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "estado",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "exclusivo",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "fin",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "id",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "inicio",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "planMinimo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "streaming",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "titulo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "ubicacion",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+EventoDto(id : int, titulo : String, descripcion : String, inicio : String, fin : String, estado : String, capacidadMaxima : int, planMinimo : String, ubicacion : String, streaming : boolean, exclusivo : boolean, artistas : List<Integer>, conectados : List<Integer>)",
+        "+artistas() : List<Integer>",
+        "+capacidadMaxima() : int",
+        "+conectados() : List<Integer>",
+        "+descripcion() : String",
+        "+equals(o : Object) : boolean",
+        "+estado() : String",
+        "+exclusivo() : boolean",
+        "+fin() : String",
+        "+hashCode() : int",
+        "+id() : int",
+        "+inicio() : String",
+        "+planMinimo() : String",
+        "+streaming() : boolean",
+        "+titulo() : String",
+        "+toString() : String",
+        "+ubicacion() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Integer",
+        "java.lang.Object",
+        "java.lang.String",
+        "java.util.List"
+      ]
+    },
+    {
+      "name": "api.IdDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "Integer",
+          "final": true,
+          "enumConstant": false,
+          "name": "id",
+          "static": false,
+          "references": [
+            "java.lang.Integer"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+IdDto(id : Integer)",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+id() : Integer",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Integer",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.InicioSesionDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "contrasena",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombreUsuario",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+InicioSesionDto(nombreUsuario : String, contrasena : String)",
+        "+contrasena() : String",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+nombreUsuario() : String",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.Json",
+      "package": "api",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "com.google.gson.Gson",
+          "final": true,
+          "enumConstant": false,
+          "name": "GSON",
+          "static": true,
+          "references": [
+            "com.google.gson.Gson"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "-Json()",
+        "{static} +<T> leer(texto : String, tipo : Class<T>) : T",
+        "{static} +escribir(objeto : Object) : String"
+      ],
+      "dependencies": [
+        "com.google.gson.Gson",
+        "java.lang.Class",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.NuevoArtistaDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "biografia",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "contrasena",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "generoPrincipal",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombreArtistico",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombreUsuario",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "verificado",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+NuevoArtistaDto(nombreUsuario : String, contrasena : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean)",
+        "+biografia() : String",
+        "+contrasena() : String",
+        "+equals(o : Object) : boolean",
+        "+generoPrincipal() : String",
+        "+hashCode() : int",
+        "+nombreArtistico() : String",
+        "+nombreUsuario() : String",
+        "+toString() : String",
+        "+verificado() : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.NuevoEventoDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "capacidadMaxima",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "descripcion",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "estado",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "exclusivo",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "fin",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "idArtista",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "inicio",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "planMinimo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "streaming",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "titulo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "ubicacion",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+NuevoEventoDto(idArtista : int, titulo : String, descripcion : String, inicio : String, fin : String, estado : String, capacidadMaxima : int, planMinimo : String, ubicacion : String, streaming : boolean, exclusivo : boolean)",
+        "+capacidadMaxima() : int",
+        "+descripcion() : String",
+        "+equals(o : Object) : boolean",
+        "+estado() : String",
+        "+exclusivo() : boolean",
+        "+fin() : String",
+        "+hashCode() : int",
+        "+idArtista() : int",
+        "+inicio() : String",
+        "+planMinimo() : String",
+        "+streaming() : boolean",
+        "+titulo() : String",
+        "+toString() : String",
+        "+ubicacion() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.NuevoUsuarioDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "apellido",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "contrasena",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "email",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombre",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombreUsuario",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "plan",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+NuevoUsuarioDto(nombreUsuario : String, nombre : String, apellido : String, email : String, contrasena : String, plan : String)",
+        "+apellido() : String",
+        "+contrasena() : String",
+        "+email() : String",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+nombre() : String",
+        "+nombreUsuario() : String",
+        "+plan() : String",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.RegistroDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "exitoso",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "fechaHoraIngreso",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "idEvento",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "idUsuario",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "motivoRechazo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+RegistroDto(idUsuario : int, idEvento : int, fechaHoraIngreso : String, exitoso : boolean, motivoRechazo : String)",
+        "+equals(o : Object) : boolean",
+        "+exitoso() : boolean",
+        "+fechaHoraIngreso() : String",
+        "+hashCode() : int",
+        "+idEvento() : int",
+        "+idUsuario() : int",
+        "+motivoRechazo() : String",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.SesionDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "api.CuentaDto",
+          "final": true,
+          "enumConstant": false,
+          "name": "cuenta",
+          "static": false,
+          "references": [
+            "api.CuentaDto"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "token",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+SesionDto(token : String, cuenta : api.CuentaDto)",
+        "+cuenta() : api.CuentaDto",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+toString() : String",
+        "+token() : String"
+      ],
+      "dependencies": [
+        "api.CuentaDto",
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.TransmisionDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "titulo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "url",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+TransmisionDto(titulo : String, url : String)",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+titulo() : String",
+        "+toString() : String",
+        "+url() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.UrlDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "url",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+UrlDto(url : String)",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+toString() : String",
+        "+url() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.UsuarioDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "activo",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "apellido",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "email",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "id",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombre",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "nombreUsuario",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "plan",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "tipo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+UsuarioDto(id : int, nombreUsuario : String, nombre : String, apellido : String, email : String, plan : String, activo : boolean, tipo : String)",
+        "+activo() : boolean",
+        "+apellido() : String",
+        "+email() : String",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+id() : int",
+        "+nombre() : String",
+        "+nombreUsuario() : String",
+        "+plan() : String",
+        "+tipo() : String",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "api.UsuarioPedidoDto",
+      "package": "api",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "idUsuario",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+UsuarioPedidoDto(idUsuario : int)",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+idUsuario() : int",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "app.App",
+      "package": "app",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "MODO_CONSOLA",
+          "static": true,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "MODO_GRAFICO",
+          "static": true,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+App()",
+        "{static} +main(args : String[]) : void throws IOException",
+        "{static} -direccionDelServidor(args : String[], scanner : Scanner) : String",
+        "{static} -elegirModo(scanner : Scanner) : int",
+        "{static} -iniciarSesion(scanner : Scanner, gestor : gestor.ServicioEventos) : boolean",
+        "{static} -servir() : void throws IOException",
+        "{static} -usar(scanner : Scanner, gestor : gestor.ServicioEventos) : void"
+      ],
+      "dependencies": [
+        "app.AppSwing",
+        "app.Arranque",
+        "app.ConsoleIO",
+        "app.MenuAcciones",
+        "app.MenuPorRol",
+        "boolean",
+        "cliente.GestorRemoto",
+        "gestor.ServicioEventos",
+        "int",
+        "java.io.IOException",
+        "java.lang.InterruptedException",
+        "java.lang.String",
+        "java.lang.System",
+        "java.lang.Thread",
+        "java.util.NoSuchElementException",
+        "java.util.Scanner",
+        "java.util.concurrent.CountDownLatch",
+        "servidor.ConfiguracionServidor",
+        "void"
+      ]
+    },
+    {
+      "name": "app.AppSwing",
+      "package": "app",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+AppSwing()",
+        "{static} ~abrir(gestor : gestor.ServicioEventos) : void"
+      ],
+      "dependencies": [
+        "gestor.ServicioEventos",
+        "javax.swing.SwingUtilities",
+        "ui.VentanaLogin",
+        "void"
+      ]
+    },
+    {
+      "name": "app.Arranque",
+      "package": "app",
+      "kind": "class",
+      "modifiers": "final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-Arranque()",
+        "{static} ~iniciarServidor(aceptaRed : boolean) : gestor.GestorEventosEnVivo throws IOException"
+      ],
+      "dependencies": [
+        "app.DatosIniciales",
+        "boolean",
+        "gestor.GestorEventosEnVivo",
+        "gestor.ProveedorTransmision",
+        "java.io.IOException",
+        "java.net.BindException",
+        "java.util.Map",
+        "notificacion.NotificadorInactivo",
+        "persistencia.PersistenciaSqlite",
+        "servidor.CodigosCalendario",
+        "servidor.ConfiguracionServidor",
+        "servidor.ManejadorApi",
+        "servidor.ManejadorCalendario",
+        "servidor.PublicadorHttp",
+        "servidor.ServidorHttp",
+        "transmision.ClienteTransmision",
+        "transmision.ProcesoServicio"
+      ]
+    },
+    {
+      "name": "app.ConsoleIO",
+      "package": "app",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-ConsoleIO()",
+        "{static} +leerBooleano(scanner : Scanner, mensaje : String) : boolean",
+        "{static} +leerEntero(scanner : Scanner, mensaje : String) : int"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.String",
+        "java.lang.System",
+        "java.util.Scanner"
+      ]
+    },
+    {
+      "name": "app.DatosIniciales",
+      "package": "app",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-DatosIniciales()",
+        "{static} +sembrar(gestor : gestor.GestorEventosEnVivo) : void"
+      ],
+      "dependencies": [
+        "gestor.GestorEventosEnVivo",
+        "java.time.LocalDateTime",
+        "java.util.ArrayList",
+        "java.util.List",
+        "modelo.Artista",
+        "modelo.Contrasenas",
+        "modelo.DatosRecital",
+        "modelo.EstadoEvento",
+        "modelo.PlanSuscripcion",
+        "modelo.RecitalEnVivo",
+        "modelo.RegistroAcceso",
+        "modelo.TipoUsuario",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "app.MenuAcciones",
+      "package": "app",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-MenuAcciones()",
+        "{static} +abrirInterfazGrafica(gestor : gestor.ServicioEventos) : void",
+        "{static} +cambiarEstadoEvento(scanner : Scanner, gestor : gestor.ServicioEventos, accion : String) : void",
+        "{static} +cambiarEstadoUsuario(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} +crearEventoManual(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} +expulsarUsuario(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} +listarArtistas(gestor : gestor.ServicioEventos) : void",
+        "{static} +listarConectados(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} +listarEventos(gestor : gestor.ServicioEventos) : void",
+        "{static} +listarMisRegistros(gestor : gestor.ServicioEventos) : void",
+        "{static} +listarRegistros(gestor : gestor.ServicioEventos) : void",
+        "{static} +listarUsuarios(gestor : gestor.ServicioEventos) : void",
+        "{static} +login(scanner : Scanner, gestor : gestor.ServicioEventos) : modelo.Cuenta",
+        "{static} +mostrarCapacidad(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} +registrarArtista(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} +registrarUsuario(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} +solicitarIngreso(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} +verTransmision(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} +vincularCalendario(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} -ejecutarCambioDeEstado(gestor : gestor.ServicioEventos, idEvento : int, accion : String) : void throws AccesoDenegadoException",
+        "{static} -leerCapacidadMaxima(scanner : Scanner) : int",
+        "{static} -leerContrasenaNueva(scanner : Scanner) : String",
+        "{static} -leerDuracionMinutos(scanner : Scanner) : int",
+        "{static} -leerNombreUsuarioNuevo(scanner : Scanner, gestor : gestor.ServicioEventos) : String",
+        "{static} -listarEventosParaCambio(gestor : gestor.ServicioEventos, accion : String) : boolean",
+        "{static} -listarUsuariosConectadosParaExpulsion(recital : modelo.Evento) : boolean",
+        "{static} -mostrarTransmision(gestor : gestor.ServicioEventos, idEvento : int) : void",
+        "{static} -obtenerNombreAccion(accion : String) : String",
+        "{static} -puedeAplicarAccion(evento : modelo.Evento, accion : String) : boolean",
+        "{static} -seleccionarArtistaParaEvento(scanner : Scanner, gestor : gestor.ServicioEventos) : modelo.Artista",
+        "{static} -seleccionarPlan(scanner : Scanner) : modelo.PlanSuscripcion"
+      ],
+      "dependencies": [
+        "app.ConsoleIO",
+        "boolean",
+        "calendario.VinculoApple",
+        "calendario.VinculoGoogle",
+        "excepciones.AccesoDenegadoException",
+        "excepciones.ErrorDeServicioException",
+        "gestor.ServicioEventos",
+        "gestor.Transmision",
+        "gestor.VinculoCalendario",
+        "int",
+        "java.io.IOException",
+        "java.lang.String",
+        "java.lang.System",
+        "java.time.LocalDateTime",
+        "java.util.List",
+        "java.util.Scanner",
+        "javax.swing.SwingUtilities",
+        "modelo.Artista",
+        "modelo.Cuenta",
+        "modelo.DatosRecital",
+        "modelo.EstadoEvento",
+        "modelo.Evento",
+        "modelo.PlanSuscripcion",
+        "modelo.RecitalEnVivo",
+        "modelo.RegistroAcceso",
+        "modelo.TipoUsuario",
+        "modelo.Usuario",
+        "ui.Navegador",
+        "ui.VentanaPrincipal",
+        "void"
+      ]
+    },
+    {
+      "name": "app.MenuPorRol",
+      "package": "app",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-MenuPorRol()",
+        "{static} +ejecutar(scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} -ejecutarAccion(accion : gestor.Accion, scanner : Scanner, gestor : gestor.ServicioEventos) : void",
+        "{static} -mostrarMenu(gestor : gestor.ServicioEventos, acciones : List<gestor.Accion>) : void"
+      ],
+      "dependencies": [
+        "app.ConsoleIO",
+        "app.MenuAcciones",
+        "excepciones.ErrorDeServicioException",
+        "excepciones.PermisoDenegadoException",
+        "gestor.Accion",
+        "gestor.ServicioEventos",
+        "java.lang.System",
+        "java.util.List",
+        "java.util.Scanner",
+        "void"
+      ]
+    },
+    {
+      "name": "calendario.FormatoIcs",
+      "package": "calendario",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "format.DateTimeFormatter",
+          "final": true,
+          "enumConstant": false,
+          "name": "FECHA",
+          "static": true,
+          "references": [
+            "java.time.format.DateTimeFormatter"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "-FormatoIcs()",
+        "{static} +calendario(nombre : String, eventos : List<modelo.Evento>) : String",
+        "{static} -agregarEvento(ics : StringBuilder, evento : modelo.Evento) : void",
+        "{static} -escapar(texto : String) : String",
+        "{static} -linea(ics : StringBuilder, texto : String) : void"
+      ],
+      "dependencies": [
+        "java.lang.String",
+        "java.lang.StringBuilder",
+        "java.time.Instant",
+        "java.time.LocalDateTime",
+        "java.time.ZoneOffset",
+        "java.time.format.DateTimeFormatter",
+        "java.util.List",
+        "modelo.EstadoEvento",
+        "modelo.Evento",
+        "void"
+      ]
+    },
+    {
+      "name": "calendario.VinculoApple",
+      "package": "calendario",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.VinculoCalendario"
+      ],
+      "fields": [],
+      "operations": [
+        "+VinculoApple()",
+        "+getNombre() : String",
+        "+vincular(urlFeed : String) : void throws IOException"
+      ],
+      "dependencies": [
+        "gestor.VinculoCalendario",
+        "java.awt.Desktop",
+        "java.awt.Desktop.Action",
+        "java.io.IOException",
+        "java.lang.Override",
+        "java.lang.ProcessBuilder",
+        "java.lang.String",
+        "java.lang.System",
+        "java.net.URI",
+        "void"
+      ]
+    },
+    {
+      "name": "calendario.VinculoGoogle",
+      "package": "calendario",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.VinculoCalendario"
+      ],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "BASE",
+          "static": true,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+VinculoGoogle()",
+        "+getNombre() : String",
+        "+vincular(urlFeed : String) : void throws IOException"
+      ],
+      "dependencies": [
+        "gestor.VinculoCalendario",
+        "java.awt.Desktop",
+        "java.awt.Desktop.Action",
+        "java.io.IOException",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.net.URI",
+        "java.net.URLEncoder",
+        "java.nio.charset.StandardCharsets",
+        "void"
+      ]
+    },
+    {
+      "name": "cliente.ClienteHttp",
+      "package": "cliente",
+      "kind": "class",
+      "modifiers": "",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "java.net.http.HttpClient",
+          "final": true,
+          "enumConstant": false,
+          "name": "cliente",
+          "static": false,
+          "references": [
+            "java.net.http.HttpClient"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "token",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "urlBase",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "-enviar(metodo : String, ruta : String, cuerpo : Object) : String throws AccesoDenegadoException, IOException",
+        "{static} -errorDe(respuesta : java.net.http.HttpResponse<String>) : RuntimeException throws AccesoDenegadoException, IOException",
+        "~ClienteHttp(urlBase : String)",
+        "~delete(ruta : String) : String throws AccesoDenegadoException, IOException",
+        "~get(ruta : String) : String throws AccesoDenegadoException, IOException",
+        "~post(ruta : String, cuerpo : Object) : String throws AccesoDenegadoException, IOException",
+        "~setToken(token : String) : void"
+      ],
+      "dependencies": [
+        "api.ErrorDto",
+        "api.Json",
+        "excepciones.AccesoDenegadoException",
+        "excepciones.ConexionException",
+        "excepciones.PermisoDenegadoException",
+        "excepciones.PersistenciaException",
+        "java.io.IOException",
+        "java.lang.IllegalArgumentException",
+        "java.lang.InterruptedException",
+        "java.lang.Object",
+        "java.lang.RuntimeException",
+        "java.lang.String",
+        "java.lang.Thread",
+        "java.net.URI",
+        "java.net.http.HttpClient",
+        "java.net.http.HttpRequest",
+        "java.net.http.HttpRequest.BodyPublishers",
+        "java.net.http.HttpRequest.Builder",
+        "java.net.http.HttpResponse",
+        "java.net.http.HttpResponse.BodyHandlers",
+        "java.time.Duration",
+        "void"
+      ]
+    },
+    {
+      "name": "cliente.EstadoLocal",
+      "package": "cliente",
+      "kind": "class",
+      "modifiers": "",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "List<modelo.Artista>",
+          "final": true,
+          "enumConstant": false,
+          "name": "artistas",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.Artista"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.Cuenta",
+          "final": true,
+          "enumConstant": false,
+          "name": "cuenta",
+          "static": false,
+          "references": [
+            "modelo.Cuenta"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<modelo.Evento>",
+          "final": true,
+          "enumConstant": false,
+          "name": "eventos",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.Evento"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<modelo.RegistroAcceso>",
+          "final": true,
+          "enumConstant": false,
+          "name": "registros",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.RegistroAcceso"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<modelo.Usuario>",
+          "final": true,
+          "enumConstant": false,
+          "name": "usuarios",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.Usuario"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "~EstadoLocal(estado : api.EstadoDto)",
+        "~construirRegistro(dto : api.RegistroDto) : modelo.RegistroAcceso",
+        "~construirRegistro(dto : api.RegistroDto, usuariosPorId : Map<Integer, modelo.Usuario>, eventosPorId : Map<Integer, modelo.Evento>) : modelo.RegistroAcceso",
+        "~getArtistas() : List<modelo.Artista>",
+        "~getCuenta() : modelo.Cuenta",
+        "~getEventos() : List<modelo.Evento>",
+        "~getRegistros() : List<modelo.RegistroAcceso>",
+        "~getUsuarios() : List<modelo.Usuario>"
+      ],
+      "dependencies": [
+        "api.ArtistaDto",
+        "api.EstadoDto",
+        "api.EventoDto",
+        "api.RegistroDto",
+        "api.UsuarioDto",
+        "java.lang.Integer",
+        "java.time.LocalDateTime",
+        "java.util.ArrayList",
+        "java.util.HashMap",
+        "java.util.List",
+        "java.util.Map",
+        "modelo.Artista",
+        "modelo.Cuenta",
+        "modelo.DatosRecital",
+        "modelo.EstadoEvento",
+        "modelo.Evento",
+        "modelo.PlanSuscripcion",
+        "modelo.RecitalEnVivo",
+        "modelo.RegistroAcceso",
+        "modelo.TipoUsuario",
+        "modelo.Usuario"
+      ]
+    },
+    {
+      "name": "cliente.GestorRemoto",
+      "package": "cliente",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.ServicioEventos"
+      ],
+      "fields": [
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "conSesion",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "cliente.EstadoLocal",
+          "final": false,
+          "enumConstant": false,
+          "name": "estado",
+          "static": false,
+          "references": [
+            "cliente.EstadoLocal"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "cliente.ClienteHttp",
+          "final": true,
+          "enumConstant": false,
+          "name": "http",
+          "static": false,
+          "references": [
+            "cliente.ClienteHttp"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.Permisos",
+          "final": true,
+          "enumConstant": false,
+          "name": "permisos",
+          "static": false,
+          "references": [
+            "gestor.Permisos"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+GestorRemoto(urlServidor : String)",
+        "+accionesPermitidas() : List<gestor.Accion>",
+        "+actualizar() : void",
+        "+alternarActivo(idUsuario : int) : modelo.Usuario",
+        "+buscarArtistaPorId(id : int) : modelo.Artista",
+        "+buscarEventoVisible(id : int) : modelo.Evento",
+        "+buscarUsuarioPorId(id : int) : modelo.Usuario",
+        "+cancelarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+cerrarSesion() : void",
+        "+crearEvento(datos : modelo.DatosRecital, artista : modelo.Artista) : modelo.RecitalEnVivo",
+        "+existeNombreUsuario(nombreUsuario : String) : boolean",
+        "+expulsarUsuario(idEvento : int, idUsuario : int) : modelo.Usuario",
+        "+finalizarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+getCuentaActual() : modelo.Cuenta",
+        "+iniciarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+iniciarSesion(nombreUsuario : String, contrasena : String) : modelo.Cuenta throws AccesoDenegadoException",
+        "+listarArtistas() : List<modelo.Artista>",
+        "+listarEventosVisibles() : List<modelo.Evento>",
+        "+listarMisRegistros() : List<modelo.RegistroAcceso>",
+        "+listarRegistros() : List<modelo.RegistroAcceso>",
+        "+listarUsuarios() : List<modelo.Usuario>",
+        "+obtenerTransmision(idEvento : int) : gestor.Transmision throws AccesoDenegadoException, IOException",
+        "+pausarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+puede(accion : gestor.Accion) : boolean",
+        "+reanudarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+registrarArtista(nombreUsuario : String, contrasena : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean) : modelo.Artista",
+        "+registrarUsuario(nombreUsuario : String, nombre : String, apellido : String, email : String, contrasena : String, plan : modelo.PlanSuscripcion) : modelo.Usuario",
+        "+solicitarIngreso(idUsuario : int, idEvento : int) : modelo.RegistroAcceso",
+        "+vincularCalendario(idEvento : int, vinculo : gestor.VinculoCalendario) : void throws IOException",
+        "-cambiarEstado(idEvento : int, accion : String) : void throws AccesoDenegadoException",
+        "-exigir(accion : gestor.Accion) : void",
+        "-pedirId(ruta : String, cuerpo : Object) : Integer"
+      ],
+      "dependencies": [
+        "api.EstadoDto",
+        "api.IdDto",
+        "api.InicioSesionDto",
+        "api.Json",
+        "api.NuevoArtistaDto",
+        "api.NuevoEventoDto",
+        "api.NuevoUsuarioDto",
+        "api.RegistroDto",
+        "api.SesionDto",
+        "api.TransmisionDto",
+        "api.UrlDto",
+        "api.UsuarioPedidoDto",
+        "boolean",
+        "cliente.ClienteHttp",
+        "cliente.EstadoLocal",
+        "excepciones.AccesoDenegadoException",
+        "excepciones.ConexionException",
+        "excepciones.PermisoDenegadoException",
+        "gestor.Accion",
+        "gestor.Permisos",
+        "gestor.ServicioEventos",
+        "gestor.Transmision",
+        "gestor.VinculoCalendario",
+        "int",
+        "java.io.IOException",
+        "java.lang.Integer",
+        "java.lang.Object",
+        "java.lang.Override",
+        "java.lang.RuntimeException",
+        "java.lang.String",
+        "java.util.ArrayList",
+        "java.util.List",
+        "modelo.Artista",
+        "modelo.Cuenta",
+        "modelo.DatosRecital",
+        "modelo.Evento",
+        "modelo.PlanSuscripcion",
+        "modelo.RecitalEnVivo",
+        "modelo.RegistroAcceso",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "excepciones.AccesoDenegadoException",
+      "package": "excepciones",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Exception",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+AccesoDenegadoException(mensaje : String)"
+      ],
+      "dependencies": [
+        "java.lang.Exception",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "excepciones.ConexionException",
+      "package": "excepciones",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "excepciones.ErrorDeServicioException",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+ConexionException(mensaje : String, causa : Throwable)"
+      ],
+      "dependencies": [
+        "excepciones.ErrorDeServicioException",
+        "java.lang.String",
+        "java.lang.Throwable"
+      ]
+    },
+    {
+      "name": "excepciones.ErrorDeServicioException",
+      "package": "excepciones",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.RuntimeException",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+ErrorDeServicioException(mensaje : String)",
+        "+ErrorDeServicioException(mensaje : String, causa : Throwable)"
+      ],
+      "dependencies": [
+        "java.lang.RuntimeException",
+        "java.lang.String",
+        "java.lang.Throwable"
+      ]
+    },
+    {
+      "name": "excepciones.PermisoDenegadoException",
+      "package": "excepciones",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.RuntimeException",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+PermisoDenegadoException(mensaje : String)"
+      ],
+      "dependencies": [
+        "java.lang.RuntimeException",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "excepciones.PersistenciaException",
+      "package": "excepciones",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "excepciones.ErrorDeServicioException",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+PersistenciaException(mensaje : String, causa : Throwable)"
+      ],
+      "dependencies": [
+        "excepciones.ErrorDeServicioException",
+        "java.lang.String",
+        "java.lang.Throwable"
+      ]
+    },
+    {
+      "name": "gestor.Accion",
+      "package": "gestor",
+      "kind": "enum",
+      "modifiers": "public final",
+      "superclass": "java.lang.Enum",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "ABRIR_INTERFAZ_GRAFICA",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "ACTIVAR_DESACTIVAR_USUARIO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "CANCELAR_EVENTO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "CREAR_EVENTO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "EXPULSAR_USUARIO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "FINALIZAR_EVENTO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "INICIAR_EVENTO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "PAUSAR_EVENTO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "REANUDAR_EVENTO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "REGISTRAR_ARTISTA",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "REGISTRAR_USUARIO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "SOLICITAR_INGRESO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "VER_ARTISTAS",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "VER_CAPACIDAD",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "VER_CONECTADOS",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "VER_EVENTOS",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "VER_MIS_REGISTROS",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "VER_REGISTROS",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "VER_TRANSMISION",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "VER_USUARIOS",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "gestor.Accion",
+          "final": true,
+          "enumConstant": true,
+          "name": "VINCULAR_CALENDARIO",
+          "static": true,
+          "references": [
+            "gestor.Accion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "etiqueta",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+getEtiqueta() : String",
+        "-Accion(etiqueta : String)",
+        "{static} +valueOf(name : String) : gestor.Accion",
+        "{static} +values() : gestor.Accion[]"
+      ],
+      "dependencies": [
+        "gestor.Accion",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "gestor.ConsultaTransmision",
+      "package": "gestor",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "artista",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "espectador",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "LocalDateTime",
+          "final": true,
+          "enumConstant": false,
+          "name": "inicio",
+          "static": false,
+          "references": [
+            "java.time.LocalDateTime"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ConsultaTransmision(artista : String, inicio : LocalDateTime, espectador : String)",
+        "+artista() : String",
+        "+equals(o : Object) : boolean",
+        "+espectador() : String",
+        "+hashCode() : int",
+        "+inicio() : LocalDateTime",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String",
+        "java.time.LocalDateTime"
+      ]
+    },
+    {
+      "name": "gestor.ControlAcceso",
+      "package": "gestor",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "gestor.Notificador",
+          "final": false,
+          "enumConstant": false,
+          "name": "notificador",
+          "static": false,
+          "references": [
+            "gestor.Notificador"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<modelo.RegistroAcceso>",
+          "final": false,
+          "enumConstant": false,
+          "name": "registros",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.RegistroAcceso"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": false,
+          "enumConstant": false,
+          "name": "siguienteIdAcceso",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ControlAcceso(notificador : gestor.Notificador)",
+        "+listar() : List<modelo.RegistroAcceso>",
+        "+procesarIngreso(usuario : modelo.Usuario, evento : modelo.Evento) : modelo.RegistroAcceso",
+        "+reemplazar(registrosCargados : List<modelo.RegistroAcceso>) : void",
+        "+registrar(registro : modelo.RegistroAcceso) : void",
+        "+registrarExpulsion(usuario : modelo.Usuario, evento : modelo.Evento) : void",
+        "-avisar(usuario : modelo.Usuario, titulo : String, mensaje : String) : void",
+        "-rechazar(usuario : modelo.Usuario, evento : modelo.Evento, motivo : String) : modelo.RegistroAcceso"
+      ],
+      "dependencies": [
+        "excepciones.AccesoDenegadoException",
+        "gestor.Notificador",
+        "java.lang.String",
+        "java.time.LocalDateTime",
+        "java.util.ArrayList",
+        "java.util.List",
+        "modelo.AccesoEvento",
+        "modelo.Evento",
+        "modelo.RecitalEnVivo",
+        "modelo.RegistroAcceso",
+        "modelo.TipoUsuario",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.ControlSesion",
+      "package": "gestor",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "modelo.Cuenta",
+          "final": false,
+          "enumConstant": false,
+          "name": "cuentaActual",
+          "static": false,
+          "references": [
+            "modelo.Cuenta"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.Permisos",
+          "final": true,
+          "enumConstant": false,
+          "name": "permisos",
+          "static": false,
+          "references": [
+            "gestor.Permisos"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ControlSesion()",
+        "+accionesPermitidas() : List<gestor.Accion>",
+        "+cerrar() : void",
+        "+exigir(accion : gestor.Accion) : void",
+        "+exigirSiHaySesion(accion : gestor.Accion) : void",
+        "+getCuentaActual() : modelo.Cuenta",
+        "+iniciar(cuenta : modelo.Cuenta) : void",
+        "+permite(accion : gestor.Accion) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "excepciones.PermisoDenegadoException",
+        "gestor.Accion",
+        "gestor.Permisos",
+        "java.util.ArrayList",
+        "java.util.List",
+        "modelo.Cuenta",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.GestorEventosEnVivo",
+      "package": "gestor",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.ServicioEventos"
+      ],
+      "fields": [
+        {
+          "type": "List<modelo.Artista>",
+          "final": false,
+          "enumConstant": false,
+          "name": "artistasRegistrados",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.Artista"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.ControlAcceso",
+          "final": false,
+          "enumConstant": false,
+          "name": "controlAcceso",
+          "static": false,
+          "references": [
+            "gestor.ControlAcceso"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<modelo.Evento>",
+          "final": false,
+          "enumConstant": false,
+          "name": "eventos",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.Evento"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.Persistencia",
+          "final": false,
+          "enumConstant": false,
+          "name": "persistencia",
+          "static": false,
+          "references": [
+            "gestor.Persistencia"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.ProveedorTransmision",
+          "final": false,
+          "enumConstant": false,
+          "name": "proveedorTransmision",
+          "static": false,
+          "references": [
+            "gestor.ProveedorTransmision"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.PublicadorCalendario",
+          "final": false,
+          "enumConstant": false,
+          "name": "publicador",
+          "static": false,
+          "references": [
+            "gestor.PublicadorCalendario"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.ControlSesion",
+          "final": false,
+          "enumConstant": false,
+          "name": "sesion",
+          "static": false,
+          "references": [
+            "gestor.ControlSesion"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<modelo.Usuario>",
+          "final": false,
+          "enumConstant": false,
+          "name": "usuariosRegistrados",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.Usuario"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.PoliticasVisibilidad",
+          "final": true,
+          "enumConstant": false,
+          "name": "visibilidad",
+          "static": false,
+          "references": [
+            "gestor.PoliticasVisibilidad"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+GestorEventosEnVivo(persistencia : gestor.Persistencia, notificador : gestor.Notificador, publicador : gestor.PublicadorCalendario, proveedorTransmision : gestor.ProveedorTransmision)",
+        "+accionesPermitidas() : List<gestor.Accion>",
+        "+actualizar() : void",
+        "+alternarActivo(idUsuario : int) : modelo.Usuario",
+        "+asumirSesion(cuenta : modelo.Cuenta) : void",
+        "+autenticar(nombreUsuario : String, contrasena : String) : modelo.Cuenta throws AccesoDenegadoException",
+        "+buscarArtistaPorId(id : int) : modelo.Artista",
+        "+buscarCuentaPorNombreUsuario(nombreUsuario : String) : modelo.Cuenta",
+        "+buscarEventoPorId(id : int) : modelo.Evento",
+        "+buscarEventoVisible(id : int) : modelo.Evento",
+        "+buscarEventoVisiblePara(cuenta : modelo.Cuenta, id : int) : modelo.Evento",
+        "+buscarUsuarioPorId(id : int) : modelo.Usuario",
+        "+cancelarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+cargarDatos() : void throws IOException",
+        "+cerrarSesion() : void",
+        "+cerrarTransmisionesDe(cuenta : modelo.Cuenta) : void",
+        "+consultaDeTransmision(idEvento : int) : gestor.ConsultaTransmision throws AccesoDenegadoException",
+        "+crearEvento(datos : modelo.DatosRecital, artista : modelo.Artista) : modelo.RecitalEnVivo",
+        "+crearEvento(evento : modelo.RecitalEnVivo) : void",
+        "+crearEvento(evento : modelo.RecitalEnVivo, artista : modelo.Artista) : void",
+        "+existeNombreUsuario(nombreUsuario : String) : boolean",
+        "+expulsarUsuario(idEvento : int, idUsuario : int) : modelo.Usuario",
+        "+finalizarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+getCuentaActual() : modelo.Cuenta",
+        "+guardarDatos() : void",
+        "+iniciarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+iniciarSesion(nombreUsuario : String, contrasena : String) : modelo.Cuenta throws AccesoDenegadoException",
+        "+listarArtistas() : List<modelo.Artista>",
+        "+listarEventos() : List<modelo.Evento>",
+        "+listarEventosDisponibles() : List<modelo.Evento>",
+        "+listarEventosVisibles() : List<modelo.Evento>",
+        "+listarMisRegistros() : List<modelo.RegistroAcceso>",
+        "+listarRegistros() : List<modelo.RegistroAcceso>",
+        "+listarUsuarios() : List<modelo.Usuario>",
+        "+obtenerTransmision(idEvento : int) : gestor.Transmision throws AccesoDenegadoException, IOException",
+        "+pausarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+puede(accion : gestor.Accion) : boolean",
+        "+reanudarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+reemplazarDatos(usuarios : List<modelo.Usuario>, artistas : List<modelo.Artista>, eventosCargados : List<modelo.Evento>, registrosCargados : List<modelo.RegistroAcceso>) : void",
+        "+registrarAcceso(registro : modelo.RegistroAcceso) : void",
+        "+registrarArtista(artista : modelo.Artista) : void",
+        "+registrarArtista(nombreUsuario : String, contrasena : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean) : modelo.Artista",
+        "+registrarUsuario(nombreUsuario : String, nombre : String, apellido : String, email : String, contrasena : String, plan : modelo.PlanSuscripcion) : modelo.Usuario",
+        "+registrarUsuario(usuario : modelo.Usuario) : boolean",
+        "+solicitarIngreso(idUsuario : int, idEvento : int) : modelo.RegistroAcceso",
+        "+soltarSesion() : void",
+        "+urlCalendario(idEvento : int) : String throws IOException",
+        "+vincularCalendario(idEvento : int, vinculo : gestor.VinculoCalendario) : void throws IOException",
+        "-buscarEventoParaCambio(idEvento : int, accion : gestor.Accion) : modelo.Evento throws AccesoDenegadoException",
+        "-esVisible(evento : modelo.Evento) : boolean",
+        "-esVisiblePara(actual : modelo.Cuenta, evento : modelo.Evento) : boolean",
+        "-estaConectado(evento : modelo.Evento, cuenta : modelo.Cuenta) : boolean",
+        "-reenlazarSesion() : void",
+        "-siguienteIdArtista() : int",
+        "-siguienteIdEvento() : int",
+        "-siguienteIdUsuario() : int",
+        "{static} -espectador(cuenta : modelo.Cuenta, idEvento : int) : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "excepciones.AccesoDenegadoException",
+        "excepciones.PermisoDenegadoException",
+        "excepciones.PersistenciaException",
+        "gestor.Accion",
+        "gestor.ConsultaTransmision",
+        "gestor.ControlAcceso",
+        "gestor.ControlSesion",
+        "gestor.Notificador",
+        "gestor.Persistencia",
+        "gestor.PoliticasVisibilidad",
+        "gestor.ProveedorTransmision",
+        "gestor.PublicadorCalendario",
+        "gestor.ServicioEventos",
+        "gestor.Transmision",
+        "gestor.VinculoCalendario",
+        "int",
+        "java.io.IOException",
+        "java.lang.IllegalArgumentException",
+        "java.lang.Math",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.util.ArrayList",
+        "java.util.List",
+        "modelo.Artista",
+        "modelo.Contrasenas",
+        "modelo.Cuenta",
+        "modelo.DatosRecital",
+        "modelo.EstadoEvento",
+        "modelo.Evento",
+        "modelo.PlanSuscripcion",
+        "modelo.RecitalEnVivo",
+        "modelo.RegistroAcceso",
+        "modelo.TipoUsuario",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.Notificador",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+notificar(destinatario : modelo.Usuario, titulo : String, mensaje : String) : void"
+      ],
+      "dependencies": [
+        "java.lang.String",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.Permisos",
+      "package": "gestor",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "Map<modelo.TipoUsuario, Set<gestor.Accion>>",
+          "final": true,
+          "enumConstant": false,
+          "name": "permitidas",
+          "static": false,
+          "references": [
+            "java.util.Map",
+            "modelo.TipoUsuario",
+            "java.util.Set",
+            "gestor.Accion"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+Permisos()",
+        "+accionesPermitidas(tipo : modelo.TipoUsuario) : List<gestor.Accion>",
+        "+permite(tipo : modelo.TipoUsuario, accion : gestor.Accion) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "gestor.Accion",
+        "java.util.ArrayList",
+        "java.util.EnumMap",
+        "java.util.EnumSet",
+        "java.util.List",
+        "java.util.Map",
+        "java.util.Set",
+        "modelo.TipoUsuario"
+      ]
+    },
+    {
+      "name": "gestor.Persistencia",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+cargar(gestor : gestor.GestorEventosEnVivo) : void throws IOException",
+        "+guardar(gestor : gestor.GestorEventosEnVivo) : void throws IOException"
+      ],
+      "dependencies": [
+        "gestor.GestorEventosEnVivo",
+        "java.io.IOException",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.PoliticaVisibilidadEvento",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+esVisible(cuenta : modelo.Cuenta, evento : modelo.Evento) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "modelo.Cuenta",
+        "modelo.Evento"
+      ]
+    },
+    {
+      "name": "gestor.PoliticasVisibilidad",
+      "package": "gestor",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "Map<modelo.TipoUsuario, gestor.PoliticaVisibilidadEvento>",
+          "final": true,
+          "enumConstant": false,
+          "name": "porRol",
+          "static": false,
+          "references": [
+            "java.util.Map",
+            "modelo.TipoUsuario",
+            "gestor.PoliticaVisibilidadEvento"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+PoliticasVisibilidad()",
+        "+esVisible(cuenta : modelo.Cuenta, evento : modelo.Evento) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "gestor.PoliticaVisibilidadEvento",
+        "gestor.VisibilidadArtista",
+        "gestor.VisibilidadGeneral",
+        "java.util.Map",
+        "modelo.Cuenta",
+        "modelo.Evento",
+        "modelo.TipoUsuario"
+      ]
+    },
+    {
+      "name": "gestor.ProveedorTransmision",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+buscar(consulta : gestor.ConsultaTransmision) : gestor.Transmision throws IOException",
+        "+cerrar(espectador : String) : void"
+      ],
+      "dependencies": [
+        "gestor.ConsultaTransmision",
+        "gestor.Transmision",
+        "java.io.IOException",
+        "java.lang.String",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.PublicadorCalendario",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+urlFeed(cuenta : modelo.Cuenta, evento : modelo.Evento) : String throws IOException"
+      ],
+      "dependencies": [
+        "java.io.IOException",
+        "java.lang.String",
+        "modelo.Cuenta",
+        "modelo.Evento"
+      ]
+    },
+    {
+      "name": "gestor.ServicioComandos",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+alternarActivo(idUsuario : int) : modelo.Usuario",
+        "+cancelarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+crearEvento(datos : modelo.DatosRecital, artista : modelo.Artista) : modelo.RecitalEnVivo",
+        "+expulsarUsuario(idEvento : int, idUsuario : int) : modelo.Usuario",
+        "+finalizarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+iniciarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+pausarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+reanudarEvento(idEvento : int) : void throws AccesoDenegadoException",
+        "+registrarArtista(nombreUsuario : String, contrasena : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean) : modelo.Artista",
+        "+registrarUsuario(nombreUsuario : String, nombre : String, apellido : String, email : String, contrasena : String, plan : modelo.PlanSuscripcion) : modelo.Usuario",
+        "+solicitarIngreso(idUsuario : int, idEvento : int) : modelo.RegistroAcceso",
+        "+vincularCalendario(idEvento : int, vinculo : gestor.VinculoCalendario) : void throws IOException"
+      ],
+      "dependencies": [
+        "boolean",
+        "excepciones.AccesoDenegadoException",
+        "gestor.VinculoCalendario",
+        "int",
+        "java.io.IOException",
+        "java.lang.String",
+        "modelo.Artista",
+        "modelo.DatosRecital",
+        "modelo.PlanSuscripcion",
+        "modelo.RecitalEnVivo",
+        "modelo.RegistroAcceso",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.ServicioConsultas",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+actualizar() : void",
+        "+buscarArtistaPorId(id : int) : modelo.Artista",
+        "+buscarEventoVisible(id : int) : modelo.Evento",
+        "+buscarUsuarioPorId(id : int) : modelo.Usuario",
+        "+existeNombreUsuario(nombreUsuario : String) : boolean",
+        "+listarArtistas() : List<modelo.Artista>",
+        "+listarEventosVisibles() : List<modelo.Evento>",
+        "+listarMisRegistros() : List<modelo.RegistroAcceso>",
+        "+listarRegistros() : List<modelo.RegistroAcceso>",
+        "+listarUsuarios() : List<modelo.Usuario>",
+        "+obtenerTransmision(idEvento : int) : gestor.Transmision throws AccesoDenegadoException, IOException"
+      ],
+      "dependencies": [
+        "boolean",
+        "excepciones.AccesoDenegadoException",
+        "gestor.Transmision",
+        "int",
+        "java.io.IOException",
+        "java.lang.String",
+        "java.util.List",
+        "modelo.Artista",
+        "modelo.Evento",
+        "modelo.RegistroAcceso",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.ServicioEventos",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [
+        "gestor.ServicioComandos",
+        "gestor.ServicioConsultas",
+        "gestor.ServicioSesion"
+      ],
+      "fields": [],
+      "operations": [],
+      "dependencies": [
+        "gestor.ServicioComandos",
+        "gestor.ServicioConsultas",
+        "gestor.ServicioSesion"
+      ]
+    },
+    {
+      "name": "gestor.ServicioSesion",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+accionesPermitidas() : List<gestor.Accion>",
+        "+cerrarSesion() : void",
+        "+getCuentaActual() : modelo.Cuenta",
+        "+iniciarSesion(nombreUsuario : String, contrasena : String) : modelo.Cuenta throws AccesoDenegadoException",
+        "+puede(accion : gestor.Accion) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "excepciones.AccesoDenegadoException",
+        "gestor.Accion",
+        "java.lang.String",
+        "java.util.List",
+        "modelo.Cuenta",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.Transmision",
+      "package": "gestor",
+      "kind": "record",
+      "modifiers": "public final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "titulo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "url",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+Transmision(titulo : String, url : String)",
+        "+equals(o : Object) : boolean",
+        "+hashCode() : int",
+        "+titulo() : String",
+        "+toString() : String",
+        "+url() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "gestor.VinculoCalendario",
+      "package": "gestor",
+      "kind": "interface",
+      "modifiers": "public abstract interface",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+getNombre() : String",
+        "+vincular(urlFeed : String) : void throws IOException"
+      ],
+      "dependencies": [
+        "java.io.IOException",
+        "java.lang.String",
+        "void"
+      ]
+    },
+    {
+      "name": "gestor.VisibilidadArtista",
+      "package": "gestor",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.PoliticaVisibilidadEvento"
+      ],
+      "fields": [],
+      "operations": [
+        "+VisibilidadArtista()",
+        "+esVisible(cuenta : modelo.Cuenta, evento : modelo.Evento) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "gestor.PoliticaVisibilidadEvento",
+        "java.lang.Override",
+        "modelo.Artista",
+        "modelo.Cuenta",
+        "modelo.Evento"
+      ]
+    },
+    {
+      "name": "gestor.VisibilidadGeneral",
+      "package": "gestor",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.PoliticaVisibilidadEvento"
+      ],
+      "fields": [],
+      "operations": [
+        "+VisibilidadGeneral()",
+        "+esVisible(cuenta : modelo.Cuenta, evento : modelo.Evento) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "gestor.PoliticaVisibilidadEvento",
+        "java.lang.Override",
+        "modelo.Cuenta",
+        "modelo.Evento"
+      ]
+    },
+    {
+      "name": "modelo.AccesoEvento",
+      "package": "modelo",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "accesoPrioritario",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.Evento",
+          "final": false,
+          "enumConstant": false,
+          "name": "evento",
+          "static": false,
+          "references": [
+            "modelo.Evento"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "LocalDateTime",
+          "final": false,
+          "enumConstant": false,
+          "name": "fechaRegistro",
+          "static": false,
+          "references": [
+            "java.time.LocalDateTime"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "habilitado",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": false,
+          "enumConstant": false,
+          "name": "id",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.PlanSuscripcion",
+          "final": false,
+          "enumConstant": false,
+          "name": "planRequerido",
+          "static": false,
+          "references": [
+            "modelo.PlanSuscripcion"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "tipoAcceso",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.Usuario",
+          "final": false,
+          "enumConstant": false,
+          "name": "usuario",
+          "static": false,
+          "references": [
+            "modelo.Usuario"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+AccesoEvento(id : int, usuario : modelo.Usuario, evento : modelo.Evento, fechaRegistro : LocalDateTime, habilitado : boolean, tipoAcceso : String, planRequerido : modelo.PlanSuscripcion, accesoPrioritario : boolean)",
+        "+cancelarAcceso() : void",
+        "+generarAcceso() : void",
+        "+getEvento() : modelo.Evento",
+        "+getFechaRegistro() : LocalDateTime",
+        "+getId() : int",
+        "+getPlanRequerido() : modelo.PlanSuscripcion",
+        "+getTipoAcceso() : String",
+        "+getUsuario() : modelo.Usuario",
+        "+isAccesoPrioritario() : boolean",
+        "+validarAutorizacion() : void throws AccesoDenegadoException",
+        "+validarIngreso() : boolean",
+        "+validarPlan() : void throws AccesoDenegadoException",
+        "+validarPlanUsuario() : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "excepciones.AccesoDenegadoException",
+        "int",
+        "java.lang.String",
+        "java.time.LocalDateTime",
+        "modelo.Evento",
+        "modelo.PlanSuscripcion",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "modelo.Artista",
+      "package": "modelo",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "modelo.Cuenta",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "biografia",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<modelo.Evento>",
+          "final": false,
+          "enumConstant": false,
+          "name": "eventosCreados",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.Evento"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "generoPrincipal",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "nombreArtistico",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "List<String>",
+          "final": false,
+          "enumConstant": false,
+          "name": "obras",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "Map<String, String>",
+          "final": false,
+          "enumConstant": false,
+          "name": "redesSociales",
+          "static": false,
+          "references": [
+            "java.util.Map",
+            "java.lang.String",
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "verificado",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+Artista(id : int, nombreUsuario : String, hashContrasena : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean)",
+        "+actualizarInformacionArtistica(nuevaBiografia : String) : String",
+        "+agregarObra(titulo : String) : void",
+        "+agregarRedSocial(red : String, url : String) : void",
+        "+crearEvento(evento : modelo.Evento) : void",
+        "+getBiografia() : String",
+        "+getEventosCreados() : List<modelo.Evento>",
+        "+getGeneroPrincipal() : String",
+        "+getNombreArtistico() : String",
+        "+isVerificado() : boolean",
+        "+toString() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.util.ArrayList",
+        "java.util.HashMap",
+        "java.util.List",
+        "java.util.Map",
+        "modelo.Cuenta",
+        "modelo.Evento",
+        "modelo.TipoUsuario",
+        "void"
+      ]
+    },
+    {
+      "name": "modelo.Contrasenas",
+      "package": "modelo",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "java.security.SecureRandom",
+          "final": true,
+          "enumConstant": false,
+          "name": "AZAR",
+          "static": true,
+          "references": [
+            "java.security.SecureRandom"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "BITS_HASH",
+          "static": true,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "BYTES_SAL",
+          "static": true,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "ITERACIONES",
+          "static": true,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "PREFIJO",
+          "static": true,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "-Contrasenas()",
+        "{static} +hashear(contrasena : String) : String",
+        "{static} +verificar(contrasena : String, hash : String) : boolean",
+        "{static} -calcular(contrasena : String, sal : byte[], iteraciones : int) : byte[]"
+      ],
+      "dependencies": [
+        "boolean",
+        "byte",
+        "int",
+        "java.lang.IllegalArgumentException",
+        "java.lang.IllegalStateException",
+        "java.lang.Integer",
+        "java.lang.String",
+        "java.security.GeneralSecurityException",
+        "java.security.MessageDigest",
+        "java.security.SecureRandom",
+        "java.util.Base64",
+        "javax.crypto.SecretKeyFactory",
+        "javax.crypto.spec.PBEKeySpec"
+      ]
+    },
+    {
+      "name": "modelo.Cuenta",
+      "package": "modelo",
+      "kind": "abstract class",
+      "modifiers": "public abstract",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "activo",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "hashContrasena",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": false,
+          "enumConstant": false,
+          "name": "id",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "nombreUsuario",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "sesionIniciada",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.TipoUsuario",
+          "final": false,
+          "enumConstant": false,
+          "name": "tipoUsuario",
+          "static": false,
+          "references": [
+            "modelo.TipoUsuario"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "#Cuenta(id : int, nombreUsuario : String, hashContrasena : String, activo : boolean, tipoUsuario : modelo.TipoUsuario)",
+        "+activar() : void",
+        "+cerrarSesion() : void",
+        "+desactivar() : void",
+        "+getHashContrasena() : String",
+        "+getId() : int",
+        "+getNombreUsuario() : String",
+        "+getTipoUsuario() : modelo.TipoUsuario",
+        "+iniciarSesion() : void",
+        "+isActivo() : boolean",
+        "+isSesionIniciada() : boolean",
+        "+validarContrasena(contrasenaIngresada : String) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.String",
+        "modelo.Contrasenas",
+        "modelo.TipoUsuario",
+        "void"
+      ]
+    },
+    {
+      "name": "modelo.DatosRecital",
+      "package": "modelo",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "int",
+          "final": false,
+          "enumConstant": false,
+          "name": "capacidadMaxima",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "descripcion",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "esStreaming",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.EstadoEvento",
+          "final": false,
+          "enumConstant": false,
+          "name": "estado",
+          "static": false,
+          "references": [
+            "modelo.EstadoEvento"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "exclusivo",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "LocalDateTime",
+          "final": false,
+          "enumConstant": false,
+          "name": "fechaHoraFin",
+          "static": false,
+          "references": [
+            "java.time.LocalDateTime"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "LocalDateTime",
+          "final": false,
+          "enumConstant": false,
+          "name": "fechaHoraInicio",
+          "static": false,
+          "references": [
+            "java.time.LocalDateTime"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.PlanSuscripcion",
+          "final": false,
+          "enumConstant": false,
+          "name": "planMinimoRequerido",
+          "static": false,
+          "references": [
+            "modelo.PlanSuscripcion"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "titulo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "ubicacion",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+DatosRecital(titulo : String, descripcion : String, fechaHoraInicio : LocalDateTime, fechaHoraFin : LocalDateTime, estado : modelo.EstadoEvento, capacidadMaxima : int, planMinimoRequerido : modelo.PlanSuscripcion, ubicacion : String, esStreaming : boolean, exclusivo : boolean)",
+        "+getCapacidadMaxima() : int",
+        "+getDescripcion() : String",
+        "+getEstado() : modelo.EstadoEvento",
+        "+getFechaHoraFin() : LocalDateTime",
+        "+getFechaHoraInicio() : LocalDateTime",
+        "+getPlanMinimoRequerido() : modelo.PlanSuscripcion",
+        "+getTitulo() : String",
+        "+getUbicacion() : String",
+        "+isEsStreaming() : boolean",
+        "+isExclusivo() : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.String",
+        "java.time.LocalDateTime",
+        "modelo.EstadoEvento",
+        "modelo.PlanSuscripcion"
+      ]
+    },
+    {
+      "name": "modelo.EstadoEvento",
+      "package": "modelo",
+      "kind": "enum",
+      "modifiers": "public final",
+      "superclass": "java.lang.Enum",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "modelo.EstadoEvento",
+          "final": true,
+          "enumConstant": true,
+          "name": "CANCELADO",
+          "static": true,
+          "references": [
+            "modelo.EstadoEvento"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "modelo.EstadoEvento",
+          "final": true,
+          "enumConstant": true,
+          "name": "EN_CURSO",
+          "static": true,
+          "references": [
+            "modelo.EstadoEvento"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "modelo.EstadoEvento",
+          "final": true,
+          "enumConstant": true,
+          "name": "EN_ESPERA",
+          "static": true,
+          "references": [
+            "modelo.EstadoEvento"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "modelo.EstadoEvento",
+          "final": true,
+          "enumConstant": true,
+          "name": "FINALIZADO",
+          "static": true,
+          "references": [
+            "modelo.EstadoEvento"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "modelo.EstadoEvento",
+          "final": true,
+          "enumConstant": true,
+          "name": "PAUSADO",
+          "static": true,
+          "references": [
+            "modelo.EstadoEvento"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "modelo.EstadoEvento",
+          "final": true,
+          "enumConstant": true,
+          "name": "PROGRAMADO",
+          "static": true,
+          "references": [
+            "modelo.EstadoEvento"
+          ],
+          "visibility": "+"
+        }
+      ],
+      "operations": [
+        "+admiteIngreso() : boolean",
+        "+estaCerrado() : boolean",
+        "+permiteCancelar() : boolean",
+        "+permiteFinalizar() : boolean",
+        "+permiteIniciar() : boolean",
+        "+permitePausar() : boolean",
+        "+permiteReanudar() : boolean",
+        "{static} +valueOf(name : String) : modelo.EstadoEvento",
+        "{static} +values() : modelo.EstadoEvento[]"
+      ],
+      "dependencies": [
+        "boolean",
+        "java.lang.String",
+        "modelo.EstadoEvento"
+      ]
+    },
+    {
+      "name": "modelo.Evento",
+      "package": "modelo",
+      "kind": "abstract class",
+      "modifiers": "public abstract",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "List<modelo.Artista>",
+          "final": false,
+          "enumConstant": false,
+          "name": "artistas",
+          "static": false,
+          "references": [
+            "java.util.List",
+            "modelo.Artista"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": false,
+          "enumConstant": false,
+          "name": "capacidadMaxima",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "descripcion",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.EstadoEvento",
+          "final": false,
+          "enumConstant": false,
+          "name": "estado",
+          "static": false,
+          "references": [
+            "modelo.EstadoEvento"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "LocalDateTime",
+          "final": false,
+          "enumConstant": false,
+          "name": "fechaHoraFin",
+          "static": false,
+          "references": [
+            "java.time.LocalDateTime"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "LocalDateTime",
+          "final": false,
+          "enumConstant": false,
+          "name": "fechaHoraInicio",
+          "static": false,
+          "references": [
+            "java.time.LocalDateTime"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": false,
+          "enumConstant": false,
+          "name": "id",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "titulo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+Evento(id : int, titulo : String, descripcion : String, fechaHoraInicio : LocalDateTime, fechaHoraFin : LocalDateTime, estado : modelo.EstadoEvento, capacidadMaxima : int)",
+        "+agregarArtista(artista : modelo.Artista) : void",
+        "+cancelarEvento() : void",
+        "+estaDentroDelHorario(momento : LocalDateTime) : boolean",
+        "+finalizarEvento() : void throws AccesoDenegadoException",
+        "+getArtistas() : List<modelo.Artista>",
+        "+getCapacidadMaxima() : int",
+        "+getDescripcion() : String",
+        "+getEstado() : modelo.EstadoEvento",
+        "+getFechaHoraFin() : LocalDateTime",
+        "+getFechaHoraInicio() : LocalDateTime",
+        "+getId() : int",
+        "+getNombresArtistas() : String",
+        "+getTitulo() : String",
+        "+iniciarEvento() : void throws AccesoDenegadoException",
+        "+mostrarEstado() : String",
+        "+pausarEvento() : void throws AccesoDenegadoException",
+        "+reanudarEvento() : void throws AccesoDenegadoException",
+        "+toString() : String",
+        "{abstract} #desconectarTodos() : void",
+        "{abstract} +expulsarUsuario(usuario : modelo.Usuario) : void",
+        "{abstract} +getCantidadConectados() : int",
+        "{abstract} +getPlanMinimoRequerido() : modelo.PlanSuscripcion",
+        "{abstract} +getUbicacion() : String",
+        "{abstract} +getUsuariosConectados() : Set<modelo.Usuario>",
+        "{abstract} +isExclusivo() : boolean",
+        "{abstract} +isStreaming() : boolean",
+        "{abstract} +permitirIngreso(usuario : modelo.Usuario) : void throws AccesoDenegadoException"
+      ],
+      "dependencies": [
+        "boolean",
+        "excepciones.AccesoDenegadoException",
+        "int",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.time.LocalDateTime",
+        "java.util.ArrayList",
+        "java.util.List",
+        "java.util.Set",
+        "modelo.Artista",
+        "modelo.EstadoEvento",
+        "modelo.PlanSuscripcion",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "modelo.PlanSuscripcion",
+      "package": "modelo",
+      "kind": "enum",
+      "modifiers": "public final",
+      "superclass": "java.lang.Enum",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "modelo.PlanSuscripcion",
+          "final": true,
+          "enumConstant": true,
+          "name": "ARTIST_PASS",
+          "static": true,
+          "references": [
+            "modelo.PlanSuscripcion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "modelo.PlanSuscripcion",
+          "final": true,
+          "enumConstant": true,
+          "name": "FREE",
+          "static": true,
+          "references": [
+            "modelo.PlanSuscripcion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "modelo.PlanSuscripcion",
+          "final": true,
+          "enumConstant": true,
+          "name": "PREMIUM",
+          "static": true,
+          "references": [
+            "modelo.PlanSuscripcion"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "nivel",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+cubre(planRequerido : modelo.PlanSuscripcion) : boolean",
+        "+getNivel() : int",
+        "-PlanSuscripcion(nivel : int)",
+        "{static} +valueOf(name : String) : modelo.PlanSuscripcion",
+        "{static} +values() : modelo.PlanSuscripcion[]"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.String",
+        "modelo.PlanSuscripcion"
+      ]
+    },
+    {
+      "name": "modelo.RecitalEnVivo",
+      "package": "modelo",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "modelo.Evento",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "esStreaming",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "exclusivo",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.PlanSuscripcion",
+          "final": false,
+          "enumConstant": false,
+          "name": "planMinimoRequerido",
+          "static": false,
+          "references": [
+            "modelo.PlanSuscripcion"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "ubicacion",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "Set<modelo.Usuario>",
+          "final": false,
+          "enumConstant": false,
+          "name": "usuariosConectados",
+          "static": false,
+          "references": [
+            "java.util.Set",
+            "modelo.Usuario"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "#desconectarTodos() : void",
+        "+RecitalEnVivo(id : int, datos : modelo.DatosRecital)",
+        "+expulsarUsuario(usuario : modelo.Usuario) : void",
+        "+getCantidadConectados() : int",
+        "+getPlanMinimoRequerido() : modelo.PlanSuscripcion",
+        "+getUbicacion() : String",
+        "+getUsuariosConectados() : Set<modelo.Usuario>",
+        "+isExclusivo() : boolean",
+        "+isStreaming() : boolean",
+        "+permitirIngreso(usuario : modelo.Usuario) : void throws AccesoDenegadoException",
+        "+restaurarConectado(usuario : modelo.Usuario) : void",
+        "+toString() : String",
+        "+validarDisponibilidad(momento : LocalDateTime) : void throws AccesoDenegadoException",
+        "+verificarCapacidad() : boolean",
+        "{static} +desconocido() : modelo.RecitalEnVivo"
+      ],
+      "dependencies": [
+        "boolean",
+        "excepciones.AccesoDenegadoException",
+        "int",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.time.LocalDateTime",
+        "java.util.Collections",
+        "java.util.HashSet",
+        "java.util.Set",
+        "modelo.DatosRecital",
+        "modelo.EstadoEvento",
+        "modelo.Evento",
+        "modelo.PlanSuscripcion",
+        "modelo.RecitalEnVivo",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "modelo.RegistroAcceso",
+      "package": "modelo",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "modelo.Evento",
+          "final": false,
+          "enumConstant": false,
+          "name": "evento",
+          "static": false,
+          "references": [
+            "modelo.Evento"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "exitoso",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "LocalDateTime",
+          "final": false,
+          "enumConstant": false,
+          "name": "fechaHoraIngreso",
+          "static": false,
+          "references": [
+            "java.time.LocalDateTime"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "LocalDateTime",
+          "final": false,
+          "enumConstant": false,
+          "name": "fechaHoraSalida",
+          "static": false,
+          "references": [
+            "java.time.LocalDateTime"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "motivoRechazo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.Usuario",
+          "final": false,
+          "enumConstant": false,
+          "name": "usuario",
+          "static": false,
+          "references": [
+            "modelo.Usuario"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+RegistroAcceso(usuario : modelo.Usuario, evento : modelo.Evento, exitoso : boolean, motivoRechazo : String)",
+        "+getEvento() : modelo.Evento",
+        "+getFechaHoraIngreso() : LocalDateTime",
+        "+getFechaHoraSalida() : LocalDateTime",
+        "+getMotivoRechazo() : String",
+        "+getUsuario() : modelo.Usuario",
+        "+isExitoso() : boolean",
+        "+registrarSalida() : void",
+        "+toString() : String",
+        "{static} +generarRegistro(usuario : modelo.Usuario, evento : modelo.Evento, exitoso : boolean, motivoRechazo : String) : modelo.RegistroAcceso",
+        "{static} +reconstruirRegistro(usuario : modelo.Usuario, evento : modelo.Evento, fechaHoraIngreso : LocalDateTime, exitoso : boolean, motivoRechazo : String) : modelo.RegistroAcceso",
+        "{static} +registrarIntentoFallido(usuario : modelo.Usuario, evento : modelo.Evento, motivoRechazo : String) : modelo.RegistroAcceso"
+      ],
+      "dependencies": [
+        "boolean",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.time.LocalDateTime",
+        "modelo.Evento",
+        "modelo.RegistroAcceso",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "modelo.TipoUsuario",
+      "package": "modelo",
+      "kind": "enum",
+      "modifiers": "public final",
+      "superclass": "java.lang.Enum",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "modelo.TipoUsuario",
+          "final": true,
+          "enumConstant": true,
+          "name": "ADMINISTRADOR",
+          "static": true,
+          "references": [
+            "modelo.TipoUsuario"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "modelo.TipoUsuario",
+          "final": true,
+          "enumConstant": true,
+          "name": "ARTISTA",
+          "static": true,
+          "references": [
+            "modelo.TipoUsuario"
+          ],
+          "visibility": "+"
+        },
+        {
+          "type": "modelo.TipoUsuario",
+          "final": true,
+          "enumConstant": true,
+          "name": "USUARIO",
+          "static": true,
+          "references": [
+            "modelo.TipoUsuario"
+          ],
+          "visibility": "+"
+        }
+      ],
+      "operations": [
+        "{static} +valueOf(name : String) : modelo.TipoUsuario",
+        "{static} +values() : modelo.TipoUsuario[]"
+      ],
+      "dependencies": [
+        "java.lang.String",
+        "modelo.TipoUsuario"
+      ]
+    },
+    {
+      "name": "modelo.Usuario",
+      "package": "modelo",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "modelo.Cuenta",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "apellido",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "email",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": false,
+          "enumConstant": false,
+          "name": "nombre",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "modelo.PlanSuscripcion",
+          "final": false,
+          "enumConstant": false,
+          "name": "planSuscripcion",
+          "static": false,
+          "references": [
+            "modelo.PlanSuscripcion"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+Usuario(id : int, nombre : String, planSuscripcion : modelo.PlanSuscripcion)",
+        "+Usuario(id : int, nombreUsuario : String, nombre : String, apellido : String, email : String, hashContrasena : String, planSuscripcion : modelo.PlanSuscripcion, activo : boolean)",
+        "+Usuario(id : int, nombreUsuario : String, nombre : String, apellido : String, email : String, hashContrasena : String, planSuscripcion : modelo.PlanSuscripcion, activo : boolean, tipoUsuario : modelo.TipoUsuario)",
+        "+actualizarPerfil(nombre : String, apellido : String, email : String) : void",
+        "+equals(obj : Object) : boolean",
+        "+getApellido() : String",
+        "+getEmail() : String",
+        "+getNombre() : String",
+        "+getNombreCompleto() : String",
+        "+getPlanSuscripcion() : modelo.PlanSuscripcion",
+        "+hashCode() : int",
+        "+tieneAccesoPrioritario() : boolean",
+        "+toString() : String",
+        "{static} +desconocido() : modelo.Usuario"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.util.Objects",
+        "modelo.Contrasenas",
+        "modelo.Cuenta",
+        "modelo.PlanSuscripcion",
+        "modelo.TipoUsuario",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "notificacion.NotificadorInactivo",
+      "package": "notificacion",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.Notificador"
+      ],
+      "fields": [],
+      "operations": [
+        "+NotificadorInactivo()",
+        "+notificar(destinatario : modelo.Usuario, titulo : String, mensaje : String) : void"
+      ],
+      "dependencies": [
+        "gestor.Notificador",
+        "java.lang.Override",
+        "java.lang.String",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "persistencia.ConexionSqlite",
+      "package": "persistencia",
+      "kind": "class",
+      "modifiers": "final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String[]",
+          "final": true,
+          "enumConstant": false,
+          "name": "TABLAS",
+          "static": true,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "-ConexionSqlite()",
+        "{static} ~abrir() : java.sql.Connection throws IOException"
+      ],
+      "dependencies": [
+        "java.io.IOException",
+        "java.lang.String",
+        "java.lang.System",
+        "java.nio.file.Files",
+        "java.nio.file.Path",
+        "java.nio.file.Paths",
+        "java.sql.Connection",
+        "java.sql.DriverManager",
+        "java.sql.SQLException",
+        "java.sql.Statement"
+      ]
+    },
+    {
+      "name": "persistencia.PersistenciaSqlite",
+      "package": "persistencia",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.Persistencia"
+      ],
+      "fields": [
+        {
+          "type": "persistencia.RepositorioArtistas",
+          "final": true,
+          "enumConstant": false,
+          "name": "artistas",
+          "static": false,
+          "references": [
+            "persistencia.RepositorioArtistas"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "persistencia.RepositorioEventos",
+          "final": true,
+          "enumConstant": false,
+          "name": "eventos",
+          "static": false,
+          "references": [
+            "persistencia.RepositorioEventos"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "persistencia.RepositorioRegistros",
+          "final": true,
+          "enumConstant": false,
+          "name": "registros",
+          "static": false,
+          "references": [
+            "persistencia.RepositorioRegistros"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "persistencia.RepositorioUsuarios",
+          "final": true,
+          "enumConstant": false,
+          "name": "usuarios",
+          "static": false,
+          "references": [
+            "persistencia.RepositorioUsuarios"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+PersistenciaSqlite()",
+        "+cargar(gestor : gestor.GestorEventosEnVivo) : void throws IOException",
+        "+guardar(gestor : gestor.GestorEventosEnVivo) : void throws IOException",
+        "{static} -borrar(conexion : java.sql.Connection, tablas : String[]) : void throws SQLException"
+      ],
+      "dependencies": [
+        "gestor.GestorEventosEnVivo",
+        "gestor.Persistencia",
+        "java.io.IOException",
+        "java.lang.Integer",
+        "java.lang.Override",
+        "java.lang.RuntimeException",
+        "java.lang.String",
+        "java.sql.Connection",
+        "java.sql.SQLException",
+        "java.sql.Statement",
+        "java.util.HashMap",
+        "java.util.List",
+        "java.util.Map",
+        "java.util.stream.Collectors",
+        "modelo.Artista",
+        "modelo.Evento",
+        "modelo.RegistroAcceso",
+        "modelo.Usuario",
+        "persistencia.ConexionSqlite",
+        "persistencia.RepositorioArtistas",
+        "persistencia.RepositorioEventos",
+        "persistencia.RepositorioRegistros",
+        "persistencia.RepositorioUsuarios",
+        "void"
+      ]
+    },
+    {
+      "name": "persistencia.RepositorioArtistas",
+      "package": "persistencia",
+      "kind": "class",
+      "modifiers": "final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "~RepositorioArtistas()",
+        "~cargarTodos(conexion : java.sql.Connection) : List<modelo.Artista> throws SQLException",
+        "~reemplazarTodos(conexion : java.sql.Connection, artistas : List<modelo.Artista>) : void throws SQLException"
+      ],
+      "dependencies": [
+        "java.sql.Connection",
+        "java.sql.PreparedStatement",
+        "java.sql.ResultSet",
+        "java.sql.SQLException",
+        "java.sql.Statement",
+        "java.util.ArrayList",
+        "java.util.List",
+        "modelo.Artista",
+        "void"
+      ]
+    },
+    {
+      "name": "persistencia.RepositorioEventos",
+      "package": "persistencia",
+      "kind": "class",
+      "modifiers": "final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "~RepositorioEventos()",
+        "~cargarTodos(conexion : java.sql.Connection, artistas : Map<Integer, modelo.Artista>, usuarios : Map<Integer, modelo.Usuario>) : List<modelo.Evento> throws SQLException",
+        "~reemplazarTodos(conexion : java.sql.Connection, eventos : List<modelo.Evento>) : void throws SQLException"
+      ],
+      "dependencies": [
+        "java.lang.Integer",
+        "java.sql.Connection",
+        "java.sql.PreparedStatement",
+        "java.sql.ResultSet",
+        "java.sql.SQLException",
+        "java.sql.Statement",
+        "java.time.LocalDateTime",
+        "java.util.ArrayList",
+        "java.util.HashMap",
+        "java.util.List",
+        "java.util.Map",
+        "modelo.Artista",
+        "modelo.DatosRecital",
+        "modelo.EstadoEvento",
+        "modelo.Evento",
+        "modelo.PlanSuscripcion",
+        "modelo.RecitalEnVivo",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "persistencia.RepositorioRegistros",
+      "package": "persistencia",
+      "kind": "class",
+      "modifiers": "final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "~RepositorioRegistros()",
+        "~cargarTodos(conexion : java.sql.Connection, usuarios : Map<Integer, modelo.Usuario>, eventos : Map<Integer, modelo.Evento>) : List<modelo.RegistroAcceso> throws SQLException",
+        "~reemplazarTodos(conexion : java.sql.Connection, registros : List<modelo.RegistroAcceso>, idsUsuarios : Set<Integer>, idsEventos : Set<Integer>) : void throws SQLException"
+      ],
+      "dependencies": [
+        "java.lang.Integer",
+        "java.sql.Connection",
+        "java.sql.PreparedStatement",
+        "java.sql.ResultSet",
+        "java.sql.SQLException",
+        "java.sql.Statement",
+        "java.time.LocalDateTime",
+        "java.util.ArrayList",
+        "java.util.List",
+        "java.util.Map",
+        "java.util.Set",
+        "modelo.Evento",
+        "modelo.RegistroAcceso",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "persistencia.RepositorioUsuarios",
+      "package": "persistencia",
+      "kind": "class",
+      "modifiers": "final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "~RepositorioUsuarios()",
+        "~cargarTodos(conexion : java.sql.Connection) : List<modelo.Usuario> throws SQLException",
+        "~reemplazarTodos(conexion : java.sql.Connection, usuarios : List<modelo.Usuario>) : void throws SQLException"
+      ],
+      "dependencies": [
+        "java.sql.Connection",
+        "java.sql.PreparedStatement",
+        "java.sql.ResultSet",
+        "java.sql.SQLException",
+        "java.sql.Statement",
+        "java.util.ArrayList",
+        "java.util.List",
+        "modelo.PlanSuscripcion",
+        "modelo.TipoUsuario",
+        "modelo.Usuario",
+        "void"
+      ]
+    },
+    {
+      "name": "servidor.CodigosCalendario",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "byte[]",
+          "final": true,
+          "enumConstant": false,
+          "name": "clave",
+          "static": false,
+          "references": [
+            "byte"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+CodigosCalendario()",
+        "+codigoDe(cuenta : modelo.Cuenta) : String"
+      ],
+      "dependencies": [
+        "java.io.IOException",
+        "java.lang.IllegalStateException",
+        "java.lang.String",
+        "java.lang.StringBuilder",
+        "java.lang.System",
+        "java.nio.charset.StandardCharsets",
+        "java.nio.file.Files",
+        "java.nio.file.Path",
+        "java.nio.file.Paths",
+        "java.security.GeneralSecurityException",
+        "java.security.SecureRandom",
+        "javax.crypto.Mac",
+        "javax.crypto.spec.SecretKeySpec",
+        "modelo.Cuenta"
+      ]
+    },
+    {
+      "name": "servidor.ConfiguracionServidor",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "boolean",
+          "final": true,
+          "enumConstant": false,
+          "name": "aceptaRed",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "int",
+          "final": true,
+          "enumConstant": false,
+          "name": "puerto",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "urlPublica",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ConfiguracionServidor(aceptaRedPorDefecto : boolean)",
+        "+esPublica() : boolean",
+        "+getDireccionDeEscucha() : java.net.InetAddress throws UnknownHostException",
+        "+getPuerto() : int",
+        "+getUrlBase() : String"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Integer",
+        "java.lang.String",
+        "java.lang.System",
+        "java.net.InetAddress",
+        "java.net.UnknownHostException"
+      ]
+    },
+    {
+      "name": "servidor.Conversor",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-Conversor()",
+        "{static} ~aDto(artista : modelo.Artista) : api.ArtistaDto",
+        "{static} ~aDto(cuenta : modelo.Cuenta) : api.CuentaDto",
+        "{static} ~aDto(evento : modelo.Evento) : api.EventoDto",
+        "{static} ~aDto(registro : modelo.RegistroAcceso) : api.RegistroDto",
+        "{static} ~aDto(usuario : modelo.Usuario) : api.UsuarioDto",
+        "{static} ~anonimo(usuario : modelo.Usuario) : api.UsuarioDto"
+      ],
+      "dependencies": [
+        "api.ArtistaDto",
+        "api.CuentaDto",
+        "api.EventoDto",
+        "api.RegistroDto",
+        "api.UsuarioDto",
+        "java.lang.Integer",
+        "java.util.ArrayList",
+        "java.util.List",
+        "modelo.Artista",
+        "modelo.Cuenta",
+        "modelo.Evento",
+        "modelo.RegistroAcceso",
+        "modelo.Usuario"
+      ]
+    },
+    {
+      "name": "servidor.Instantanea",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-Instantanea()",
+        "{static} ~de(gestor : gestor.GestorEventosEnVivo) : api.EstadoDto"
+      ],
+      "dependencies": [
+        "api.ArtistaDto",
+        "api.EstadoDto",
+        "api.EventoDto",
+        "api.RegistroDto",
+        "api.UsuarioDto",
+        "gestor.Accion",
+        "gestor.GestorEventosEnVivo",
+        "java.lang.Integer",
+        "java.util.ArrayList",
+        "java.util.LinkedHashMap",
+        "java.util.List",
+        "java.util.Map",
+        "modelo.Artista",
+        "modelo.Cuenta",
+        "modelo.Evento",
+        "modelo.RegistroAcceso",
+        "modelo.TipoUsuario",
+        "modelo.Usuario",
+        "servidor.Conversor"
+      ]
+    },
+    {
+      "name": "servidor.ManejadorApi",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "com.sun.net.httpserver.HttpHandler"
+      ],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "PREFIJO",
+          "static": true,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.GestorEventosEnVivo",
+          "final": true,
+          "enumConstant": false,
+          "name": "gestor",
+          "static": false,
+          "references": [
+            "gestor.GestorEventosEnVivo"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.ProveedorTransmision",
+          "final": true,
+          "enumConstant": false,
+          "name": "proveedorTransmision",
+          "static": false,
+          "references": [
+            "gestor.ProveedorTransmision"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "servidor.Sesiones",
+          "final": true,
+          "enumConstant": false,
+          "name": "sesiones",
+          "static": false,
+          "references": [
+            "servidor.Sesiones"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ManejadorApi(gestor : gestor.GestorEventosEnVivo, proveedorTransmision : gestor.ProveedorTransmision)",
+        "+handle(intercambio : com.sun.net.httpserver.HttpExchange) : void throws IOException",
+        "-atender(intercambio : com.sun.net.httpserver.HttpExchange) : Object throws AccesoDenegadoException, IOException",
+        "-atenderSesion(intercambio : com.sun.net.httpserver.HttpExchange, metodo : String) : Object throws AccesoDenegadoException, IOException",
+        "-atenderTransmision(cuenta : modelo.Cuenta, idEvento : int) : Object throws AccesoDenegadoException, IOException",
+        "-cuentaDe(token : String) : modelo.Cuenta",
+        "-ejecutar(partes : String[], metodo : String, cuerpo : String) : Object throws AccesoDenegadoException, IOException",
+        "-ejecutarEventos(partes : String[], cuerpo : String) : Object throws AccesoDenegadoException, IOException",
+        "-ejecutarUsuarios(partes : String[], cuerpo : String) : Object",
+        "-restaurarSesion(anterior : modelo.Cuenta) : void",
+        "{static} -cuerpo(intercambio : com.sun.net.httpserver.HttpExchange) : String throws IOException",
+        "{static} -enviar(intercambio : com.sun.net.httpserver.HttpExchange, codigo : int, cuerpo : Object) : void throws IOException",
+        "{static} -mensaje(e : Exception) : String",
+        "{static} -token(intercambio : com.sun.net.httpserver.HttpExchange) : String"
+      ],
+      "dependencies": [
+        "api.ErrorDto",
+        "api.IdDto",
+        "api.InicioSesionDto",
+        "api.Json",
+        "api.NuevoArtistaDto",
+        "api.NuevoEventoDto",
+        "api.NuevoUsuarioDto",
+        "api.SesionDto",
+        "api.TransmisionDto",
+        "api.UrlDto",
+        "api.UsuarioPedidoDto",
+        "com.google.gson.JsonParseException",
+        "com.sun.net.httpserver.HttpExchange",
+        "com.sun.net.httpserver.HttpHandler",
+        "excepciones.AccesoDenegadoException",
+        "excepciones.PermisoDenegadoException",
+        "excepciones.PersistenciaException",
+        "gestor.ConsultaTransmision",
+        "gestor.GestorEventosEnVivo",
+        "gestor.ProveedorTransmision",
+        "gestor.Transmision",
+        "int",
+        "java.io.IOException",
+        "java.io.OutputStream",
+        "java.lang.Exception",
+        "java.lang.IllegalArgumentException",
+        "java.lang.Integer",
+        "java.lang.NullPointerException",
+        "java.lang.Object",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.nio.charset.StandardCharsets",
+        "java.time.LocalDateTime",
+        "modelo.Artista",
+        "modelo.Cuenta",
+        "modelo.DatosRecital",
+        "modelo.EstadoEvento",
+        "modelo.PlanSuscripcion",
+        "modelo.RecitalEnVivo",
+        "modelo.Usuario",
+        "servidor.Conversor",
+        "servidor.Instantanea",
+        "servidor.ManejadorApi.NoAutenticado",
+        "servidor.ManejadorApi.NoEncontrada",
+        "servidor.ManejadorApi.SinContenido",
+        "servidor.Sesiones",
+        "void"
+      ]
+    },
+    {
+      "name": "servidor.ManejadorApi$NoAutenticado",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "private static",
+      "superclass": "java.lang.RuntimeException",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "~NoAutenticado(mensaje : String)"
+      ],
+      "dependencies": [
+        "java.lang.RuntimeException",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "servidor.ManejadorApi$NoEncontrada",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "private static",
+      "superclass": "java.lang.RuntimeException",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "~NoEncontrada(mensaje : String)"
+      ],
+      "dependencies": [
+        "java.lang.RuntimeException",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "servidor.ManejadorApi$SinContenido",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "private static",
+      "superclass": "java.lang.RuntimeException",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-SinContenido()"
+      ],
+      "dependencies": [
+        "java.lang.RuntimeException"
+      ]
+    },
+    {
+      "name": "servidor.ManejadorCalendario",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "com.sun.net.httpserver.HttpHandler"
+      ],
+      "fields": [
+        {
+          "type": "servidor.CodigosCalendario",
+          "final": true,
+          "enumConstant": false,
+          "name": "codigos",
+          "static": false,
+          "references": [
+            "servidor.CodigosCalendario"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.GestorEventosEnVivo",
+          "final": true,
+          "enumConstant": false,
+          "name": "gestor",
+          "static": false,
+          "references": [
+            "gestor.GestorEventosEnVivo"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ManejadorCalendario(gestor : gestor.GestorEventosEnVivo, codigos : servidor.CodigosCalendario)",
+        "+handle(intercambio : com.sun.net.httpserver.HttpExchange) : void throws IOException",
+        "-buscarEvento(codigo : String, texto : String) : modelo.Evento"
+      ],
+      "dependencies": [
+        "calendario.FormatoIcs",
+        "com.sun.net.httpserver.HttpExchange",
+        "com.sun.net.httpserver.HttpHandler",
+        "gestor.GestorEventosEnVivo",
+        "java.io.IOException",
+        "java.io.OutputStream",
+        "java.lang.Integer",
+        "java.lang.NumberFormatException",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.nio.charset.StandardCharsets",
+        "java.security.MessageDigest",
+        "java.util.ArrayList",
+        "java.util.List",
+        "modelo.Cuenta",
+        "modelo.Evento",
+        "servidor.CodigosCalendario",
+        "servidor.PublicadorHttp",
+        "void"
+      ]
+    },
+    {
+      "name": "servidor.PublicadorHttp",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.PublicadorCalendario"
+      ],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "PREFIJO",
+          "static": true,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "~"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "SUFIJO",
+          "static": true,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "~"
+        },
+        {
+          "type": "servidor.CodigosCalendario",
+          "final": true,
+          "enumConstant": false,
+          "name": "codigos",
+          "static": false,
+          "references": [
+            "servidor.CodigosCalendario"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "servidor.ConfiguracionServidor",
+          "final": true,
+          "enumConstant": false,
+          "name": "configuracion",
+          "static": false,
+          "references": [
+            "servidor.ConfiguracionServidor"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+PublicadorHttp(configuracion : servidor.ConfiguracionServidor, codigos : servidor.CodigosCalendario)",
+        "+urlFeed(cuenta : modelo.Cuenta, evento : modelo.Evento) : String throws IOException"
+      ],
+      "dependencies": [
+        "gestor.PublicadorCalendario",
+        "java.io.IOException",
+        "java.lang.Override",
+        "java.lang.String",
+        "modelo.Cuenta",
+        "modelo.Evento",
+        "servidor.CodigosCalendario",
+        "servidor.ConfiguracionServidor"
+      ]
+    },
+    {
+      "name": "servidor.ServidorHttp",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-ServidorHttp()",
+        "{static} +iniciar(configuracion : servidor.ConfiguracionServidor, manejadores : Map<String, com.sun.net.httpserver.HttpHandler>) : void throws IOException",
+        "{static} -iniciarComoDaemon(servidor : com.sun.net.httpserver.HttpServer) : void throws IOException"
+      ],
+      "dependencies": [
+        "com.sun.net.httpserver.HttpHandler",
+        "com.sun.net.httpserver.HttpServer",
+        "java.io.IOException",
+        "java.lang.InterruptedException",
+        "java.lang.Runnable",
+        "java.lang.String",
+        "java.lang.Thread",
+        "java.net.InetSocketAddress",
+        "java.util.Map",
+        "java.util.concurrent.Executors",
+        "servidor.ConfiguracionServidor",
+        "void"
+      ]
+    },
+    {
+      "name": "servidor.Sesiones",
+      "package": "servidor",
+      "kind": "class",
+      "modifiers": "",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "java.security.SecureRandom",
+          "final": true,
+          "enumConstant": false,
+          "name": "azar",
+          "static": false,
+          "references": [
+            "java.security.SecureRandom"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "Map<String, String>",
+          "final": true,
+          "enumConstant": false,
+          "name": "cuentasPorToken",
+          "static": false,
+          "references": [
+            "java.util.Map",
+            "java.lang.String",
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "~Sesiones()",
+        "~abrir(nombreUsuario : String) : String",
+        "~cerrar(token : String) : void",
+        "~cuentaDe(token : String) : String"
+      ],
+      "dependencies": [
+        "java.lang.String",
+        "java.lang.StringBuilder",
+        "java.security.SecureRandom",
+        "java.util.Map",
+        "java.util.concurrent.ConcurrentHashMap",
+        "void"
+      ]
+    },
+    {
+      "name": "transmision.ClienteTransmision",
+      "package": "transmision",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "java.lang.Object",
+      "interfaces": [
+        "gestor.ProveedorTransmision"
+      ],
+      "fields": [
+        {
+          "type": "java.net.http.HttpClient",
+          "final": true,
+          "enumConstant": false,
+          "name": "cliente",
+          "static": false,
+          "references": [
+            "java.net.http.HttpClient"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "urlBase",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "urlPublica",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ClienteTransmision()",
+        "+buscar(consulta : gestor.ConsultaTransmision) : gestor.Transmision throws IOException",
+        "+cerrar(espectador : String) : void"
+      ],
+      "dependencies": [
+        "com.google.gson.Gson",
+        "gestor.ConsultaTransmision",
+        "gestor.ProveedorTransmision",
+        "gestor.Transmision",
+        "java.io.IOException",
+        "java.lang.InterruptedException",
+        "java.lang.Override",
+        "java.lang.String",
+        "java.lang.System",
+        "java.lang.Thread",
+        "java.lang.Throwable",
+        "java.net.URI",
+        "java.net.URLEncoder",
+        "java.net.http.HttpClient",
+        "java.net.http.HttpRequest",
+        "java.net.http.HttpResponse",
+        "java.net.http.HttpResponse.BodyHandlers",
+        "java.nio.charset.StandardCharsets",
+        "java.time.Duration",
+        "transmision.ClienteTransmision.Respuesta",
+        "void"
+      ]
+    },
+    {
+      "name": "transmision.ClienteTransmision$Respuesta",
+      "package": "transmision",
+      "kind": "record",
+      "modifiers": "private static final",
+      "superclass": "java.lang.Record",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "error",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "ruta",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "String",
+          "final": true,
+          "enumConstant": false,
+          "name": "titulo",
+          "static": false,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+equals(o : Object) : boolean",
+        "+error() : String",
+        "+hashCode() : int",
+        "+ruta() : String",
+        "+titulo() : String",
+        "+toString() : String",
+        "-Respuesta(titulo : String, ruta : String, error : String)"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Object",
+        "java.lang.String"
+      ]
+    },
+    {
+      "name": "transmision.ProcesoServicio",
+      "package": "transmision",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "String[]",
+          "final": true,
+          "enumConstant": false,
+          "name": "POSIBLES_NODE",
+          "static": true,
+          "references": [
+            "java.lang.String"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "-ProcesoServicio()",
+        "{static} +iniciar() : void",
+        "{static} -funciona(node : String) : boolean",
+        "{static} -localizarNode() : String",
+        "{static} -localizarScript() : java.nio.file.Path",
+        "{static} -respondeSalud(base : java.net.URI) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "java.io.IOException",
+        "java.lang.InterruptedException",
+        "java.lang.Process",
+        "java.lang.ProcessBuilder",
+        "java.lang.ProcessBuilder.Redirect",
+        "java.lang.ProcessHandle",
+        "java.lang.Runtime",
+        "java.lang.String",
+        "java.lang.System",
+        "java.lang.Thread",
+        "java.net.URI",
+        "java.net.http.HttpClient",
+        "java.net.http.HttpRequest",
+        "java.net.http.HttpResponse",
+        "java.net.http.HttpResponse.BodyHandlers",
+        "java.nio.file.Files",
+        "java.nio.file.Path",
+        "java.nio.file.Paths",
+        "java.time.Duration",
+        "void"
+      ]
+    },
+    {
+      "name": "ui.Logo",
+      "package": "ui",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "int[]",
+          "final": true,
+          "enumConstant": false,
+          "name": "LADOS",
+          "static": true,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "-Logo()",
+        "{static} +aplicar(ventana : javax.swing.JFrame) : void",
+        "{static} +dibujar(lado : int) : java.awt.image.BufferedImage",
+        "{static} +icono(lado : int) : javax.swing.Icon",
+        "{static} +iconos() : List<java.awt.Image>"
+      ],
+      "dependencies": [
+        "int",
+        "java.awt.BasicStroke",
+        "java.awt.Color",
+        "java.awt.GradientPaint",
+        "java.awt.Graphics2D",
+        "java.awt.Image",
+        "java.awt.RenderingHints",
+        "java.awt.Taskbar",
+        "java.awt.Taskbar.Feature",
+        "java.awt.geom.Ellipse2D",
+        "java.awt.geom.Ellipse2D.Double",
+        "java.awt.geom.RoundRectangle2D",
+        "java.awt.geom.RoundRectangle2D.Double",
+        "java.awt.image.BufferedImage",
+        "java.lang.SecurityException",
+        "java.lang.UnsupportedOperationException",
+        "java.util.ArrayList",
+        "java.util.List",
+        "javax.swing.Icon",
+        "javax.swing.ImageIcon",
+        "javax.swing.JFrame",
+        "void"
+      ]
+    },
+    {
+      "name": "ui.ModeloTabla",
+      "package": "ui",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "javax.swing.table.DefaultTableModel",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "Class<?>[]",
+          "final": true,
+          "enumConstant": false,
+          "name": "tipos",
+          "static": false,
+          "references": [
+            "java.lang.Class",
+            "java.lang.Object"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+ModeloTabla(columnas : String[], tipos : Class<?>[])",
+        "+getColumnClass(columna : int) : Class<?>",
+        "+isCellEditable(fila : int, columna : int) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.lang.Class",
+        "java.lang.Object",
+        "java.lang.Override",
+        "java.lang.String",
+        "javax.swing.table.DefaultTableModel"
+      ]
+    },
+    {
+      "name": "ui.Navegador",
+      "package": "ui",
+      "kind": "class",
+      "modifiers": "public final",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "-Navegador()",
+        "{static} +abrir(url : String) : void throws IOException"
+      ],
+      "dependencies": [
+        "java.awt.Desktop",
+        "java.awt.Desktop.Action",
+        "java.io.IOException",
+        "java.lang.String",
+        "java.net.URI",
+        "void"
+      ]
+    },
+    {
+      "name": "ui.VentanaLogin",
+      "package": "ui",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "javax.swing.JFrame",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "javax.swing.JPasswordField",
+          "final": true,
+          "enumConstant": false,
+          "name": "campoContrasena",
+          "static": false,
+          "references": [
+            "javax.swing.JPasswordField"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JTextField",
+          "final": true,
+          "enumConstant": false,
+          "name": "campoUsuario",
+          "static": false,
+          "references": [
+            "javax.swing.JTextField"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.ServicioEventos",
+          "final": true,
+          "enumConstant": false,
+          "name": "gestor",
+          "static": false,
+          "references": [
+            "gestor.ServicioEventos"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JLabel",
+          "final": true,
+          "enumConstant": false,
+          "name": "mensaje",
+          "static": false,
+          "references": [
+            "javax.swing.JLabel"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+VentanaLogin(gestor : gestor.ServicioEventos)",
+        "-construirInterfaz() : void",
+        "-iniciarSesion() : void"
+      ],
+      "dependencies": [
+        "excepciones.AccesoDenegadoException",
+        "excepciones.ErrorDeServicioException",
+        "gestor.ServicioEventos",
+        "java.awt.Color",
+        "java.awt.Font",
+        "java.awt.GridBagConstraints",
+        "java.awt.GridBagLayout",
+        "java.awt.Insets",
+        "java.awt.event.ActionEvent",
+        "java.lang.String",
+        "java.lang.System",
+        "javax.swing.BorderFactory",
+        "javax.swing.JButton",
+        "javax.swing.JFrame",
+        "javax.swing.JLabel",
+        "javax.swing.JPanel",
+        "javax.swing.JPasswordField",
+        "javax.swing.JTextField",
+        "ui.Logo",
+        "ui.VentanaPrincipal",
+        "void"
+      ]
+    },
+    {
+      "name": "ui.VentanaPrincipal",
+      "package": "ui",
+      "kind": "class",
+      "modifiers": "public",
+      "superclass": "javax.swing.JFrame",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "java.awt.Color",
+          "final": true,
+          "enumConstant": false,
+          "name": "COLOR_ERROR",
+          "static": true,
+          "references": [
+            "java.awt.Color"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "java.awt.Color",
+          "final": true,
+          "enumConstant": false,
+          "name": "COLOR_EXITO",
+          "static": true,
+          "references": [
+            "java.awt.Color"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "format.DateTimeFormatter",
+          "final": true,
+          "enumConstant": false,
+          "name": "FORMATO_FECHA",
+          "static": true,
+          "references": [
+            "java.time.format.DateTimeFormatter"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JButton",
+          "final": true,
+          "enumConstant": false,
+          "name": "alternarActivo",
+          "static": false,
+          "references": [
+            "javax.swing.JButton"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JButton",
+          "final": true,
+          "enumConstant": false,
+          "name": "calendario",
+          "static": false,
+          "references": [
+            "javax.swing.JButton"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JButton",
+          "final": true,
+          "enumConstant": false,
+          "name": "cancelar",
+          "static": false,
+          "references": [
+            "javax.swing.JButton"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JLabel",
+          "final": false,
+          "enumConstant": false,
+          "name": "estado",
+          "static": false,
+          "references": [
+            "javax.swing.JLabel"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JButton",
+          "final": true,
+          "enumConstant": false,
+          "name": "finalizar",
+          "static": false,
+          "references": [
+            "javax.swing.JButton"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "gestor.ServicioEventos",
+          "final": false,
+          "enumConstant": false,
+          "name": "gestor",
+          "static": false,
+          "references": [
+            "gestor.ServicioEventos"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JButton",
+          "final": true,
+          "enumConstant": false,
+          "name": "iniciar",
+          "static": false,
+          "references": [
+            "javax.swing.JButton"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.Timer",
+          "final": true,
+          "enumConstant": false,
+          "name": "limpiarEstado",
+          "static": false,
+          "references": [
+            "javax.swing.Timer"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "ui.ModeloTabla",
+          "final": false,
+          "enumConstant": false,
+          "name": "modeloArtistas",
+          "static": false,
+          "references": [
+            "ui.ModeloTabla"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "ui.ModeloTabla",
+          "final": false,
+          "enumConstant": false,
+          "name": "modeloEventos",
+          "static": false,
+          "references": [
+            "ui.ModeloTabla"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "ui.ModeloTabla",
+          "final": false,
+          "enumConstant": false,
+          "name": "modeloRegistros",
+          "static": false,
+          "references": [
+            "ui.ModeloTabla"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "ui.ModeloTabla",
+          "final": false,
+          "enumConstant": false,
+          "name": "modeloUsuarios",
+          "static": false,
+          "references": [
+            "ui.ModeloTabla"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JButton",
+          "final": true,
+          "enumConstant": false,
+          "name": "pausar",
+          "static": false,
+          "references": [
+            "javax.swing.JButton"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "boolean",
+          "final": false,
+          "enumConstant": false,
+          "name": "permiteCerrarSesion",
+          "static": false,
+          "references": [
+            "boolean"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JButton",
+          "final": true,
+          "enumConstant": false,
+          "name": "reanudar",
+          "static": false,
+          "references": [
+            "javax.swing.JButton"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.Timer",
+          "final": true,
+          "enumConstant": false,
+          "name": "refrescoAutomatico",
+          "static": false,
+          "references": [
+            "javax.swing.Timer"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JTable",
+          "final": false,
+          "enumConstant": false,
+          "name": "tablaEventos",
+          "static": false,
+          "references": [
+            "javax.swing.JTable"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JTable",
+          "final": false,
+          "enumConstant": false,
+          "name": "tablaUsuarios",
+          "static": false,
+          "references": [
+            "javax.swing.JTable"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JButton",
+          "final": true,
+          "enumConstant": false,
+          "name": "verConectados",
+          "static": false,
+          "references": [
+            "javax.swing.JButton"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JButton",
+          "final": true,
+          "enumConstant": false,
+          "name": "verTransmision",
+          "static": false,
+          "references": [
+            "javax.swing.JButton"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "+VentanaPrincipal(gestor : gestor.ServicioEventos, permiteCerrarSesion : boolean)",
+        "-abrirTransmision(evento : modelo.Evento) : void",
+        "-accionPorDefecto() : void",
+        "-actualizarAutomaticamente() : void",
+        "-actualizarBotonUsuario() : void",
+        "-actualizarBotones() : void",
+        "-actualizarDesdeOrigen() : void",
+        "-actualizarListas() : void",
+        "-agregarRegistros(registros : List<modelo.RegistroAcceso>) : void",
+        "-agregarSiPermitido(panel : javax.swing.JPanel, accion : gestor.Accion, boton : javax.swing.JButton) : void",
+        "-alternarActivoSeleccionado() : void",
+        "-cambiarEstadoSeleccionado(accion : String) : void",
+        "-cerrarSesion() : void",
+        "-confirmar(pregunta : String) : boolean",
+        "-construirInterfaz() : void",
+        "-crearBoton(texto : String, accion : Runnable) : javax.swing.JButton",
+        "-crearBuscador() : javax.swing.JPanel",
+        "-crearEvento() : void",
+        "-crearFila(titulo : String) : javax.swing.JPanel",
+        "-crearPanelArtistas() : javax.swing.JPanel",
+        "-crearPanelEventos() : javax.swing.JPanel",
+        "-crearPanelRegistros() : javax.swing.JPanel",
+        "-crearPanelUsuarios() : javax.swing.JPanel",
+        "-crearTabla(modelo : ui.ModeloTabla, anchos : int[]) : javax.swing.JTable",
+        "-ejecutar(accion : Runnable) : void",
+        "-estaConectado(evento : modelo.Evento) : boolean",
+        "-eventoSeleccionado() : modelo.Evento",
+        "-expulsarUsuario() : void",
+        "-filtrarEventos(texto : String) : void",
+        "-mostrarEnBarra(mensaje : String, color : java.awt.Color) : void",
+        "-mostrarError(mensaje : String) : void",
+        "-mostrarExito(mensaje : String) : void",
+        "-mostrarInfo(mensaje : String) : void",
+        "-obtenerIdDesdeTexto(texto : String) : int",
+        "-obtenerIdSeleccionado(tabla : javax.swing.JTable) : Integer",
+        "-pedir(titulo : String, formulario : ui.VentanaPrincipal.Formulario, validador : function.Supplier<String>) : boolean",
+        "-registrarArtista() : void",
+        "-registrarUsuario() : void",
+        "-reseleccionar(tabla : javax.swing.JTable, modelo : ui.ModeloTabla, id : Integer) : void",
+        "-seleccionarEvento() : modelo.Evento",
+        "-seleccionarOpcion(titulo : String, opciones : List<String>) : String",
+        "-seleccionarUsuario() : modelo.Usuario",
+        "-seleccionarUsuarioConectado(evento : modelo.Evento) : modelo.Usuario",
+        "-solicitarIngreso() : void",
+        "-usuarioSeleccionado() : modelo.Usuario",
+        "-verConectados() : void",
+        "-verTransmision() : void",
+        "-vincularCalendario(vinculo : gestor.VinculoCalendario) : void",
+        "{static} -vacio(campo : javax.swing.JTextField) : boolean"
+      ],
+      "dependencies": [
+        "boolean",
+        "calendario.VinculoApple",
+        "calendario.VinculoGoogle",
+        "excepciones.AccesoDenegadoException",
+        "excepciones.ErrorDeServicioException",
+        "excepciones.PermisoDenegadoException",
+        "gestor.Accion",
+        "gestor.ServicioEventos",
+        "gestor.Transmision",
+        "gestor.VinculoCalendario",
+        "int",
+        "java.awt.BorderLayout",
+        "java.awt.Color",
+        "java.awt.Cursor",
+        "java.awt.FlowLayout",
+        "java.awt.event.ActionEvent",
+        "java.awt.event.MouseAdapter",
+        "java.awt.event.WindowAdapter",
+        "java.io.IOException",
+        "java.lang.Class",
+        "java.lang.Integer",
+        "java.lang.Object",
+        "java.lang.Runnable",
+        "java.lang.String",
+        "java.lang.StringBuilder",
+        "java.time.LocalDateTime",
+        "java.time.format.DateTimeFormatter",
+        "java.util.ArrayList",
+        "java.util.List",
+        "java.util.function.Supplier",
+        "java.util.regex.Pattern",
+        "javax.swing.BorderFactory",
+        "javax.swing.BoxLayout",
+        "javax.swing.DefaultListCellRenderer",
+        "javax.swing.JButton",
+        "javax.swing.JCheckBox",
+        "javax.swing.JComboBox",
+        "javax.swing.JFrame",
+        "javax.swing.JLabel",
+        "javax.swing.JMenuItem",
+        "javax.swing.JOptionPane",
+        "javax.swing.JPanel",
+        "javax.swing.JPasswordField",
+        "javax.swing.JPopupMenu",
+        "javax.swing.JScrollPane",
+        "javax.swing.JSpinner",
+        "javax.swing.JTabbedPane",
+        "javax.swing.JTable",
+        "javax.swing.JTextField",
+        "javax.swing.ListSelectionModel",
+        "javax.swing.RowFilter",
+        "javax.swing.SwingConstants",
+        "javax.swing.Timer",
+        "javax.swing.event.DocumentListener",
+        "javax.swing.event.ListSelectionEvent",
+        "javax.swing.table.DefaultTableCellRenderer",
+        "javax.swing.table.TableColumn",
+        "javax.swing.table.TableRowSorter",
+        "modelo.Artista",
+        "modelo.DatosRecital",
+        "modelo.EstadoEvento",
+        "modelo.Evento",
+        "modelo.PlanSuscripcion",
+        "modelo.RegistroAcceso",
+        "modelo.TipoUsuario",
+        "modelo.Usuario",
+        "ui.Logo",
+        "ui.ModeloTabla",
+        "ui.Navegador",
+        "ui.VentanaLogin",
+        "ui.VentanaPrincipal$Formulario",
+        "ui.VentanaPrincipal.Formulario",
+        "ui.VentanaPrincipal.RenderizadorEstado",
+        "void"
+      ]
+    },
+    {
+      "name": "ui.VentanaPrincipal$Formulario",
+      "package": "ui",
+      "kind": "class",
+      "modifiers": "private static",
+      "superclass": "java.lang.Object",
+      "interfaces": [],
+      "fields": [
+        {
+          "type": "int",
+          "final": false,
+          "enumConstant": false,
+          "name": "fila",
+          "static": false,
+          "references": [
+            "int"
+          ],
+          "visibility": "-"
+        },
+        {
+          "type": "javax.swing.JPanel",
+          "final": true,
+          "enumConstant": false,
+          "name": "panel",
+          "static": false,
+          "references": [
+            "javax.swing.JPanel"
+          ],
+          "visibility": "-"
+        }
+      ],
+      "operations": [
+        "-<T extends java.awt.Component> agregar(etiqueta : String, campo : T) : T",
+        "-Formulario()",
+        "~<T> combo(etiqueta : String, valores : T[]) : javax.swing.JComboBox<T>",
+        "~clave(etiqueta : String) : javax.swing.JPasswordField",
+        "~marca(etiqueta : String) : javax.swing.JCheckBox",
+        "~numero(etiqueta : String, inicial : int, minimo : int, maximo : int) : javax.swing.JSpinner",
+        "~panel() : javax.swing.JPanel",
+        "~texto(etiqueta : String) : javax.swing.JTextField"
+      ],
+      "dependencies": [
+        "int",
+        "java.awt.Component",
+        "java.awt.GridBagConstraints",
+        "java.awt.GridBagLayout",
+        "java.awt.Insets",
+        "java.lang.String",
+        "javax.swing.JCheckBox",
+        "javax.swing.JComboBox",
+        "javax.swing.JLabel",
+        "javax.swing.JPanel",
+        "javax.swing.JPasswordField",
+        "javax.swing.JSpinner",
+        "javax.swing.JTextField",
+        "javax.swing.SpinnerNumberModel"
+      ]
+    },
+    {
+      "name": "ui.VentanaPrincipal$RenderizadorEstado",
+      "package": "ui",
+      "kind": "class",
+      "modifiers": "private static",
+      "superclass": "javax.swing.table.DefaultTableCellRenderer",
+      "interfaces": [],
+      "fields": [],
+      "operations": [
+        "+getTableCellRendererComponent(tabla : javax.swing.JTable, valor : Object, seleccionada : boolean, foco : boolean, fila : int, columna : int) : java.awt.Component",
+        "-RenderizadorEstado()",
+        "-colorDeEstado(estado : String) : java.awt.Color"
+      ],
+      "dependencies": [
+        "boolean",
+        "int",
+        "java.awt.Color",
+        "java.awt.Component",
+        "java.awt.Font",
+        "java.lang.Object",
+        "java.lang.Override",
+        "java.lang.String",
+        "javax.swing.JTable",
+        "javax.swing.table.DefaultTableCellRenderer"
+      ]
+    }
+  ],
+  "permissions": {
+    "administrador": [
+      "REGISTRAR_USUARIO",
+      "REGISTRAR_ARTISTA",
+      "ACTIVAR_DESACTIVAR_USUARIO",
+      "CREAR_EVENTO",
+      "VER_USUARIOS",
+      "VER_ARTISTAS",
+      "VER_EVENTOS",
+      "INICIAR_EVENTO",
+      "PAUSAR_EVENTO",
+      "REANUDAR_EVENTO",
+      "FINALIZAR_EVENTO",
+      "CANCELAR_EVENTO",
+      "SOLICITAR_INGRESO",
+      "VER_CONECTADOS",
+      "VER_CAPACIDAD",
+      "VINCULAR_CALENDARIO",
+      "VER_TRANSMISION",
+      "EXPULSAR_USUARIO",
+      "VER_REGISTROS",
+      "ABRIR_INTERFAZ_GRAFICA"
+    ],
+    "artista": [
+      "CREAR_EVENTO",
+      "VER_EVENTOS",
+      "INICIAR_EVENTO",
+      "PAUSAR_EVENTO",
+      "REANUDAR_EVENTO",
+      "FINALIZAR_EVENTO",
+      "CANCELAR_EVENTO",
+      "VER_CONECTADOS",
+      "VER_CAPACIDAD",
+      "VINCULAR_CALENDARIO",
+      "VER_TRANSMISION",
+      "ABRIR_INTERFAZ_GRAFICA"
+    ],
+    "usuario": [
+      "VER_EVENTOS",
+      "SOLICITAR_INGRESO",
+      "VER_CAPACIDAD",
+      "VINCULAR_CALENDARIO",
+      "VER_TRANSMISION",
+      "VER_MIS_REGISTROS",
+      "ABRIR_INTERFAZ_GRAFICA"
+    ]
+  }
+}

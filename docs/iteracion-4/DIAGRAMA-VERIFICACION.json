@@ -1,0 +1,32 @@
+{
+  "sourceFiles": 91,
+  "ownTypes": 97,
+  "externalTypes": 6,
+  "structuralRelations": 82,
+  "attributes": 266,
+  "operations": 686,
+  "approvedModelPreserved": true,
+  "straightConnectors": true,
+  "files": {
+    "TP/Grupo9_POO_Diagramas_Pdf/fuentes/clases-completo.puml": "c02ec1391d31c2f668c534b1f9920e23995ac2322bccd718be3b57be7c26c00e",
+    "TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.svg": "8bf5d00533de9d77b4fddfc2f291057ea1ceda9f54ff6c1484aaf176da5cd4f6",
+    "TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.png": "200cb4f0cf8c78ff65f4e12bfa2d0db70a8acb1c9ac9879fb362ab2fcbac6299"
+  },
+  "reports": [
+    {
+      "file": "UADE_Beats_Iteracion_4_Informe_A4.pdf",
+      "pages": 8,
+      "attachments": 1
+    },
+    {
+      "file": "UADE_Beats_Iteracion_4_Presentacion.pdf",
+      "pages": 19,
+      "attachments": 1
+    },
+    {
+      "file": "UADE_Beats_Diagrama_Clases_Corregido_A4.pdf",
+      "pages": 12,
+      "attachments": 2
+    }
+  ]
+}

@@ -57,6 +57,9 @@ public class GestorEventosEnVivo implements ServicioEventos {
     // Direccion donde se publica el calendario de cada evento.
     private PublicadorCalendario publicador;
 
+    // Contexto Strategy para el alcance de lectura; no reemplaza los permisos.
+    private final PoliticasVisibilidad visibilidad = new PoliticasVisibilidad();
+
     // Servicio que encuentra la transmision de cada evento.
     private ProveedorTransmision proveedorTransmision;
 
@@ -332,21 +335,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
     }
 
     private boolean esVisiblePara(Cuenta actual, Evento evento) {
-        if (actual == null) {
-            return false;
-        }
-
-        if (actual.getTipoUsuario() != TipoUsuario.ARTISTA) {
-            return true;
-        }
-
-        for (Artista artista : evento.getArtistas()) {
-            if (artista.getId() == actual.getId()) {
-                return true;
-            }
-        }
-
-        return false;
+        return visibilidad.esVisible(actual, evento);
     }
 
     // Los datos de un gestor local siempre estan al dia.
