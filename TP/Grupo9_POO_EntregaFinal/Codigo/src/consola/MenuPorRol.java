@@ -1,9 +1,9 @@
-package app;
+package consola;
 
-import gestor.Accion;
+import seguridad.Accion;
 import excepciones.PermisoDenegadoException;
 import excepciones.ErrorDeServicioException;
-import gestor.ServicioEventos;
+import servicio.ServicioEventos;
 
 import java.util.List;
 import java.util.Scanner;

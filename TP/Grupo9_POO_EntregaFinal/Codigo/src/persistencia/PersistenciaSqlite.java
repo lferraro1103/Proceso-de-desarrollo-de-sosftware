@@ -1,7 +1,7 @@
 package persistencia;
 
 import gestor.GestorEventosEnVivo;
-import gestor.Persistencia;
+import puertos.Persistencia;
 import modelo.Artista;
 import modelo.Evento;
 import modelo.RegistroAcceso;

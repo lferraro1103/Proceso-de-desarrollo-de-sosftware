@@ -1,4 +1,4 @@
-package gestor;
+package seguridad;
 
 /*
  * Acciones que una cuenta puede intentar ejecutar sobre el sistema.

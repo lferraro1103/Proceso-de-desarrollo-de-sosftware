@@ -1,4 +1,4 @@
-package gestor;
+package seguridad;
 
 import excepciones.PermisoDenegadoException;
 import modelo.Cuenta;

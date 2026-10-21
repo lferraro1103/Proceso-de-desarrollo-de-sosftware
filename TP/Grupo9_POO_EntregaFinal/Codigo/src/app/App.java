@@ -1,8 +1,12 @@
 package app;
 
 import cliente.GestorRemoto;
-import gestor.ServicioEventos;
+import consola.ConsoleIO;
+import consola.MenuAcciones;
+import consola.MenuPorRol;
+import servicio.ServicioEventos;
 import servidor.ConfiguracionServidor;
+import ui.AppSwing;
 
 import java.io.IOException;
 import java.util.NoSuchElementException;

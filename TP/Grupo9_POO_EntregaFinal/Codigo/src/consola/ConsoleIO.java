@@ -1,4 +1,4 @@
-package app;
+package consola;
 
 import java.util.Scanner;
 

@@ -1,6 +1,6 @@
 package calendario;
 
-import gestor.VinculoCalendario;
+import puertos.VinculoCalendario;
 
 import java.awt.Desktop;
 import java.io.IOException;

@@ -1,5 +1,8 @@
 package gestor;
 
+import puertos.ConsultaTransmision;
+import puertos.ProveedorTransmision;
+import puertos.Transmision;
 import excepciones.AccesoDenegadoException;
 import modelo.Cuenta;
 import modelo.EstadoEvento;

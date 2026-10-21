@@ -1,9 +1,9 @@
 package transmision;
 
 import com.google.gson.Gson;
-import gestor.ConsultaTransmision;
-import gestor.ProveedorTransmision;
-import gestor.Transmision;
+import puertos.ConsultaTransmision;
+import puertos.ProveedorTransmision;
+import puertos.Transmision;
 
 import java.io.IOException;
 import java.net.URI;

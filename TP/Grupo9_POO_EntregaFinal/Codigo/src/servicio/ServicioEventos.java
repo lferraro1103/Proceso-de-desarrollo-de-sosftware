@@ -1,4 +1,4 @@
-package gestor;
+package servicio;
 
 /*
  * Todo lo que las vistas (ventana y consola) piden al sistema.

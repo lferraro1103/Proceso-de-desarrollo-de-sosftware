@@ -1,7 +1,7 @@
 package app;
 
 import gestor.GestorEventosEnVivo;
-import gestor.ProveedorTransmision;
+import puertos.ProveedorTransmision;
 import notificacion.NotificadorInactivo;
 import persistencia.PersistenciaSqlite;
 import transmision.ClienteTransmision;

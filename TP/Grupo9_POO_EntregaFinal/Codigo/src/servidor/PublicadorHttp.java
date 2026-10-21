@@ -1,6 +1,6 @@
 package servidor;
 
-import gestor.PublicadorCalendario;
+import puertos.PublicadorCalendario;
 import modelo.Cuenta;
 import modelo.Evento;
 
