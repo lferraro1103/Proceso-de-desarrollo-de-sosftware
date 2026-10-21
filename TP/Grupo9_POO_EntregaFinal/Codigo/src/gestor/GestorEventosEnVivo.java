@@ -20,16 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
- * Clase gestora del modulo.
+ * Controlador del modulo: recibe los pedidos de las vistas y del servidor,
+ * verifica el permiso de la cuenta, aplica la operacion sobre el modelo y
+ * guarda los cambios.
  *
- * Su funcion es coordinar operaciones generales:
- * - administrar eventos;
- * - administrar usuarios;
- * - buscar por ID;
- * - solicitar ingresos;
- * - guardar registros de acceso.
- *
- * Con esto se evita que Main concentre reglas de negocio.
+ * Administra usuarios, artistas y eventos; delega los ingresos en
+ * ControlAcceso y la sesion en ControlSesion, y recibe por constructor la
+ * persistencia, el calendario y las transmisiones.
  *
  * Sus operaciones publicas son synchronized porque pueden llegar desde la
  * ventana local y desde los hilos del servidor al mismo tiempo.
@@ -94,58 +91,6 @@ public class GestorEventosEnVivo implements ServicioEventos {
         }
     }
 
-    // Agrega un recital al gestor.
-    public synchronized void crearEvento(
-            RecitalEnVivo evento) {
-
-        sesion.exigirSiHaySesion(Accion.CREAR_EVENTO);
-
-        eventos.add(evento);
-    }
-
-    /*
-     * Crea un evento asociado a un artista.
-     *
-     * Se llama explicitamente a artista.crearEvento(evento) para usar
-     * el comportamiento propio de Artista y mantener la trazabilidad.
-     */
-    public synchronized void crearEvento(RecitalEnVivo evento,
-                            Artista artista) {
-
-        sesion.exigirSiHaySesion(Accion.CREAR_EVENTO);
-
-        if (artista != null) {
-            artista.crearEvento(evento);
-            evento.agregarArtista(artista);
-        }
-
-        eventos.add(evento);
-    }
-
-    /*
-     * Registra un usuario si el nombre de usuario no existe.
-     *
-     * Devuelve true si pudo registrarlo y false si ya habia otro usuario
-     * con el mismo nombre de usuario.
-     */
-    public synchronized boolean registrarUsuario(Usuario usuario) {
-        sesion.exigirSiHaySesion(Accion.REGISTRAR_USUARIO);
-
-        if (existeNombreUsuario(usuario.getNombreUsuario())) {
-            return false;
-        }
-
-        usuariosRegistrados.add(usuario);
-        return true;
-    }
-
-    // Registra un artista en la lista del gestor.
-    public synchronized void registrarArtista(Artista artista) {
-        sesion.exigirSiHaySesion(Accion.REGISTRAR_ARTISTA);
-
-        artistasRegistrados.add(artista);
-    }
-
     /*
      * Da de alta un usuario nuevo a partir de los datos crudos que junta
      * la vista. El gestor es quien conoce los usuarios existentes, por lo
@@ -163,6 +108,10 @@ public class GestorEventosEnVivo implements ServicioEventos {
 
         sesion.exigir(Accion.REGISTRAR_USUARIO);
 
+        if (existeNombreUsuario(nombreUsuario)) {
+            return null;
+        }
+
         Usuario usuario = new Usuario(
                 siguienteIdUsuario(),
                 nombreUsuario,
@@ -174,10 +123,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
                 true
         );
 
-        if (!registrarUsuario(usuario)) {
-            return null;
-        }
-
+        usuariosRegistrados.add(usuario);
         guardarDatos();
         return usuario;
     }
@@ -212,7 +158,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
                 verificado
         );
 
-        registrarArtista(artista);
+        artistasRegistrados.add(artista);
         guardarDatos();
         return artista;
     }
@@ -231,57 +177,25 @@ public class GestorEventosEnVivo implements ServicioEventos {
         }
 
         RecitalEnVivo recital = new RecitalEnVivo(siguienteIdEvento(), datos);
-        crearEvento(recital, artista);
+
+        // agregarArtista tambien registra el evento en el artista.
+        recital.agregarArtista(artista);
+        eventos.add(recital);
         guardarDatos();
         return recital;
     }
 
-    // El proximo ID de usuario es el mayor existente mas uno.
+    // Los proximos IDs son el mayor existente mas uno.
     private int siguienteIdUsuario() {
-        int mayor = 0;
-        for (Usuario usuario : usuariosRegistrados) {
-            mayor = Math.max(mayor, usuario.getId());
-        }
-        return mayor + 1;
+        return usuariosRegistrados.stream().mapToInt(Usuario::getId).max().orElse(0) + 1;
     }
 
-    // El proximo ID de artista es el mayor existente mas uno.
     private int siguienteIdArtista() {
-        int mayor = 0;
-        for (Artista artista : artistasRegistrados) {
-            mayor = Math.max(mayor, artista.getId());
-        }
-        return mayor + 1;
+        return artistasRegistrados.stream().mapToInt(Artista::getId).max().orElse(0) + 1;
     }
 
-    // El proximo ID de evento es el mayor existente mas uno.
     private int siguienteIdEvento() {
-        int mayor = 0;
-        for (Evento evento : eventos) {
-            mayor = Math.max(mayor, evento.getId());
-        }
-        return mayor + 1;
-    }
-
-    /*
-     * Devuelve eventos disponibles para operar.
-     *
-     * Excluye cancelados y finalizados porque ya no deberian aparecer
-     * como alternativas de acceso disponibles.
-     */
-    public List<Evento>
-    listarEventosDisponibles() {
-
-        List<Evento> disponibles = new ArrayList<>();
-
-        for (Evento evento : eventos) {
-            if (evento.getEstado() != EstadoEvento.CANCELADO
-                    && evento.getEstado() != EstadoEvento.FINALIZADO) {
-                disponibles.add(evento);
-            }
-        }
-
-        return disponibles;
+        return eventos.stream().mapToInt(Evento::getId).max().orElse(0) + 1;
     }
 
     /*
@@ -313,15 +227,11 @@ public class GestorEventosEnVivo implements ServicioEventos {
     public synchronized List<RegistroAcceso> listarMisRegistros() {
         sesion.exigir(Accion.VER_MIS_REGISTROS);
 
+        int idActual = sesion.getCuentaActual().getId();
         List<RegistroAcceso> propios = new ArrayList<>();
-        Cuenta actual = sesion.getCuentaActual();
-
-        if (actual == null) {
-            return propios;
-        }
 
         for (RegistroAcceso registro : controlAcceso.listar()) {
-            if (registro.getUsuario().getId() == actual.getId()) {
+            if (registro.getUsuario().getId() == idActual) {
                 propios.add(registro);
             }
         }
@@ -329,7 +239,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
         return propios;
     }
 
-    // Un artista solo ve los eventos en los que participa.
+    // Alcance de lectura de la cuenta actual segun su rol (estrategia de visibilidad).
     private boolean esVisible(Evento evento) {
         return esVisiblePara(sesion.getCuentaActual(), evento);
     }
@@ -408,25 +318,14 @@ public class GestorEventosEnVivo implements ServicioEventos {
 
     // Busca un evento por ID. Si no existe, devuelve null.
     public synchronized Evento buscarEventoPorId(int id) {
-        for (Evento evento : eventos) {
-            if (evento.getId() == id) {
-                return evento;
-            }
-        }
-
-        return null;
+        return eventos.stream().filter(e -> e.getId() == id).findFirst().orElse(null);
     }
 
     // Busca un usuario por ID. Si no existe, devuelve null.
     @Override
     public synchronized Usuario buscarUsuarioPorId(int id) {
-        for (Usuario usuario : usuariosRegistrados) {
-            if (usuario.getId() == id) {
-                return usuario;
-            }
-        }
-
-        return null;
+        return usuariosRegistrados.stream()
+                .filter(u -> u.getId() == id).findFirst().orElse(null);
     }
 
     // Verifica si ya existe un usuario con ese nombre de cuenta.
@@ -623,24 +522,25 @@ public class GestorEventosEnVivo implements ServicioEventos {
                 espectador(actual, idEvento));
     }
 
-    // Nombre con el que el servicio de transmisiones identifica a quien mira.
-    private static String espectador(Cuenta cuenta, int idEvento) {
-        return cuenta.getTipoUsuario() + "" + cuenta.getId() + ":" + idEvento;
+    // Nombre con el que el servicio de transmisiones identifica a quien mira
+    // un evento; "*" en lugar del evento abarca todos los de la cuenta.
+    private static String espectador(Cuenta cuenta, Object evento) {
+        return cuenta.getTipoUsuario() + "" + cuenta.getId() + ":" + evento;
     }
 
     // Cierra las transmisiones abiertas por una cuenta.
     public void cerrarTransmisionesDe(Cuenta cuenta) {
-        proveedorTransmision.cerrar(cuenta.getTipoUsuario() + "" + cuenta.getId() + ":*");
+        proveedorTransmision.cerrar(espectador(cuenta, "*"));
+    }
+
+    // Cierra las transmisiones de todos los que miran un evento.
+    private void cerrarTransmisionesDeEvento(int idEvento) {
+        proveedorTransmision.cerrar("*:" + idEvento);
     }
 
     private boolean estaConectado(Evento evento, Cuenta cuenta) {
-        for (Usuario usuario : evento.getUsuariosConectados()) {
-            if (usuario.getId() == cuenta.getId()) {
-                return true;
-            }
-        }
-
-        return false;
+        return evento.getUsuariosConectados().stream()
+                .anyMatch(usuario -> usuario.getId() == cuenta.getId());
     }
 
     /*
@@ -656,13 +556,8 @@ public class GestorEventosEnVivo implements ServicioEventos {
     // Busca un artista por ID. Si no existe, devuelve null.
     @Override
     public synchronized Artista buscarArtistaPorId(int id) {
-        for (Artista artista : artistasRegistrados) {
-            if (artista.getId() == id) {
-                return artista;
-            }
-        }
-
-        return null;
+        return artistasRegistrados.stream()
+                .filter(a -> a.getId() == id).findFirst().orElse(null);
     }
 
     /*
@@ -693,7 +588,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
     @Override
     public synchronized void finalizarEvento(int idEvento) throws AccesoDenegadoException {
         buscarEventoParaCambio(idEvento, Accion.FINALIZAR_EVENTO).finalizarEvento();
-        proveedorTransmision.cerrar("*:" + idEvento);
+        cerrarTransmisionesDeEvento(idEvento);
         guardarDatos();
     }
 
@@ -709,7 +604,7 @@ public class GestorEventosEnVivo implements ServicioEventos {
         }
 
         evento.cancelarEvento();
-        proveedorTransmision.cerrar("*:" + idEvento);
+        cerrarTransmisionesDeEvento(idEvento);
         guardarDatos();
     }
 
@@ -732,11 +627,6 @@ public class GestorEventosEnVivo implements ServicioEventos {
         }
 
         return evento;
-    }
-
-    // Agrega un registro a la trazabilidad.
-    public synchronized void registrarAcceso(RegistroAcceso registro) {
-        controlAcceso.registrar(registro);
     }
 
     // Caso de uso principal: solicitar ingreso a un evento.
