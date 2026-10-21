@@ -4,6 +4,9 @@ title Diagrama de clases: colaboradores del gestor (por constructor)
 
 class GestorEventosEnVivo
 class ControlAcceso
+class ControlTransmision {
+  reglas de las transmisiones
+}
 
 interface Persistencia {
   +guardar(gestor : GestorEventosEnVivo) : void
@@ -56,7 +59,8 @@ class Transmision {
 
 GestorEventosEnVivo "1" --> "1" Persistencia : persistencia
 GestorEventosEnVivo "1" --> "1" PublicadorCalendario : publicador
-GestorEventosEnVivo "1" --> "1" ProveedorTransmision : proveedorTransmision
+GestorEventosEnVivo "1" *-- "1" ControlTransmision
+ControlTransmision "1" --> "1" ProveedorTransmision : proveedor
 GestorEventosEnVivo "1" *-- "1" ControlAcceso
 ControlAcceso "1" --> "1" Notificador : notificador
 GestorEventosEnVivo ..> "0..1" VinculoCalendario : recibe por parametro

@@ -38,6 +38,9 @@ package "Interfaz grafica (Swing)" {
   class Logo {
     icono dibujado por codigo
   }
+  class Formularios {
+    formularios de alta: usuario, artista y evento
+  }
   class Navegador {
     abre una direccion en el navegador
   }
@@ -62,6 +65,8 @@ VentanaLogin "1" --> "0..1" VentanaPrincipal : tras iniciar sesion
 VentanaLogin "1" --> "1" Logo
 VentanaPrincipal "1" *-- "4" ModeloTabla : usuarios, artistas, eventos y registros
 VentanaPrincipal "1" --> "1" Logo
+VentanaPrincipal "1" *-- "1" Formularios
+Formularios "1" --> "1" ServicioEventos : gestor
 VentanaPrincipal ..> "1" Navegador
 MenuAcciones "1" --> "1" ServicioEventos : gestor
 VentanaPrincipal "1" --> "1" ServicioEventos : gestor
