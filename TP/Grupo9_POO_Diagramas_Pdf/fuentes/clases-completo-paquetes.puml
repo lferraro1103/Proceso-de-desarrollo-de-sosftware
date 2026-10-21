@@ -192,12 +192,24 @@ package "api (DTO)" {
   class RegistroDto
   class SesionDto
   class TransmisionDto
+  class InicioSesionDto
+  class NuevoUsuarioDto
+  class NuevoArtistaDto
+  class NuevoEventoDto
+  class UsuarioPedidoDto
+  class IdDto
+  class UrlDto
+  class ErrorDto
 }
 
 package "cliente" {
   class GestorRemoto
   class ClienteHttp
   class EstadoLocal
+}
+
+package "(raiz)" {
+  class Main
 }
 
 package "app" {
@@ -330,7 +342,26 @@ ClienteHttp ..> ConexionException
 ClienteHttp "*" ..> "1" ManejadorApi : HTTP + JSON
 GestorRemoto ..> TransmisionDto
 
+' ---------- peticiones y respuestas de la API ----------
+ManejadorApi ..> InicioSesionDto
+ManejadorApi ..> NuevoUsuarioDto
+ManejadorApi ..> NuevoArtistaDto
+ManejadorApi ..> NuevoEventoDto
+ManejadorApi ..> UsuarioPedidoDto
+ManejadorApi ..> IdDto
+ManejadorApi ..> UrlDto
+ManejadorApi ..> ErrorDto
+GestorRemoto ..> InicioSesionDto
+GestorRemoto ..> NuevoUsuarioDto
+GestorRemoto ..> NuevoArtistaDto
+GestorRemoto ..> NuevoEventoDto
+GestorRemoto ..> UsuarioPedidoDto
+GestorRemoto ..> IdDto
+GestorRemoto ..> UrlDto
+ClienteHttp ..> ErrorDto
+
 ' ---------- arranque y vistas ----------
+Main "1" --> "1" App
 App "1" --> "0..1" Arranque
 App "1" --> "0..1" GestorRemoto
 App "1" --> "0..1" MenuPorRol
