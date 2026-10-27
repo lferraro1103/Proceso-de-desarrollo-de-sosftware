@@ -36,7 +36,7 @@ Esta iteración reemplaza los archivos de texto por una base SQLite, agrega un s
 
 | Modo | Comando | Qué hace |
 |---|---|---|
-| Completo | `Main` | Datos propios en SQLite, API para clientes remotos (solo accesible desde el mismo equipo) y ventana o consola local. |
+| Completo | `Main` | Datos propios en SQLite, API para clientes remotos (solo accesible desde el mismo equipo), calendarios publicados en la red local y ventana o consola local. |
 | Servidor | `Main servidor` | Solo datos y API, sin interfaz. Acepta conexiones de la red. Se deja corriendo en una PC. |
 | Cliente | `Main cliente http://192.168.0.10:8765` | Solo interfaz. No guarda nada: se conecta al servidor, inicia sesión allí y trabaja con lo que su rol puede ver. |
 
@@ -45,9 +45,12 @@ Los parámetros se pasan como propiedades de Java (`-D`):
 | Propiedad | Valor por defecto | Uso |
 |---|---|---|
 | `uadebeats.db` | `~/.uadebeats/uadebeats.db` | Archivo de la base SQLite. |
-| `uadebeats.puerto` | `8765` | Puerto del servidor. |
+| `uadebeats.puerto` | `8765` | Puerto del servidor. En modo completo, si no se lo indica y está ocupado, se usa uno libre. |
 | `uadebeats.escuchar` | `local` en modo completo, `todas` en modo servidor | `todas` acepta conexiones de la red. |
-| `uadebeats.url` | (ninguna) | Dirección pública con https por la que se alcanza el servidor, necesaria para los calendarios. |
+| `uadebeats.puerto.calendario` | `8767` | Puerto con el que el modo completo publica los calendarios en la red local. Si está ocupado se usa uno libre. |
+| `uadebeats.url` | (ninguna) | Dirección pública con https por la que se alcanza el servidor. Si falta, los calendarios usan la dirección de la red local o la del túnel. |
+| `uadebeats.tunel` | (sí) | `no` evita abrir el túnel de Cloudflare aunque `cloudflared` esté instalado. |
+| `uadebeats.cloudflared` | (se busca en el PATH) | Ruta del ejecutable de `cloudflared`. |
 | `uadebeats.servidor` | (ninguna) | Dirección del servidor para el modo cliente, si no se la pasa como argumento. |
 
 ![Diagrama de servidor, API y cliente](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-red.png)
@@ -203,7 +206,26 @@ Una persona selecciona un evento y toca Google Calendar o Apple Calendar. Se abr
 
 El servidor publica cada evento en `/calendario/<código>/<id>.ics`. El código es un HMAC de la cuenta con una clave guardada en `~/.uadebeats/calendario.key`, por lo que no se puede adivinar y no hace falta login. Responde 404 si la cuenta está desactivada, el evento no existe o la cuenta no puede verlo. En modo cliente, el pedido pasa por el servidor, que es quien arma la dirección.
 
-Google y Apple se suscriben por https: Calendar convierte `webcal://` en `https://`, y Google además lee la dirección desde sus servidores. Por eso la dirección debe ser pública y con https. Se expone el puerto con un túnel (por ejemplo `cloudflared tunnel --url http://localhost:8765`) y se ejecuta con `-Duadebeats.url=https://<dirección del túnel>`. Con la dirección local se informa el motivo y no se abre nada.
+El servidor de calendarios arranca solo con el programa, sin ejecutar `Main servidor`:
+
+| Modo | Dónde se publican los calendarios |
+|---|---|
+| Completo | Un servidor aparte (`ServidorHttp.iniciarCalendarios`) que atiende solo `/calendario/` en todas las interfaces, puerto 8767. La API sigue escuchando solo este equipo. |
+| Servidor | El mismo servidor de la API, que ya acepta conexiones de la red. |
+| Cliente | Le pide la dirección al servidor. |
+
+La dirección de los enlaces se elige en este orden:
+
+1. `-Duadebeats.url=https://...`, si se indica.
+2. La del túnel de Cloudflare: en modo completo, si `cloudflared` está instalado, el programa lo inicia como proceso hijo hacia el puerto de los calendarios (no hacia la API), toma la dirección `https://...trycloudflare.com` de su salida y lo cierra al salir. Esa dirección cambia en cada ejecución, por lo que las suscripciones hechas con ella dejan de actualizarse al cerrar el programa.
+3. La de este equipo en la red local, por ejemplo `http://192.168.0.10:8767`.
+
+| Calendario | Requisito |
+|---|---|
+| Google Calendar | Lee la dirección desde sus servidores: necesita https (túnel o `uadebeats.url`). Con una dirección de la red local se informa el motivo y no se abre nada. |
+| Apple Calendar | Con túnel usa la dirección https. Sin túnel recibe `webcal://` sobre la dirección de la red local. **Sin verificar:** en una prueba anterior en Mac, Calendario convirtió `webcal://` en `https://` y la suscripción a una dirección local quedó procesando sin terminar. Si pasa, instalar `cloudflared` resuelve el caso. |
+
+En Windows, la primera vez que se publica en la red puede aparecer el aviso del firewall para Java: hay que permitir el acceso en redes privadas para que otros equipos lleguen al puerto 8767.
 
 ## 9. Interfaz de la ventana
 

@@ -10,6 +10,7 @@ import servidor.CodigosCalendario;
 import servidor.ConfiguracionServidor;
 import servidor.ManejadorApi;
 import servidor.ManejadorCalendario;
+import servidor.ProcesoTunel;
 import servidor.PublicadorHttp;
 import servidor.ServidorHttp;
 
@@ -50,14 +51,25 @@ final class Arranque {
             DatosIniciales.sembrar(gestor);
         }
 
+        ManejadorCalendario calendarios = new ManejadorCalendario(gestor, codigos);
+
         try {
             ServidorHttp.iniciar(configuracion, Map.of(
                     "/api/", new ManejadorApi(gestor, proveedorTransmision),
-                    "/calendario/", new ManejadorCalendario(gestor, codigos)));
+                    "/calendario/", calendarios));
         } catch (BindException e) {
             throw new IOException("El puerto " + configuracion.getPuerto()
                     + " ya esta en uso (¿hay otro programa abierto?). "
                     + "Use -Duadebeats.puerto=<otro puerto>.", e);
+        }
+
+        // Si la API solo escucha este equipo, los calendarios se publican
+        // aparte en la red local para que Apple Calendar se suscriba sin
+        // arrancar el modo servidor. Con cloudflared se abre ademas un tunel
+        // con https para Google Calendar.
+        if (!configuracion.aceptaRed()) {
+            ServidorHttp.iniciarCalendarios(configuracion, calendarios);
+            ProcesoTunel.iniciar(configuracion);
         }
 
         // El servicio de transmisiones arranca con el programa y no hace nada

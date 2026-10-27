@@ -15,9 +15,10 @@ import java.io.IOException;
 public interface PublicadorCalendario {
 
     /*
-     * Direccion http(s) del calendario del evento para la cuenta. Falla con
-     * IOException si la direccion no es alcanzable desde afuera, porque
-     * Google y Apple Calendar leen la suscripcion desde sus servidores.
+     * Direccion http(s) del calendario del evento para la cuenta. Puede ser
+     * de la red local: cada VinculoCalendario decide si le alcanza (Google
+     * necesita https porque lee la suscripcion desde sus servidores). Falla
+     * con IOException si no se puede armar ninguna.
      */
     String urlFeed(Cuenta cuenta, Evento evento) throws IOException;
 }

@@ -8,6 +8,10 @@ import java.io.IOException;
 
 /*
  * Arma las direcciones donde ManejadorCalendario publica cada evento.
+ *
+ * La direccion es la publica (https) si hay una y si no la de este equipo en
+ * la red local. Cada calendario decide si le alcanza: Apple se suscribe en la
+ * misma red, Google necesita https porque lee desde sus servidores.
  */
 public class PublicadorHttp implements PublicadorCalendario {
 
@@ -25,15 +29,6 @@ public class PublicadorHttp implements PublicadorCalendario {
 
     @Override
     public String urlFeed(Cuenta cuenta, Evento evento) throws IOException {
-        // Calendar convierte webcal:// en https:// y Google lee la direccion
-        // desde sus servidores: con una direccion local nunca se completa.
-        if (!configuracion.esPublica()) {
-            throw new IOException("Google y Apple Calendar necesitan una "
-                    + "direccion publica con https y esta es local. Exponga "
-                    + "el puerto con un tunel y ejecute con "
-                    + "-Duadebeats.url=https://su-direccion.");
-        }
-
         return configuracion.getUrlBase() + PREFIJO
                 + codigos.codigoDe(cuenta) + "/" + evento.getId() + SUFIJO;
     }
