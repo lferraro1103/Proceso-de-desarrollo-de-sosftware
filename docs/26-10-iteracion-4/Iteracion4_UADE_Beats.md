@@ -376,7 +376,7 @@ Eventos "● EN VIVO" en rojo, doble clic con acción según el rol, confirmacio
 - `Codigo/test/PruebasIteracion4.java`: según el repositorio, **110 comprobaciones** que cubren las estrategias, permisos, el servicio local, el remoto por HTTP y SQLite (se ejecutan con `java -ea`, sin JUnit).
 - Las pruebas de Strategy verifican que un artista ajeno no vea un evento, que un artista recargado desde la base siga viendo los suyos y que la estrategia de calendario no se ejecute para un evento que la cuenta no puede ver.
 - No se probaron servicios externos reales (YouTube, Google, Apple) en las pruebas automáticas.
-- Diagrama de clases completo contrastado con el código: 91 archivos Java, 97 tipos.
+- Diagrama de clases completo contrastado con el código: 94 archivos Java, un tipo principal por archivo (más 6 tipos internos auxiliares).
 
 ---
 
