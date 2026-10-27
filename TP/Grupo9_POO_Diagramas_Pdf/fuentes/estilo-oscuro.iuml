@@ -1,5 +1,5 @@
 !pragma layout elk
-skinparam linetype polyline
+skinparam linetype ortho
 skinparam classAttributeIconSize 0
 skinparam defaultFontName Helvetica
 skinparam defaultFontSize 11

@@ -281,7 +281,7 @@ Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_
 | Diagrama | Contenido |
 |---|---|
 | Diagrama de clases completo (generado) | Todos los tipos con atributos y operaciones, generado desde el código con las herramientas de `tools/uml` (`clases-completo.puml`, `.svg` y `.png`) |
-| Diagrama de clase por paquetes | Una sola página con todas las clases e interfaces agrupadas por paquete, con sus relaciones, cardinalidades y roles (`clases-completo-paquetes.puml`) |
+| Diagrama de clase por paquetes | Una sola página con todas las clases e interfaces agrupadas por paquete, con sus atributos, constructores y métodos no privados, relaciones, cardinalidades y roles, y líneas ortogonales (`clases-completo-paquetes.puml`, también en `.svg` claro y oscuro en `imagenes`) |
 | Diagrama de clase | Siete páginas, una por parte, con más detalle de atributos y métodos: modelo, controlador, colaboradores, persistencia, red, servicio de transmisiones y vistas |
 | Diagrama de secuencia | Tres páginas: solicitar ingreso con el gestor local, desde un cliente remoto y ver la transmisión de un evento |
 | Diagrama de base de datos | Las seis tablas con claves primarias y foráneas y cardinalidades |
