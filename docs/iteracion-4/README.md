@@ -2,13 +2,13 @@
 
 Rama: `iteracion-4`. Código integrado sobre `443c4a7`, con Strategy de visibilidad y transmisión conservada.
 
-## Diagrama completo verificado
+## Diagrama completo
 
-- [PlantUML](../../TP/Grupo9_POO_Diagramas_Pdf/fuentes/clases-completo.puml)
-- [SVG](../../TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.svg)
-- [PNG](../../TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.png)
+- [PlantUML](../../TP/Grupo9_POO_Diagramas_Pdf/fuentes/clases-completo-paquetes.puml)
+- [SVG](../../TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes.svg)
+- [PNG](../../TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes.png)
 
-Los tres corresponden al mismo modelo: 97 tipos propios, 266 atributos y 686 operaciones inventariadas, más 82 relaciones estructurales. Las operaciones incluyen miembros Java generados por el compilador que forman parte de records y enums. La fuente es autónoma y editable, sin includes externos. Conectores por segmentos rectos.
+Los tres corresponden al mismo modelo: los 94 tipos del código agrupados por paquete, con atributos, métodos, cardinalidades y líneas ortogonales.
 
 ## Documentación
 
@@ -19,7 +19,7 @@ Los tres corresponden al mismo modelo: 97 tipos propios, 266 atributos y 686 ope
 
 ## Informes PDF
 
-- [Láminas de clases en A4](../../output/pdf/UADE_Beats_Diagrama_Clases_Corregido_A4.pdf)
+- [Diagramas de clase por partes](<../../TP/Grupo9_POO_Diagramas_Pdf/Diagrama de clase.pdf>)
 - [Informe explicativo A4](../../output/pdf/UADE_Beats_Iteracion_4_Informe_A4.pdf)
 - [Presentación](../../output/pdf/UADE_Beats_Iteracion_4_Presentacion.pdf)
 

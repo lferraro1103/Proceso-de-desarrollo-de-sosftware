@@ -6,11 +6,12 @@ Se incorpora Strategy para la visibilidad de eventos, conservando permisos, tran
 
 ## Diagrama de clases completo
 
-- [PlantUML editable](TP/Grupo9_POO_Diagramas_Pdf/fuentes/clases-completo.puml).
-- [SVG ampliable](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.svg).
-- [PNG](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo.png).
+- [PlantUML editable](TP/Grupo9_POO_Diagramas_Pdf/fuentes/clases-completo-paquetes.puml).
+- [SVG ampliable](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes.svg) ([oscuro](<TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes (oscuro).svg>)).
+- [PNG](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes.png).
+- [PDF](<TP/Grupo9_POO_Diagramas_Pdf/Diagrama de clase por paquetes.pdf>) ([oscuro](<TP/Grupo9_POO_Diagramas_Pdf/Diagrama de clase por paquetes (oscuro).pdf>)).
 
-Los tres archivos corresponden al mismo modelo, con conectores por segmentos rectos. La documentación y los informes están en [docs/iteracion-4/](docs/iteracion-4/README.md).
+Todos corresponden al mismo modelo: los 94 tipos del código agrupados por paquete, con atributos, métodos, cardinalidades y líneas ortogonales. La documentación y los informes están en [docs/iteracion-4/](docs/iteracion-4/README.md).
 
 ![Logo de UADE Beats](logo.png)
 
@@ -280,7 +281,6 @@ Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_
 
 | Diagrama | Contenido |
 |---|---|
-| Diagrama de clases completo (generado) | Todos los tipos con atributos y operaciones, generado desde el código con las herramientas de `tools/uml` (`clases-completo.puml`, `.svg` y `.png`) |
 | Diagrama de clase por paquetes | Una sola página con todas las clases e interfaces agrupadas por paquete, con sus atributos, constructores y métodos no privados, relaciones, cardinalidades y roles, y líneas ortogonales (`clases-completo-paquetes.puml`, también en `.svg` claro y oscuro en `imagenes`) |
 | Diagrama de clase | Siete páginas, una por parte, con más detalle de atributos y métodos: modelo, controlador, colaboradores, persistencia, red, servicio de transmisiones y vistas |
 | Diagrama de secuencia | Tres páginas: solicitar ingreso con el gestor local, desde un cliente remoto y ver la transmisión de un evento |

@@ -10,7 +10,7 @@ El contrato `ServicioEventos` reúne sesión, consultas y comandos. `GestorEvent
 
 ## Entrega de clases
 
-91 fuentes Java; 97 tipos propios con nombre. Diagrama completo en `TP/Grupo9_POO_Diagramas_Pdf/fuentes/clases-completo.puml` y sus SVG/PNG en `imagenes/`. Incluye atributos, operaciones, 82 relaciones estructurales y seis tipos del JDK como contexto. Conectores rectos; inventario contrastado con AST y bytecode.
+94 tipos en el código. Diagrama completo en `TP/Grupo9_POO_Diagramas_Pdf/fuentes/clases-completo-paquetes.puml` y sus SVG/PNG en `imagenes/`. Incluye atributos, métodos, relaciones con cardinalidades y líneas ortogonales.
 
 Las relaciones de herencia, realización, asociación y composición están diferenciadas. No se inventa una clase Administrador: es un rol de Usuario. Los colaboradores inyectados se comparten por asociación; los controles y repositorios internos tienen propiedad compuesta justificada.
 
