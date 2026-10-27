@@ -8,22 +8,60 @@ package "modelo" {
     -nombreUsuario : String
     -hashContrasena : String
     -activo : boolean
-    +validarContrasena(contrasena : String) : boolean
-    +activar() : void
+    -sesionIniciada : boolean
+    -tipoUsuario : TipoUsuario
+    #Cuenta(id : int, nombreUsuario : String, hashContrasena : String, activo : boolean, tipoUsuario : TipoUsuario)
+    +iniciarSesion() : void
+    +validarContrasena(contrasenaIngresada : String) : boolean
     +desactivar() : void
+    +activar() : void
+    +cerrarSesion() : void
+    +getId() : int
+    +getNombreUsuario() : String
+    +getHashContrasena() : String
+    +isActivo() : boolean
+    +isSesionIniciada() : boolean
+    +getTipoUsuario() : TipoUsuario
   }
   class Usuario {
     -nombre : String
     -apellido : String
     -email : String
+    -planSuscripcion : PlanSuscripcion
+    +Usuario(id : int, nombreUsuario : String, nombre : String, apellido : String, email : String, hashContrasena : String, planSuscripcion : PlanSuscripcion, activo : boolean, tipoUsuario : TipoUsuario)
+    +Usuario(id : int, nombreUsuario : String, nombre : String, apellido : String, email : String, hashContrasena : String, planSuscripcion : PlanSuscripcion, activo : boolean)
+    +Usuario(id : int, nombre : String, planSuscripcion : PlanSuscripcion)
+    {static} +desconocido() : Usuario
+    +actualizarPerfil(nombre : String, apellido : String, email : String) : void
+    +getNombre() : String
+    +getApellido() : String
+    +getEmail() : String
+    +getPlanSuscripcion() : PlanSuscripcion
     +tieneAccesoPrioritario() : boolean
+    +getNombreCompleto() : String
+    +equals(obj : Object) : boolean
+    +hashCode() : int
+    +toString() : String
   }
   class Artista {
     -nombreArtistico : String
     -generoPrincipal : String
     -biografia : String
     -verificado : boolean
+    -eventosCreados : List<Evento>
+    -obras : List<String>
+    -redesSociales : Map<String, String>
+    +Artista(id : int, nombreUsuario : String, hashContrasena : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean)
     +crearEvento(evento : Evento) : void
+    +actualizarInformacionArtistica(nuevaBiografia : String) : String
+    +agregarObra(titulo : String) : void
+    +agregarRedSocial(red : String, url : String) : void
+    +getNombreArtistico() : String
+    +getGeneroPrincipal() : String
+    +getBiografia() : String
+    +isVerificado() : boolean
+    +getEventosCreados() : List<Evento>
+    +toString() : String
   }
   abstract class Evento {
     -id : int
@@ -31,21 +69,59 @@ package "modelo" {
     -descripcion : String
     -fechaHoraInicio : LocalDateTime
     -fechaHoraFin : LocalDateTime
+    -estado : EstadoEvento
     -capacidadMaxima : int
+    -artistas : List<Artista>
+    +Evento(id : int, titulo : String, descripcion : String, fechaHoraInicio : LocalDateTime, fechaHoraFin : LocalDateTime, estado : EstadoEvento, capacidadMaxima : int)
     +iniciarEvento() : void
-    +pausarEvento() : void
-    +reanudarEvento() : void
     +finalizarEvento() : void
     +cancelarEvento() : void
+    +pausarEvento() : void
+    +reanudarEvento() : void
+    {abstract} +getPlanMinimoRequerido() : PlanSuscripcion
+    {abstract} +getUbicacion() : String
+    {abstract} +isStreaming() : boolean
+    {abstract} +isExclusivo() : boolean
     {abstract} +permitirIngreso(usuario : Usuario) : void
     {abstract} +expulsarUsuario(usuario : Usuario) : void
+    {abstract} +getUsuariosConectados() : Set<Usuario>
+    {abstract} +getCantidadConectados() : int
+    {abstract} #desconectarTodos() : void
+    +mostrarEstado() : String
+    +estaDentroDelHorario(momento : LocalDateTime) : boolean
+    +agregarArtista(artista : Artista) : void
+    +getId() : int
+    +getTitulo() : String
+    +getDescripcion() : String
+    +getFechaHoraInicio() : LocalDateTime
+    +getFechaHoraFin() : LocalDateTime
+    +getEstado() : EstadoEvento
+    +getCapacidadMaxima() : int
+    +getArtistas() : List<Artista>
+    +getNombresArtistas() : String
+    +toString() : String
   }
   class RecitalEnVivo {
+    -planMinimoRequerido : PlanSuscripcion
     -ubicacion : String
     -esStreaming : boolean
     -exclusivo : boolean
+    -usuariosConectados : Set<Usuario>
+    +RecitalEnVivo(id : int, datos : DatosRecital)
+    {static} +desconocido() : RecitalEnVivo
     +verificarCapacidad() : boolean
+    +permitirIngreso(usuario : Usuario) : void
     +validarDisponibilidad(momento : LocalDateTime) : void
+    +restaurarConectado(usuario : Usuario) : void
+    +expulsarUsuario(usuario : Usuario) : void
+    +getUsuariosConectados() : Set<Usuario>
+    #desconectarTodos() : void
+    +getCantidadConectados() : int
+    +getPlanMinimoRequerido() : PlanSuscripcion
+    +getUbicacion() : String
+    +isStreaming() : boolean
+    +isExclusivo() : boolean
+    +toString() : String
   }
   enum TipoUsuario {
     USUARIO
@@ -56,6 +132,10 @@ package "modelo" {
     FREE
     PREMIUM
     ARTIST_PASS
+    -nivel : int
+    ~PlanSuscripcion(nivel : int)
+    +getNivel() : int
+    +cubre(planRequerido : PlanSuscripcion) : boolean
   }
   enum EstadoEvento {
     PROGRAMADO
@@ -64,177 +144,753 @@ package "modelo" {
     PAUSADO
     FINALIZADO
     CANCELADO
+    +admiteIngreso() : boolean
+    +permiteIniciar() : boolean
+    +permitePausar() : boolean
+    +permiteReanudar() : boolean
+    +permiteFinalizar() : boolean
+    +estaCerrado() : boolean
+    +permiteCancelar() : boolean
   }
-  class DatosRecital
+  class DatosRecital {
+    -titulo : String
+    -descripcion : String
+    -fechaHoraInicio : LocalDateTime
+    -fechaHoraFin : LocalDateTime
+    -estado : EstadoEvento
+    -capacidadMaxima : int
+    -planMinimoRequerido : PlanSuscripcion
+    -ubicacion : String
+    -esStreaming : boolean
+    -exclusivo : boolean
+    +DatosRecital(titulo : String, descripcion : String, fechaHoraInicio : LocalDateTime, fechaHoraFin : LocalDateTime, estado : EstadoEvento, capacidadMaxima : int, planMinimoRequerido : PlanSuscripcion, ubicacion : String, esStreaming : boolean, exclusivo : boolean)
+    +getTitulo() : String
+    +getDescripcion() : String
+    +getFechaHoraInicio() : LocalDateTime
+    +getFechaHoraFin() : LocalDateTime
+    +getEstado() : EstadoEvento
+    +getCapacidadMaxima() : int
+    +getPlanMinimoRequerido() : PlanSuscripcion
+    +getUbicacion() : String
+    +isEsStreaming() : boolean
+    +isExclusivo() : boolean
+  }
   class AccesoEvento {
+    -id : int
+    -usuario : Usuario
+    -evento : Evento
+    -fechaRegistro : LocalDateTime
+    -habilitado : boolean
+    -tipoAcceso : String
+    -planRequerido : PlanSuscripcion
+    -accesoPrioritario : boolean
+    +AccesoEvento(id : int, usuario : Usuario, evento : Evento, fechaRegistro : LocalDateTime, habilitado : boolean, tipoAcceso : String, planRequerido : PlanSuscripcion, accesoPrioritario : boolean)
+    +validarIngreso() : boolean
+    +validarPlanUsuario() : boolean
     +validarAutorizacion() : void
     +validarPlan() : void
+    +generarAcceso() : void
+    +cancelarAcceso() : void
+    +getId() : int
+    +getUsuario() : Usuario
+    +getEvento() : Evento
+    +getFechaRegistro() : LocalDateTime
+    +getTipoAcceso() : String
+    +getPlanRequerido() : PlanSuscripcion
+    +isAccesoPrioritario() : boolean
   }
   class RegistroAcceso {
+    -usuario : Usuario
+    -evento : Evento
     -fechaHoraIngreso : LocalDateTime
+    -fechaHoraSalida : LocalDateTime
     -exitoso : boolean
     -motivoRechazo : String
+    +RegistroAcceso(usuario : Usuario, evento : Evento, exitoso : boolean, motivoRechazo : String)
+    +registrarSalida() : void
+    {static} +generarRegistro(usuario : Usuario, evento : Evento, exitoso : boolean, motivoRechazo : String) : RegistroAcceso
+    {static} +registrarIntentoFallido(usuario : Usuario, evento : Evento, motivoRechazo : String) : RegistroAcceso
+    {static} +reconstruirRegistro(usuario : Usuario, evento : Evento, fechaHoraIngreso : LocalDateTime, exitoso : boolean, motivoRechazo : String) : RegistroAcceso
+    +getUsuario() : Usuario
+    +getEvento() : Evento
+    +getFechaHoraIngreso() : LocalDateTime
+    +getFechaHoraSalida() : LocalDateTime
+    +isExitoso() : boolean
+    +getMotivoRechazo() : String
+    +toString() : String
   }
   class Contrasenas {
+    {static} -PREFIJO : String
+    {static} -ITERACIONES : int
+    {static} -BYTES_SAL : int
+    {static} -BITS_HASH : int
+    {static} -AZAR : SecureRandom
     {static} +hashear(contrasena : String) : String
-    {static} +verificar(contrasena, hash) : boolean
+    {static} +verificar(contrasena : String, hash : String) : boolean
   }
 }
 
 package "excepciones" {
-  class AccesoDenegadoException
-  class PermisoDenegadoException
-  abstract class ErrorDeServicioException
-  class PersistenciaException
-  class ConexionException
+  class AccesoDenegadoException {
+    +AccesoDenegadoException(mensaje : String)
+  }
+  class PermisoDenegadoException {
+    +PermisoDenegadoException(mensaje : String)
+  }
+  abstract class ErrorDeServicioException {
+    +ErrorDeServicioException(mensaje : String, causa : Throwable)
+    +ErrorDeServicioException(mensaje : String)
+  }
+  class PersistenciaException {
+    +PersistenciaException(mensaje : String, causa : Throwable)
+  }
+  class ConexionException {
+    +ConexionException(mensaje : String, causa : Throwable)
+  }
 }
 
 package "servicio" {
-  interface ServicioSesion
-  interface ServicioConsultas
-  interface ServicioComandos
+  interface ServicioSesion {
+    {abstract} +iniciarSesion(nombreUsuario : String, contrasena : String) : Cuenta
+    {abstract} +cerrarSesion() : void
+    {abstract} +getCuentaActual() : Cuenta
+    {abstract} +puede(accion : Accion) : boolean
+    {abstract} +accionesPermitidas() : List<Accion>
+  }
+  interface ServicioConsultas {
+    {abstract} +listarUsuarios() : List<Usuario>
+    {abstract} +listarArtistas() : List<Artista>
+    {abstract} +listarEventosVisibles() : List<Evento>
+    {abstract} +listarRegistros() : List<RegistroAcceso>
+    {abstract} +listarMisRegistros() : List<RegistroAcceso>
+    {abstract} +buscarEventoVisible(id : int) : Evento
+    {abstract} +buscarUsuarioPorId(id : int) : Usuario
+    {abstract} +buscarArtistaPorId(id : int) : Artista
+    {abstract} +existeNombreUsuario(nombreUsuario : String) : boolean
+    {abstract} +obtenerTransmision(idEvento : int) : Transmision
+    {abstract} +actualizar() : void
+  }
+  interface ServicioComandos {
+    {abstract} +registrarUsuario(nombreUsuario : String, nombre : String, apellido : String, email : String, contrasena : String, plan : PlanSuscripcion) : Usuario
+    {abstract} +registrarArtista(nombreUsuario : String, contrasena : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean) : Artista
+    {abstract} +crearEvento(datos : DatosRecital, artista : Artista) : RecitalEnVivo
+    {abstract} +iniciarEvento(idEvento : int) : void
+    {abstract} +pausarEvento(idEvento : int) : void
+    {abstract} +reanudarEvento(idEvento : int) : void
+    {abstract} +finalizarEvento(idEvento : int) : void
+    {abstract} +cancelarEvento(idEvento : int) : void
+    {abstract} +solicitarIngreso(idUsuario : int, idEvento : int) : RegistroAcceso
+    {abstract} +alternarActivo(idUsuario : int) : Usuario
+    {abstract} +expulsarUsuario(idEvento : int, idUsuario : int) : Usuario
+    {abstract} +vincularCalendario(idEvento : int, vinculo : VinculoCalendario) : void
+  }
   interface ServicioEventos
 }
 
 package "gestor" {
   class GestorEventosEnVivo {
+    -eventos : List<Evento>
     -usuariosRegistrados : List<Usuario>
     -artistasRegistrados : List<Artista>
-    -eventos : List<Evento>
-    +autenticar(nombreUsuario, contrasena) : Cuenta
-    +solicitarIngreso(idUsuario, idEvento) : RegistroAcceso
-    +obtenerTransmision(idEvento) : Transmision
-    +vincularCalendario(idEvento, vinculo) : void
+    -controlAcceso : ControlAcceso
+    -persistencia : Persistencia
+    -sesion : ControlSesion
+    -publicador : PublicadorCalendario
+    -visibilidad : PoliticasVisibilidad
+    -controlTransmision : ControlTransmision
+    +GestorEventosEnVivo(persistencia : Persistencia, notificador : Notificador, publicador : PublicadorCalendario, proveedorTransmision : ProveedorTransmision)
+    +cargarDatos() : void
+    +guardarDatos() : void
+    +registrarUsuario(nombreUsuario : String, nombre : String, apellido : String, email : String, contrasena : String, plan : PlanSuscripcion) : Usuario
+    +registrarArtista(nombreUsuario : String, contrasena : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean) : Artista
+    +crearEvento(datos : DatosRecital, artista : Artista) : RecitalEnVivo
+    +listarEventosVisibles() : List<Evento>
+    +buscarEventoVisible(id : int) : Evento
+    +listarMisRegistros() : List<RegistroAcceso>
+    +actualizar() : void
+    +listarEventos() : List<Evento>
+    +listarUsuarios() : List<Usuario>
+    +listarArtistas() : List<Artista>
+    +listarRegistros() : List<RegistroAcceso>
+    +reemplazarDatos(usuarios : List<Usuario>, artistas : List<Artista>, eventosCargados : List<Evento>, registrosCargados : List<RegistroAcceso>) : void
+    +buscarEventoPorId(id : int) : Evento
+    +buscarUsuarioPorId(id : int) : Usuario
+    +existeNombreUsuario(nombreUsuario : String) : boolean
+    +buscarCuentaPorNombreUsuario(nombreUsuario : String) : Cuenta
+    +autenticar(nombreUsuario : String, contrasena : String) : Cuenta
+    +iniciarSesion(nombreUsuario : String, contrasena : String) : Cuenta
+    +asumirSesion(cuenta : Cuenta) : void
+    +cerrarSesion() : void
+    +soltarSesion() : void
+    +getCuentaActual() : Cuenta
+    +puede(accion : Accion) : boolean
+    +accionesPermitidas() : List<Accion>
+    +vincularCalendario(idEvento : int, vinculo : VinculoCalendario) : void
+    +urlCalendario(idEvento : int) : String
+    +obtenerTransmision(idEvento : int) : Transmision
+    +consultaDeTransmision(idEvento : int) : ConsultaTransmision
+    +cerrarTransmisionesDe(cuenta : Cuenta) : void
+    +buscarEventoVisiblePara(cuenta : Cuenta, id : int) : Evento
+    +buscarArtistaPorId(id : int) : Artista
+    +iniciarEvento(idEvento : int) : void
+    +pausarEvento(idEvento : int) : void
+    +reanudarEvento(idEvento : int) : void
+    +finalizarEvento(idEvento : int) : void
+    +cancelarEvento(idEvento : int) : void
+    +solicitarIngreso(idUsuario : int, idEvento : int) : RegistroAcceso
+    +alternarActivo(idUsuario : int) : Usuario
+    +expulsarUsuario(idEvento : int, idUsuario : int) : Usuario
   }
   class ControlAcceso {
-    +procesarIngreso(usuario, evento) : RegistroAcceso
-    +registrarExpulsion(usuario, evento) : void
+    -registros : List<RegistroAcceso>
+    -siguienteIdAcceso : int
+    -notificador : Notificador
+    +ControlAcceso(notificador : Notificador)
+    +procesarIngreso(usuario : Usuario, evento : Evento) : RegistroAcceso
+    +registrarExpulsion(usuario : Usuario, evento : Evento) : void
+    +registrar(registro : RegistroAcceso) : void
+    +listar() : List<RegistroAcceso>
+    +reemplazar(registrosCargados : List<RegistroAcceso>) : void
   }
   class ControlTransmision {
-    +consultaPara(cuenta, evento) : ConsultaTransmision
-    +buscar(consulta) : Transmision
-    +cerrarDe(cuenta) : void
+    -proveedor : ProveedorTransmision
+    +ControlTransmision(proveedor : ProveedorTransmision)
+    +consultaPara(cuenta : Cuenta, evento : Evento) : ConsultaTransmision
+    +buscar(consulta : ConsultaTransmision) : Transmision
+    +cerrarDe(cuenta : Cuenta, idEvento : int) : void
+    +cerrarDe(cuenta : Cuenta) : void
+    +cerrarDeEvento(idEvento : int) : void
   }
   class PoliticasVisibilidad {
-    +esVisible(cuenta, evento) : boolean
+    -porRol : Map<TipoUsuario, PoliticaVisibilidadEvento>
+    +esVisible(cuenta : Cuenta, evento : Evento) : boolean
   }
-  interface PoliticaVisibilidadEvento
-  class VisibilidadGeneral
-  class VisibilidadArtista
+  interface PoliticaVisibilidadEvento {
+    {abstract} +esVisible(cuenta : Cuenta, evento : Evento) : boolean
+  }
+  class VisibilidadGeneral {
+    +esVisible(cuenta : Cuenta, evento : Evento) : boolean
+  }
+  class VisibilidadArtista {
+    +esVisible(cuenta : Cuenta, evento : Evento) : boolean
+  }
 }
 
 package "seguridad" {
   class ControlSesion {
+    -permisos : Permisos
+    -cuentaActual : Cuenta
+    +iniciar(cuenta : Cuenta) : void
+    +cerrar() : void
+    +getCuentaActual() : Cuenta
+    +permite(accion : Accion) : boolean
+    +accionesPermitidas() : List<Accion>
     +exigir(accion : Accion) : void
   }
-  class Permisos
+  class Permisos {
+    -permitidas : Map<TipoUsuario, Set<Accion>>
+    +Permisos()
+    +permite(tipo : TipoUsuario, accion : Accion) : boolean
+    +accionesPermitidas(tipo : TipoUsuario) : List<Accion>
+  }
   enum Accion {
+    REGISTRAR_USUARIO
+    REGISTRAR_ARTISTA
+    ACTIVAR_DESACTIVAR_USUARIO
+    CREAR_EVENTO
+    VER_USUARIOS
+    VER_ARTISTAS
+    VER_EVENTOS
+    INICIAR_EVENTO
+    PAUSAR_EVENTO
+    REANUDAR_EVENTO
+    FINALIZAR_EVENTO
+    CANCELAR_EVENTO
     SOLICITAR_INGRESO
+    VER_CONECTADOS
+    VER_CAPACIDAD
     VINCULAR_CALENDARIO
     VER_TRANSMISION
-    ...
+    EXPULSAR_USUARIO
+    VER_REGISTROS
+    VER_MIS_REGISTROS
+    ABRIR_INTERFAZ_GRAFICA
+    -etiqueta : String
+    ~Accion(etiqueta : String)
+    +getEtiqueta() : String
   }
 }
 
 package "puertos" {
-  interface Persistencia
-  interface Notificador
-  interface PublicadorCalendario
-  interface ProveedorTransmision
-  interface VinculoCalendario
-  class ConsultaTransmision
-  class Transmision
+  interface Persistencia {
+    {abstract} +guardar(gestor : GestorEventosEnVivo) : void
+    {abstract} +cargar(gestor : GestorEventosEnVivo) : void
+  }
+  interface Notificador {
+    {abstract} +notificar(destinatario : Usuario, titulo : String, mensaje : String) : void
+  }
+  interface PublicadorCalendario {
+    {abstract} +urlFeed(cuenta : Cuenta, evento : Evento) : String
+  }
+  interface ProveedorTransmision {
+    {abstract} +buscar(consulta : ConsultaTransmision) : Transmision
+    {abstract} +cerrar(espectador : String) : void
+  }
+  interface VinculoCalendario {
+    {abstract} +getNombre() : String
+    {abstract} +vincular(urlFeed : String) : void
+  }
+  class ConsultaTransmision <<record>> {
+    -artista : String
+    -inicio : LocalDateTime
+    -espectador : String
+  }
+  class Transmision <<record>> {
+    -titulo : String
+    -url : String
+  }
 }
 
 package "persistencia" {
-  class PersistenciaSqlite
-  class ConexionSqlite
-  class RepositorioUsuarios
-  class RepositorioArtistas
-  class RepositorioEventos
-  class RepositorioRegistros
+  class PersistenciaSqlite {
+    -usuarios : RepositorioUsuarios
+    -artistas : RepositorioArtistas
+    -eventos : RepositorioEventos
+    -registros : RepositorioRegistros
+    +guardar(gestor : GestorEventosEnVivo) : void
+    +cargar(gestor : GestorEventosEnVivo) : void
+  }
+  class ConexionSqlite {
+    {static} -TABLAS : String[]
+    {static} ~abrir() : Connection
+  }
+  class RepositorioUsuarios {
+    ~reemplazarTodos(conexion : Connection, usuarios : List<Usuario>) : void
+    ~cargarTodos(conexion : Connection) : List<Usuario>
+  }
+  class RepositorioArtistas {
+    ~reemplazarTodos(conexion : Connection, artistas : List<Artista>) : void
+    ~cargarTodos(conexion : Connection) : List<Artista>
+  }
+  class RepositorioEventos {
+    ~reemplazarTodos(conexion : Connection, eventos : List<Evento>) : void
+    ~cargarTodos(conexion : Connection, artistas : Map<Integer, Artista>, usuarios : Map<Integer, Usuario>) : List<Evento>
+  }
+  class RepositorioRegistros {
+    ~reemplazarTodos(conexion : Connection, registros : List<RegistroAcceso>, idsUsuarios : Set<Integer>, idsEventos : Set<Integer>) : void
+    ~cargarTodos(conexion : Connection, usuarios : Map<Integer, Usuario>, eventos : Map<Integer, Evento>) : List<RegistroAcceso>
+  }
 }
 
 package "notificacion" {
-  class NotificadorInactivo
+  class NotificadorInactivo {
+    +notificar(destinatario : Usuario, titulo : String, mensaje : String) : void
+  }
 }
 
 package "calendario" {
-  class VinculoGoogle
-  class VinculoApple
-  class FormatoIcs
+  class VinculoGoogle {
+    {static} -BASE : String
+    +getNombre() : String
+    +vincular(urlFeed : String) : void
+  }
+  class VinculoApple {
+    +getNombre() : String
+    +vincular(urlFeed : String) : void
+  }
+  class FormatoIcs {
+    {static} -FECHA : DateTimeFormatter
+    {static} +calendario(nombre : String, eventos : List<Evento>) : String
+  }
 }
 
 package "transmision" {
-  class ClienteTransmision
-  class ProcesoServicio
+  class ClienteTransmision {
+    -cliente : HttpClient
+    -urlBase : String
+    -urlPublica : String
+    +buscar(consulta : ConsultaTransmision) : Transmision
+    +cerrar(espectador : String) : void
+  }
+  class ProcesoServicio {
+    {static} -POSIBLES_NODE : String[]
+    {static} +iniciar() : void
+  }
 }
 
 package "servidor" {
-  class ServidorHttp
-  class ConfiguracionServidor
-  class ManejadorApi
-  class ManejadorCalendario
-  class Sesiones
-  class Instantanea
-  class Conversor
-  class PublicadorHttp
-  class CodigosCalendario
+  class ServidorHttp {
+    {static} +iniciar(configuracion : ConfiguracionServidor, manejadores : Map<String, HttpHandler>) : void
+    {static} +iniciarCalendarios(configuracion : ConfiguracionServidor, manejador : HttpHandler) : void
+  }
+  class ConfiguracionServidor {
+    {static} -PUERTO_POR_DEFECTO : int
+    {static} -PUERTO_CALENDARIO_POR_DEFECTO : int
+    -puerto : int
+    -puertoElegido : boolean
+    -aceptaRed : boolean
+    -puertoCalendario : int
+    -urlPublica : String
+    +ConfiguracionServidor(aceptaRedPorDefecto : boolean)
+    +getPuerto() : int
+    ~isPuertoElegido() : boolean
+    ~usarPuerto(puerto : int) : void
+    +aceptaRed() : boolean
+    +getPuertoCalendario() : int
+    ~usarPuertoCalendario(puerto : int) : void
+    +getDireccionDeEscucha() : InetAddress
+    +getUrlBase() : String
+    +esPublica() : boolean
+    ~usarUrlPublica(url : String) : void
+    {static} ~ipDeLaRed() : String
+  }
+  class ManejadorApi {
+    {static} -PREFIJO : String
+    -gestor : GestorEventosEnVivo
+    -proveedorTransmision : ProveedorTransmision
+    -sesiones : Sesiones
+    +ManejadorApi(gestor : GestorEventosEnVivo, proveedorTransmision : ProveedorTransmision)
+    +handle(intercambio : HttpExchange) : void
+  }
+  class ManejadorCalendario {
+    -gestor : GestorEventosEnVivo
+    -codigos : CodigosCalendario
+    +ManejadorCalendario(gestor : GestorEventosEnVivo, codigos : CodigosCalendario)
+    +handle(intercambio : HttpExchange) : void
+  }
+  class Sesiones {
+    -cuentasPorToken : Map<String, String>
+    -azar : SecureRandom
+    ~abrir(nombreUsuario : String) : String
+    ~cuentaDe(token : String) : String
+    ~cerrar(token : String) : void
+  }
+  class Instantanea {
+    {static} ~de(gestor : GestorEventosEnVivo) : EstadoDto
+  }
+  class Conversor {
+    {static} ~aDto(cuenta : Cuenta) : CuentaDto
+    {static} ~aDto(usuario : Usuario) : UsuarioDto
+    {static} ~anonimo(usuario : Usuario) : UsuarioDto
+    {static} ~aDto(artista : Artista) : ArtistaDto
+    {static} ~aDto(evento : Evento) : EventoDto
+    {static} ~aDto(registro : RegistroAcceso) : RegistroDto
+  }
+  class PublicadorHttp {
+    {static} ~PREFIJO : String
+    {static} ~SUFIJO : String
+    -configuracion : ConfiguracionServidor
+    -codigos : CodigosCalendario
+    +PublicadorHttp(configuracion : ConfiguracionServidor, codigos : CodigosCalendario)
+    +urlFeed(cuenta : Cuenta, evento : Evento) : String
+  }
+  class CodigosCalendario {
+    -clave : byte[]
+    +CodigosCalendario()
+    +codigoDe(cuenta : Cuenta) : String
+  }
+  class ProcesoTunel {
+    {static} -POSIBLES_CLOUDFLARED : String[]
+    {static} -DIRECCION : Pattern
+    {static} +iniciar(configuracion : ConfiguracionServidor) : void
+  }
 }
 
 package "api (DTO)" {
-  class Json
-  class EstadoDto
-  class CuentaDto
-  class UsuarioDto
-  class ArtistaDto
-  class EventoDto
-  class RegistroDto
-  class SesionDto
-  class TransmisionDto
-  class InicioSesionDto
-  class NuevoUsuarioDto
-  class NuevoArtistaDto
-  class NuevoEventoDto
-  class UsuarioPedidoDto
-  class IdDto
-  class UrlDto
-  class ErrorDto
+  class Json {
+    {static} -GSON : Gson
+    {static} +escribir(objeto : Object) : String
+    {static} +leer(texto : String, tipo : Class<T>) : <T> T
+  }
+  class EstadoDto <<record>> {
+    -cuenta : CuentaDto
+    -usuarios : List<UsuarioDto>
+    -artistas : List<ArtistaDto>
+    -eventos : List<EventoDto>
+    -registros : List<RegistroDto>
+  }
+  class CuentaDto <<record>> {
+    -id : int
+    -nombreUsuario : String
+    -tipo : String
+    -activo : boolean
+  }
+  class UsuarioDto <<record>> {
+    -id : int
+    -nombreUsuario : String
+    -nombre : String
+    -apellido : String
+    -email : String
+    -plan : String
+    -activo : boolean
+    -tipo : String
+  }
+  class ArtistaDto <<record>> {
+    -id : int
+    -nombreUsuario : String
+    -nombreArtistico : String
+    -generoPrincipal : String
+    -biografia : String
+    -verificado : boolean
+  }
+  class EventoDto <<record>> {
+    -id : int
+    -titulo : String
+    -descripcion : String
+    -inicio : String
+    -fin : String
+    -estado : String
+    -capacidadMaxima : int
+    -planMinimo : String
+    -ubicacion : String
+    -streaming : boolean
+    -exclusivo : boolean
+    -artistas : List<Integer>
+    -conectados : List<Integer>
+  }
+  class RegistroDto <<record>> {
+    -idUsuario : int
+    -idEvento : int
+    -fechaHoraIngreso : String
+    -exitoso : boolean
+    -motivoRechazo : String
+  }
+  class SesionDto <<record>> {
+    -token : String
+    -cuenta : CuentaDto
+  }
+  class TransmisionDto <<record>> {
+    -titulo : String
+    -url : String
+  }
+  class InicioSesionDto <<record>> {
+    -nombreUsuario : String
+    -contrasena : String
+  }
+  class NuevoUsuarioDto <<record>> {
+    -nombreUsuario : String
+    -nombre : String
+    -apellido : String
+    -email : String
+    -contrasena : String
+    -plan : String
+  }
+  class NuevoArtistaDto <<record>> {
+    -nombreUsuario : String
+    -contrasena : String
+    -nombreArtistico : String
+    -generoPrincipal : String
+    -biografia : String
+    -verificado : boolean
+  }
+  class NuevoEventoDto <<record>> {
+    -idArtista : int
+    -titulo : String
+    -descripcion : String
+    -inicio : String
+    -fin : String
+    -estado : String
+    -capacidadMaxima : int
+    -planMinimo : String
+    -ubicacion : String
+    -streaming : boolean
+    -exclusivo : boolean
+  }
+  class UsuarioPedidoDto <<record>> {
+    -idUsuario : int
+  }
+  class IdDto <<record>> {
+    -id : Integer
+  }
+  class UrlDto <<record>> {
+    -url : String
+  }
+  class ErrorDto <<record>> {
+    -tipo : String
+    -mensaje : String
+  }
 }
 
 package "cliente" {
-  class GestorRemoto
-  class ClienteHttp
-  class EstadoLocal
+  class GestorRemoto {
+    -http : ClienteHttp
+    -permisos : Permisos
+    -estado : EstadoLocal
+    -conSesion : boolean
+    +GestorRemoto(urlServidor : String)
+    +iniciarSesion(nombreUsuario : String, contrasena : String) : Cuenta
+    +cerrarSesion() : void
+    +getCuentaActual() : Cuenta
+    +puede(accion : Accion) : boolean
+    +accionesPermitidas() : List<Accion>
+    +listarUsuarios() : List<Usuario>
+    +listarArtistas() : List<Artista>
+    +listarEventosVisibles() : List<Evento>
+    +listarRegistros() : List<RegistroAcceso>
+    +listarMisRegistros() : List<RegistroAcceso>
+    +buscarEventoVisible(id : int) : Evento
+    +buscarUsuarioPorId(id : int) : Usuario
+    +buscarArtistaPorId(id : int) : Artista
+    +existeNombreUsuario(nombreUsuario : String) : boolean
+    +obtenerTransmision(idEvento : int) : Transmision
+    +actualizar() : void
+    +registrarUsuario(nombreUsuario : String, nombre : String, apellido : String, email : String, contrasena : String, plan : PlanSuscripcion) : Usuario
+    +registrarArtista(nombreUsuario : String, contrasena : String, nombreArtistico : String, generoPrincipal : String, biografia : String, verificado : boolean) : Artista
+    +crearEvento(datos : DatosRecital, artista : Artista) : RecitalEnVivo
+    +iniciarEvento(idEvento : int) : void
+    +pausarEvento(idEvento : int) : void
+    +reanudarEvento(idEvento : int) : void
+    +finalizarEvento(idEvento : int) : void
+    +cancelarEvento(idEvento : int) : void
+    +solicitarIngreso(idUsuario : int, idEvento : int) : RegistroAcceso
+    +alternarActivo(idUsuario : int) : Usuario
+    +expulsarUsuario(idEvento : int, idUsuario : int) : Usuario
+    +vincularCalendario(idEvento : int, vinculo : VinculoCalendario) : void
+  }
+  class ClienteHttp {
+    -cliente : HttpClient
+    -urlBase : String
+    -token : String
+    ~ClienteHttp(urlBase : String)
+    ~setToken(token : String) : void
+    ~get(ruta : String) : String
+    ~post(ruta : String, cuerpo : Object) : String
+    ~delete(ruta : String) : String
+  }
+  class EstadoLocal {
+    -cuenta : Cuenta
+    -usuarios : List<Usuario>
+    -artistas : List<Artista>
+    -eventos : List<Evento>
+    -registros : List<RegistroAcceso>
+    ~EstadoLocal(estado : EstadoDto)
+    ~construirRegistro(dto : RegistroDto, usuariosPorId : Map<Integer, Usuario>, eventosPorId : Map<Integer, Evento>) : RegistroAcceso
+    ~construirRegistro(dto : RegistroDto) : RegistroAcceso
+    ~getCuenta() : Cuenta
+    ~getUsuarios() : List<Usuario>
+    ~getArtistas() : List<Artista>
+    ~getEventos() : List<Evento>
+    ~getRegistros() : List<RegistroAcceso>
+  }
 }
 
 package "(raiz)" {
-  class Main
+  class Main {
+    {static} +main(args : String[]) : void
+  }
 }
 
 package "app" {
-  class App
-  class Arranque
-  class DatosIniciales
+  class App {
+    {static} -MODO_GRAFICO : int
+    {static} -MODO_CONSOLA : int
+    {static} +main(args : String[]) : void
+  }
+  class Arranque {
+    {static} ~iniciarServidor(aceptaRed : boolean) : GestorEventosEnVivo
+  }
+  class DatosIniciales {
+    {static} +sembrar(gestor : GestorEventosEnVivo) : void
+  }
 }
 
 package "consola" {
-  class MenuPorRol
-  class MenuAcciones
-  class ConsoleIO
+  class MenuPorRol {
+    {static} +ejecutar(scanner : Scanner, gestor : ServicioEventos) : void
+  }
+  class MenuAcciones {
+    {static} +login(scanner : Scanner, gestor : ServicioEventos) : Cuenta
+    {static} +registrarUsuario(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +registrarArtista(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +crearEventoManual(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +listarArtistas(gestor : ServicioEventos) : void
+    {static} +listarUsuarios(gestor : ServicioEventos) : void
+    {static} +listarEventos(gestor : ServicioEventos) : void
+    {static} +solicitarIngreso(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +listarConectados(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +expulsarUsuario(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +mostrarCapacidad(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +verTransmision(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +vincularCalendario(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +cambiarEstadoEvento(scanner : Scanner, gestor : ServicioEventos, accion : String) : void
+    {static} +cambiarEstadoUsuario(scanner : Scanner, gestor : ServicioEventos) : void
+    {static} +abrirInterfazGrafica(gestor : ServicioEventos) : void
+    {static} +listarMisRegistros(gestor : ServicioEventos) : void
+    {static} +listarRegistros(gestor : ServicioEventos) : void
+  }
+  class ConsoleIO {
+    {static} +leerEntero(scanner : Scanner, mensaje : String) : int
+    {static} +leerBooleano(scanner : Scanner, mensaje : String) : boolean
+  }
 }
 
 package "ui" {
-  class AppSwing
-  class VentanaLogin
-  class VentanaPrincipal
-  class Formularios
-  class ModeloTabla
-  class Logo
-  class Navegador
+  class AppSwing {
+    {static} +abrir(gestor : ServicioEventos) : void
+  }
+  class VentanaLogin {
+    -gestor : ServicioEventos
+    -campoUsuario : JTextField
+    -campoContrasena : JPasswordField
+    -mensaje : JLabel
+    +VentanaLogin(gestor : ServicioEventos)
+  }
+  class VentanaPrincipal {
+    {static} -COLOR_EXITO : Color
+    {static} -COLOR_ERROR : Color
+    {static} -FORMATO_FECHA : DateTimeFormatter
+    -gestor : ServicioEventos
+    -modeloUsuarios : ModeloTabla
+    -modeloArtistas : ModeloTabla
+    -modeloEventos : ModeloTabla
+    -modeloRegistros : ModeloTabla
+    -tablaEventos : JTable
+    -tablaUsuarios : JTable
+    -alternarActivo : JButton
+    -iniciar : JButton
+    -pausar : JButton
+    -reanudar : JButton
+    -finalizar : JButton
+    -cancelar : JButton
+    -verConectados : JButton
+    -verTransmision : JButton
+    -calendario : JButton
+    -formularios : Formularios
+    -estado : JLabel
+    -limpiarEstado : javax.swing.Timer
+    -refrescoAutomatico : javax.swing.Timer
+    -permiteCerrarSesion : boolean
+    +VentanaPrincipal(gestor : ServicioEventos, permiteCerrarSesion : boolean)
+  }
+  class Formularios {
+    -ventana : JFrame
+    -gestor : ServicioEventos
+    -errores : Consumer<String>
+    ~Formularios(ventana : JFrame, gestor : ServicioEventos, errores : Consumer<String>)
+    ~registrarUsuario() : Usuario
+    ~registrarArtista() : Artista
+    ~crearEvento() : Evento
+  }
+  class ModeloTabla {
+    -tipos : Class<?>[]
+    +ModeloTabla(columnas : String[], tipos : Class<?>[])
+    +isCellEditable(fila : int, columna : int) : boolean
+    +getColumnClass(columna : int) : Class<?>
+  }
+  class Logo {
+    {static} -LADOS : int[]
+    {static} +dibujar(lado : int) : BufferedImage
+    {static} +icono(lado : int) : Icon
+    {static} +iconos() : List<Image>
+    {static} +aplicar(ventana : JFrame) : void
+  }
+  class Navegador {
+    {static} +abrir(url : String) : void
+  }
 }
 
 class "Servicio de transmisiones\n(Node.js)" as Node <<externo>>
+class "cloudflared" as Cloudflared <<externo>>
 
 ' ---------- modelo ----------
 Cuenta <|-- Usuario
@@ -369,6 +1025,10 @@ App "1" --> "0..1" AppSwing
 Arranque "1" --> "1" GestorEventosEnVivo
 Arranque "1" --> "1" ServidorHttp
 Arranque ..> ProcesoServicio
+Arranque ..> ProcesoTunel
+Arranque ..> "0..1" ManejadorCalendario : servidor solo de calendarios
+ProcesoTunel ..> "1" ConfiguracionServidor : usarUrlPublica
+ProcesoTunel "1" ..> "0..1" Cloudflared : inicia y cierra
 Arranque ..> "0..1" DatosIniciales
 DatosIniciales ..> GestorEventosEnVivo
 MenuPorRol "1" --> "1" MenuAcciones

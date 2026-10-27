@@ -53,6 +53,9 @@ package "Servidor" {
   class ConfiguracionServidor {
     puerto, red y direccion publica
   }
+  class ProcesoTunel {
+    abre cloudflared para los calendarios
+  }
 }
 
 package "Servicio aparte en Node" {
@@ -66,6 +69,7 @@ interface ServicioEventos
 class GestorEventosEnVivo
 class ClienteTransmision
 class ProcesoServicio
+class "cloudflared" as Cloudflared <<externo>>
 
 GestorRemoto ..|> ServicioEventos
 GestorEventosEnVivo ..|> ServicioEventos
@@ -90,4 +94,6 @@ PublicadorHttp "1" --> "1" ConfiguracionServidor
 GestorEventosEnVivo "1" --> "1" ClienteTransmision : proveedorTransmision
 ClienteTransmision "*" ..> "1" ServicioTransmision : HTTP
 ProcesoServicio "1" ..> "0..1" ServicioTransmision : inicia y cierra
+ProcesoTunel ..> "1" ConfiguracionServidor : usarUrlPublica
+ProcesoTunel "1" ..> "0..1" Cloudflared : inicia y cierra
 @enduml
