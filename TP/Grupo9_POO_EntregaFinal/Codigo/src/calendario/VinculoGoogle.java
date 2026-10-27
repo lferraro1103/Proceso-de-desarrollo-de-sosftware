@@ -26,6 +26,14 @@ public class VinculoGoogle implements VinculoCalendario {
 
     @Override
     public void vincular(String urlFeed) throws IOException {
+        // Google lee desde internet: una direccion de la red local no le llega.
+        if (!urlFeed.startsWith("https://")) {
+            throw new IOException("Google Calendar necesita una direccion "
+                    + "publica con https y esta es de la red local. Instale "
+                    + "cloudflared para que el programa abra un tunel solo, o "
+                    + "ejecute con -Duadebeats.url=https://su-direccion.");
+        }
+
         if (!Desktop.isDesktopSupported()
                 || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
             throw new IOException("Este equipo no puede abrir el navegador. "

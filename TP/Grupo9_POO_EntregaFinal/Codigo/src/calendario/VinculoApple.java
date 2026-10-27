@@ -11,6 +11,9 @@ import java.net.URI;
  *
  * Abre un enlace webcal://; el sistema lo entrega a Calendario, que muestra
  * la ventana de suscripcion. Despues se actualiza solo.
+ *
+ * Calendario lee la direccion desde este equipo, por lo que alcanza con la
+ * de la red local (webcal:// sobre http); con un tunel se usa la https.
  */
 public class VinculoApple implements VinculoCalendario {
 
