@@ -401,10 +401,8 @@ public class VentanaPrincipal extends JFrame {
 
         // Segunda fila: acceso, transmision y calendario del evento seleccionado.
         JPanel filaGestion = crearFila("Acceso, transmision y calendario");
-        agregarSiPermitido(filaGestion, Accion.SOLICITAR_INGRESO, crearBoton(
-                gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO
-                        ? "Solicitar ingreso" : "Dar acceso",
-                this::solicitarIngreso));
+        agregarSiPermitido(filaGestion, Accion.SOLICITAR_INGRESO,
+                crearBoton("Solicitar ingreso", this::solicitarIngreso));
         agregarSiPermitido(filaGestion, Accion.EXPULSAR_USUARIO,
                 crearBoton("Expulsar usuario", this::expulsarUsuario));
         agregarSiPermitido(filaGestion, Accion.VER_CONECTADOS, verConectados);
@@ -804,14 +802,8 @@ public class VentanaPrincipal extends JFrame {
     // ---------------- acciones sobre eventos y usuarios ----------------
 
     private void solicitarIngreso() {
-        // Un usuario solicita el ingreso con su propia cuenta; el
-        // administrador elige a nombre de quien lo hace.
-        Usuario usuario;
-        if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO) {
-            usuario = gestor.buscarUsuarioPorId(gestor.getCuentaActual().getId());
-        } else {
-            usuario = seleccionarUsuario();
-        }
+        // El usuario solicita el ingreso con su propia cuenta.
+        Usuario usuario = gestor.buscarUsuarioPorId(gestor.getCuentaActual().getId());
 
         // Si hay un evento seleccionado en la tabla se usa ese.
         Evento evento = eventoSeleccionado();
@@ -836,10 +828,8 @@ public class VentanaPrincipal extends JFrame {
         if (registro.isExitoso()) {
             mostrarExito("Ingreso autorizado a \"" + evento.getTitulo() + "\".");
 
-            // Quien ingresa a su nombre entra directamente a la transmision.
-            if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO) {
-                abrirTransmision(evento);
-            }
+            // Al ingresar entra directamente a la transmision.
+            abrirTransmision(evento);
         } else {
             mostrarError("Ingreso rechazado: " + registro.getMotivoRechazo());
         }
@@ -925,27 +915,6 @@ public class VentanaPrincipal extends JFrame {
     }
 
     // ---------------- selectores ----------------
-
-    private Usuario seleccionarUsuario() {
-        // Armo una lista de textos para que la persona elija desde un combo.
-        List<String> opciones = new ArrayList<>();
-
-        for (Usuario usuario : gestor.listarUsuarios()) {
-            opciones.add(usuario.toString());
-        }
-
-        String seleccionado = seleccionarOpcion(
-                "Seleccione usuario",
-                opciones
-        );
-
-        if (seleccionado == null) {
-            return null;
-        }
-
-        // Del texto elegido extraigo el ID y busco el objeto real en el gestor.
-        return gestor.buscarUsuarioPorId(obtenerIdDesdeTexto(seleccionado));
-    }
 
     private Usuario seleccionarUsuarioConectado(Evento evento) {
         // Solo muestro los usuarios conectados a este evento.

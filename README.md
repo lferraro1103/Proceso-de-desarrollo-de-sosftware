@@ -181,11 +181,11 @@ Las contraseñas nunca viajan al cliente.
 
 ## 7. Roles y permisos
 
-Sin cambios respecto de la iteración 3, salvo que se quitan guardar y cargar datos (ahora automáticos) y se agrega el calendario.
+Sin cambios respecto de la iteración 3, salvo que el administrador ya no solicita ingresos y que se quitan guardar y cargar datos (ahora automáticos) y se agrega el calendario.
 
 | Acción | Usuario | Artista | Administrador |
 |---|---|---|---|
-| Solicitar ingreso a un evento | Solo a su nombre | No | Sí |
+| Solicitar ingreso a un evento | Sí | No | No |
 | Ver eventos | Todos | Solo los propios | Todos |
 | Ver capacidad de un evento | Sí | Solo los propios | Sí |
 | Agregar un evento a mi calendario | Sí | Solo los propios | Sí |

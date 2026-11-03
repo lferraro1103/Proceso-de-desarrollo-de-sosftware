@@ -395,15 +395,8 @@ public final class MenuAcciones {
     public static void solicitarIngreso(Scanner scanner,
                                         ServicioEventos gestor) {
 
-        // Un usuario solicita el ingreso con su propia cuenta; el
-        // administrador elige a nombre de quien lo hace.
-        int idUsuario;
-        if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO) {
-            idUsuario = gestor.getCuentaActual().getId();
-        } else {
-            listarUsuarios(gestor);
-            idUsuario = ConsoleIO.leerEntero(scanner, "Ingrese ID de usuario: ");
-        }
+        // El usuario solicita el ingreso con su propia cuenta.
+        int idUsuario = gestor.getCuentaActual().getId();
 
         // Muestra eventos para que el operador elija uno.
         listarEventos(gestor);
@@ -416,10 +409,8 @@ public final class MenuAcciones {
         if (registro.isExitoso()) {
             System.out.println("Ingreso autorizado.");
 
-            // Quien ingresa a su nombre entra directamente a la transmision.
-            if (gestor.getCuentaActual().getTipoUsuario() == TipoUsuario.USUARIO) {
-                mostrarTransmision(gestor, idEvento);
-            }
+            // Al ingresar entra directamente a la transmision.
+            mostrarTransmision(gestor, idEvento);
         } else {
             System.out.println("Ingreso rechazado: "
                     + registro.getMotivoRechazo());

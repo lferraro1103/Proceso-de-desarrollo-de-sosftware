@@ -80,7 +80,8 @@ public final class PruebasIteracion4 {
                 Accion.ABRIR_INTERFAZ_GRAFICA);
         for (Accion accion : Accion.values()) {
             verificar(permisos.permite(TipoUsuario.ADMINISTRADOR, accion)
-                    == (accion != Accion.VER_MIS_REGISTROS), "Permisos admin: " + accion);
+                    == (accion != Accion.VER_MIS_REGISTROS && accion != Accion.SOLICITAR_INGRESO),
+                    "Permisos admin: " + accion);
             verificar(permisos.permite(TipoUsuario.USUARIO, accion) == usuario.contains(accion),
                     "Matriz UML usuario: " + accion);
             verificar(permisos.permite(TipoUsuario.ARTISTA, accion) == artista.contains(accion),

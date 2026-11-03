@@ -51,9 +51,10 @@ public class Permisos {
                 Accion.ABRIR_INTERFAZ_GRAFICA
         ));
 
-        // Administrador: gestion total (todo salvo "mis registros", que es
-        // una vista propia de quien consume).
+        // Administrador: gestion total, salvo lo que es propio de quien
+        // consume: solicitar ingreso y ver "mis registros".
         Set<Accion> administrador = EnumSet.allOf(Accion.class);
+        administrador.remove(Accion.SOLICITAR_INGRESO);
         administrador.remove(Accion.VER_MIS_REGISTROS);
         permitidas.put(TipoUsuario.ADMINISTRADOR, administrador);
     }
