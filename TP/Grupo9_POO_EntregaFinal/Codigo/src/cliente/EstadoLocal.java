@@ -64,7 +64,7 @@ class EstadoLocal {
                     LocalDateTime.parse(dto.inicio()), LocalDateTime.parse(dto.fin()),
                     EstadoEvento.valueOf(dto.estado()), dto.capacidadMaxima(),
                     PlanSuscripcion.valueOf(dto.planMinimo()), dto.ubicacion(),
-                    dto.streaming(), dto.exclusivo()));
+                    dto.streaming()));
 
             for (int id : dto.artistas()) {
                 recital.agregarArtista(artistasPorId.get(id));

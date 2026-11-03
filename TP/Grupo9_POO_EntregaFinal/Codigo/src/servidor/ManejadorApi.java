@@ -260,7 +260,7 @@ public class ManejadorApi implements HttpHandler {
                     LocalDateTime.parse(p.inicio()), LocalDateTime.parse(p.fin()),
                     EstadoEvento.valueOf(p.estado()), p.capacidadMaxima(),
                     PlanSuscripcion.valueOf(p.planMinimo()), p.ubicacion(),
-                    p.streaming(), p.exclusivo()), artista);
+                    p.streaming()), artista);
 
             return new IdDto(recital.getId());
         }

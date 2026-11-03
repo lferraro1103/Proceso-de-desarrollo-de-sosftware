@@ -79,11 +79,11 @@ public final class DatosIniciales {
 
         RecitalEnVivo evento100 = new RecitalEnVivo(100, new DatosRecital(
                 "Rock en Vivo",
-                "Recital exclusivo online",
+                "Recital online para suscriptores Premium",
                 LocalDateTime.of(2026, 10, 10, 20, 0),
                 LocalDateTime.of(2026, 10, 10, 23, 0),
                 EstadoEvento.EN_CURSO, 5, PlanSuscripcion.PREMIUM,
-                "Buenos Aires", true, true));
+                "Buenos Aires", true));
         evento100.agregarArtista(artistas.get(0));
         evento100.restaurarConectado(usuarios.get(0));
         evento100.restaurarConectado(usuarios.get(3));
@@ -96,7 +96,7 @@ public final class DatosIniciales {
                 LocalDateTime.of(2026, 10, 20, 21, 0),
                 LocalDateTime.of(2026, 10, 20, 23, 30),
                 EstadoEvento.EN_ESPERA, 2, PlanSuscripcion.ARTIST_PASS,
-                "Streaming", true, true));
+                "Streaming", true));
         evento101.agregarArtista(artistas.get(1));
         eventos.add(evento101);
 
@@ -106,7 +106,7 @@ public final class DatosIniciales {
                 LocalDateTime.of(2026, 10, 11, 19, 0),
                 LocalDateTime.of(2026, 10, 11, 22, 30),
                 EstadoEvento.PAUSADO, 20, PlanSuscripcion.FREE,
-                "Sala Principal", false, false));
+                "Sala Principal", false));
         evento102.agregarArtista(artistas.get(3));
         evento102.restaurarConectado(usuarios.get(2));
         eventos.add(evento102);
@@ -117,7 +117,7 @@ public final class DatosIniciales {
                 LocalDateTime.of(2026, 11, 5, 20, 30),
                 LocalDateTime.of(2026, 11, 5, 22, 30),
                 EstadoEvento.PROGRAMADO, 30, PlanSuscripcion.FREE,
-                "Teatro UADE", true, false));
+                "Teatro UADE", true));
         evento103.agregarArtista(artistas.get(2));
         eventos.add(evento103);
 
@@ -127,7 +127,7 @@ public final class DatosIniciales {
                 LocalDateTime.of(2025, 12, 20, 18, 0),
                 LocalDateTime.of(2025, 12, 20, 23, 59),
                 EstadoEvento.FINALIZADO, 100, PlanSuscripcion.FREE,
-                "Costanera", true, false));
+                "Costanera", true));
         evento104.agregarArtista(artistas.get(0));
         evento104.agregarArtista(artistas.get(1));
         eventos.add(evento104);
@@ -138,7 +138,7 @@ public final class DatosIniciales {
                 LocalDateTime.of(2026, 9, 30, 22, 0),
                 LocalDateTime.of(2026, 10, 1, 4, 0),
                 EstadoEvento.CANCELADO, 50, PlanSuscripcion.PREMIUM,
-                "Club Prisma", false, true));
+                "Club Prisma", false));
         evento105.agregarArtista(artistas.get(1));
         eventos.add(evento105);
 
@@ -151,7 +151,7 @@ public final class DatosIniciales {
                 LocalDateTime.of(2026, 1, 1, 0, 0),
                 LocalDateTime.of(2099, 12, 31, 23, 59),
                 EstadoEvento.EN_CURSO, 1000, PlanSuscripcion.FREE,
-                "Port Orchard, WA", true, false));
+                "Port Orchard, WA", true));
         evento106.agregarArtista(artistas.get(4));
         eventos.add(evento106);
 

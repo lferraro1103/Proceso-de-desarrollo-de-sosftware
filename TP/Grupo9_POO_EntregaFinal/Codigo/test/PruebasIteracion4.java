@@ -44,7 +44,7 @@ public final class PruebasIteracion4 {
     private static RecitalEnVivo evento(int id) {
         return new RecitalEnVivo(id, new DatosRecital("Evento " + id, "Descripcion",
                 LocalDateTime.now().minusHours(1), LocalDateTime.now().plusHours(1),
-                EstadoEvento.EN_CURSO, 5, PlanSuscripcion.FREE, "Sala", true, false));
+                EstadoEvento.EN_CURSO, 5, PlanSuscripcion.FREE, "Sala", true));
     }
 
     private static void verificar(boolean condicion, String mensaje) {

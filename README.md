@@ -111,7 +111,7 @@ Un archivo SQLite con seis tablas. Las claves foráneas están activadas.
 |---|---|
 | `usuarios` | Usuarios y administrador: cuenta (única, sin distinguir mayúsculas), nombre, apellido, email, hash de la contraseña, plan, activo y rol |
 | `artistas` | Cuenta, hash de la contraseña, nombre artístico, género, biografía y verificado |
-| `eventos` | Título, descripción, inicio, fin, estado, capacidad, plan mínimo, ubicación, streaming y exclusivo |
+| `eventos` | Título, descripción, inicio, fin, estado, capacidad, plan mínimo, ubicación y streaming |
 | `evento_artistas` | Artistas de cada evento |
 | `evento_conectados` | Usuarios conectados a cada evento |
 | `registros_acceso` | Usuario, evento, fecha, resultado y motivo del rechazo |

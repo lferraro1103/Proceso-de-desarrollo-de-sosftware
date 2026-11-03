@@ -81,7 +81,6 @@ package "modelo" {
     {abstract} +getPlanMinimoRequerido() : PlanSuscripcion
     {abstract} +getUbicacion() : String
     {abstract} +isStreaming() : boolean
-    {abstract} +isExclusivo() : boolean
     {abstract} +permitirIngreso(usuario : Usuario) : void
     {abstract} +expulsarUsuario(usuario : Usuario) : void
     {abstract} +getUsuariosConectados() : Set<Usuario>
@@ -105,7 +104,6 @@ package "modelo" {
     -planMinimoRequerido : PlanSuscripcion
     -ubicacion : String
     -esStreaming : boolean
-    -exclusivo : boolean
     -usuariosConectados : Set<Usuario>
     +RecitalEnVivo(id : int, datos : DatosRecital)
     {static} +desconocido() : RecitalEnVivo
@@ -120,7 +118,6 @@ package "modelo" {
     +getPlanMinimoRequerido() : PlanSuscripcion
     +getUbicacion() : String
     +isStreaming() : boolean
-    +isExclusivo() : boolean
     +toString() : String
   }
   enum TipoUsuario {
@@ -162,8 +159,7 @@ package "modelo" {
     -planMinimoRequerido : PlanSuscripcion
     -ubicacion : String
     -esStreaming : boolean
-    -exclusivo : boolean
-    +DatosRecital(titulo : String, descripcion : String, fechaHoraInicio : LocalDateTime, fechaHoraFin : LocalDateTime, estado : EstadoEvento, capacidadMaxima : int, planMinimoRequerido : PlanSuscripcion, ubicacion : String, esStreaming : boolean, exclusivo : boolean)
+    +DatosRecital(titulo : String, descripcion : String, fechaHoraInicio : LocalDateTime, fechaHoraFin : LocalDateTime, estado : EstadoEvento, capacidadMaxima : int, planMinimoRequerido : PlanSuscripcion, ubicacion : String, esStreaming : boolean)
     +getTitulo() : String
     +getDescripcion() : String
     +getFechaHoraInicio() : LocalDateTime
@@ -173,7 +169,6 @@ package "modelo" {
     +getPlanMinimoRequerido() : PlanSuscripcion
     +getUbicacion() : String
     +isEsStreaming() : boolean
-    +isExclusivo() : boolean
   }
   class AccesoEvento {
     -id : int
@@ -644,7 +639,6 @@ package "api (DTO)" {
     -planMinimo : String
     -ubicacion : String
     -streaming : boolean
-    -exclusivo : boolean
     -artistas : List<Integer>
     -conectados : List<Integer>
   }
@@ -694,7 +688,6 @@ package "api (DTO)" {
     -planMinimo : String
     -ubicacion : String
     -streaming : boolean
-    -exclusivo : boolean
   }
   class UsuarioPedidoDto <<record>> {
     -idUsuario : int

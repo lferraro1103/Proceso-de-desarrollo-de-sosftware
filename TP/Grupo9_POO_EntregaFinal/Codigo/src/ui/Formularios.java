@@ -269,7 +269,6 @@ class Formularios {
         JComboBox<PlanSuscripcion> plan = f.combo("Plan minimo:", PlanSuscripcion.values());
         JTextField ubicacion = f.texto("Ubicacion o canal:");
         JCheckBox streaming = f.marca("Por streaming:");
-        JCheckBox exclusivo = f.marca("Exclusivo:");
 
         boolean aceptado = pedir("Crear evento", f, () -> {
             if (vacio(titulo)) {
@@ -303,8 +302,7 @@ class Formularios {
                 (Integer) capacidad.getValue(),
                 (PlanSuscripcion) plan.getSelectedItem(),
                 ubicacion.getText().trim(),
-                streaming.isSelected(),
-                exclusivo.isSelected());
+                streaming.isSelected());
 
         return gestor.crearEvento(datosRecital, artista);
     }

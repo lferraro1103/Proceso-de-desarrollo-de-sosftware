@@ -267,7 +267,7 @@ public class GestorRemoto implements ServicioEventos {
                 datos.getFechaHoraInicio().toString(),
                 datos.getFechaHoraFin().toString(), datos.getEstado().name(),
                 datos.getCapacidadMaxima(), datos.getPlanMinimoRequerido().name(),
-                datos.getUbicacion(), datos.isEsStreaming(), datos.isExclusivo()));
+                datos.getUbicacion(), datos.isEsStreaming()));
 
         return (RecitalEnVivo) buscarEventoVisible(id);
     }

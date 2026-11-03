@@ -256,11 +256,6 @@ public final class MenuAcciones {
                 "El evento es por streaming"
         );
 
-        boolean exclusivo = ConsoleIO.leerBooleano(
-                scanner,
-                "El evento es exclusivo"
-        );
-
         // Paso 4: construir el evento con todos los datos reunidos.
         DatosRecital datosRecital = new DatosRecital(
                 titulo,
@@ -271,8 +266,7 @@ public final class MenuAcciones {
                 capacidadMaxima,
                 planMinimo,
                 ubicacion,
-                esStreaming,
-                exclusivo
+                esStreaming
         );
 
         // Paso 5: el gestor asigna el ID, lo crea y lo asocia al artista.

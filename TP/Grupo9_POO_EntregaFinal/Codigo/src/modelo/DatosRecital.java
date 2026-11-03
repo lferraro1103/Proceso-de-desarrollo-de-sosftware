@@ -22,7 +22,6 @@ public class DatosRecital {
     private PlanSuscripcion planMinimoRequerido;
     private String ubicacion;
     private boolean esStreaming;
-    private boolean exclusivo;
 
     public DatosRecital(String titulo,
                         String descripcion,
@@ -32,8 +31,7 @@ public class DatosRecital {
                         int capacidadMaxima,
                         PlanSuscripcion planMinimoRequerido,
                         String ubicacion,
-                        boolean esStreaming,
-                        boolean exclusivo) {
+                        boolean esStreaming) {
 
         this.titulo = titulo;
         this.descripcion = descripcion;
@@ -44,7 +42,6 @@ public class DatosRecital {
         this.planMinimoRequerido = planMinimoRequerido;
         this.ubicacion = ubicacion;
         this.esStreaming = esStreaming;
-        this.exclusivo = exclusivo;
     }
 
     public String getTitulo() {
@@ -81,9 +78,5 @@ public class DatosRecital {
 
     public boolean isEsStreaming() {
         return esStreaming;
-    }
-
-    public boolean isExclusivo() {
-        return exclusivo;
     }
 }

@@ -7,6 +7,6 @@ import java.util.List;
  */
 public record EventoDto(int id, String titulo, String descripcion, String inicio, String fin,
                         String estado, int capacidadMaxima, String planMinimo,
-                        String ubicacion, boolean streaming, boolean exclusivo,
+                        String ubicacion, boolean streaming,
                         List<Integer> artistas, List<Integer> conectados) {
 }

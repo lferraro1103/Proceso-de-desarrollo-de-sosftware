@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -48,8 +49,7 @@ final class ConexionSqlite {
             + "capacidad_maxima INTEGER NOT NULL,"
             + "plan_minimo TEXT NOT NULL,"
             + "ubicacion TEXT NOT NULL,"
-            + "streaming INTEGER NOT NULL,"
-            + "exclusivo INTEGER NOT NULL)",
+            + "streaming INTEGER NOT NULL)",
 
         "CREATE TABLE IF NOT EXISTS evento_artistas ("
             + "evento_id INTEGER NOT NULL REFERENCES eventos(id),"
@@ -93,12 +93,35 @@ final class ConexionSqlite {
                 for (String tabla : TABLAS) {
                     sentencia.execute(tabla);
                 }
+
+                quitarColumnaExclusivo(sentencia);
             }
 
             return conexion;
         } catch (SQLException e) {
             throw new IOException("No se pudo abrir la base de datos "
                     + archivo + ": " + e.getMessage(), e);
+        }
+    }
+
+    // Las bases creadas antes tienen la columna exclusivo, que ya no se usa.
+    // Se borra para que las altas de eventos no fallen por el NOT NULL.
+    private static void quitarColumnaExclusivo(Statement sentencia)
+            throws SQLException {
+
+        boolean existe = false;
+
+        try (ResultSet columnas = sentencia.executeQuery(
+                "PRAGMA table_info(eventos)")) {
+            while (columnas.next()) {
+                if ("exclusivo".equals(columnas.getString("name"))) {
+                    existe = true;
+                }
+            }
+        }
+
+        if (existe) {
+            sentencia.execute("ALTER TABLE eventos DROP COLUMN exclusivo");
         }
     }
 }

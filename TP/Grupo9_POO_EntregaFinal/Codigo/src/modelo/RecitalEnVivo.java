@@ -27,9 +27,6 @@ public class RecitalEnVivo extends Evento {
     // Indica si el recital se transmite por streaming.
     private boolean esStreaming;
 
-    // Indica si es un evento exclusivo.
-    private boolean exclusivo;
-
     // Set de usuarios conectados. Se usa Set para evitar duplicados.
     private Set<Usuario> usuariosConectados;
 
@@ -55,7 +52,6 @@ public class RecitalEnVivo extends Evento {
         this.ubicacion = datos.getUbicacion();
 
         this.esStreaming = datos.isEsStreaming();
-        this.exclusivo = datos.isExclusivo();
 
         this.usuariosConectados = new HashSet<>();
     }
@@ -70,7 +66,7 @@ public class RecitalEnVivo extends Evento {
                 "Evento desconocido", "Evento no encontrado",
                 LocalDateTime.now(), LocalDateTime.now(),
                 EstadoEvento.CANCELADO, 0, PlanSuscripcion.FREE,
-                "", true, false));
+                "", true));
     }
 
     public boolean verificarCapacidad() {
@@ -203,11 +199,6 @@ public class RecitalEnVivo extends Evento {
     @Override
     public boolean isStreaming() {
         return esStreaming;
-    }
-
-    @Override
-    public boolean isExclusivo() {
-        return exclusivo;
     }
 
     // Texto legible para listar eventos en consola.

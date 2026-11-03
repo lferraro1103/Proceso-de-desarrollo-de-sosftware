@@ -66,7 +66,7 @@ final class Conversor {
                 evento.getDescripcion(), evento.getFechaHoraInicio().toString(),
                 evento.getFechaHoraFin().toString(), evento.getEstado().name(),
                 evento.getCapacidadMaxima(), evento.getPlanMinimoRequerido().name(),
-                evento.getUbicacion(), evento.isStreaming(), evento.isExclusivo(),
+                evento.getUbicacion(), evento.isStreaming(),
                 artistas, conectados);
     }
 

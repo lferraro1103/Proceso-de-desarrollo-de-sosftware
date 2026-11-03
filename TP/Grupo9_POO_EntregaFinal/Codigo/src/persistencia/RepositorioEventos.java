@@ -31,8 +31,8 @@ final class RepositorioEventos {
                 "INSERT INTO eventos (id, titulo, descripcion, "
                         + "fecha_hora_inicio, fecha_hora_fin, estado, "
                         + "capacidad_maxima, plan_minimo, ubicacion, "
-                        + "streaming, exclusivo) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        + "streaming) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
              PreparedStatement artista = conexion.prepareStatement(
                      "INSERT INTO evento_artistas (evento_id, artista_id) "
                              + "VALUES (?, ?)");
@@ -51,7 +51,6 @@ final class RepositorioEventos {
                 insertar.setString(8, evento.getPlanMinimoRequerido().name());
                 insertar.setString(9, evento.getUbicacion());
                 insertar.setInt(10, evento.isStreaming() ? 1 : 0);
-                insertar.setInt(11, evento.isExclusivo() ? 1 : 0);
                 insertar.executeUpdate();
 
                 for (Artista a : evento.getArtistas()) {
@@ -81,7 +80,7 @@ final class RepositorioEventos {
              ResultSet filas = consulta.executeQuery(
                      "SELECT id, titulo, descripcion, fecha_hora_inicio, "
                              + "fecha_hora_fin, estado, capacidad_maxima, "
-                             + "plan_minimo, ubicacion, streaming, exclusivo "
+                             + "plan_minimo, ubicacion, streaming "
                              + "FROM eventos ORDER BY id")) {
 
             while (filas.next()) {
@@ -94,8 +93,7 @@ final class RepositorioEventos {
                         filas.getInt("capacidad_maxima"),
                         PlanSuscripcion.valueOf(filas.getString("plan_minimo")),
                         filas.getString("ubicacion"),
-                        filas.getInt("streaming") == 1,
-                        filas.getInt("exclusivo") == 1);
+                        filas.getInt("streaming") == 1);
 
                 eventos.add(new RecitalEnVivo(filas.getInt("id"), datos));
             }
