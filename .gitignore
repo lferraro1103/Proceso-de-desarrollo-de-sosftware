@@ -6,7 +6,9 @@ out-test/
 __pycache__/
 .DS_Store
 docs/iteracion-5/
-docs/iteracion-4/diagramas/
-docs/iteracion-4/fuentes/
-docs/iteracion-4/uml-corregido/
-output/diagramas/
+.idea/
+*.iml
+docs/iteracion-4/
+output/
+tools/
+CONTEXT.md
