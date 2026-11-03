@@ -10,7 +10,11 @@
 //   1. Un archivo de la carpeta media/ cuyo nombre sea el del artista
 //      (opcional: por ejemplo sabrina-carpenter.mp4). El servicio lo transmite
 //      el mismo, con soporte de Range.
-//   2. Un recital real de YouTube, mostrado en el reproductor incrustado que
+//   2. El video de demostracion (media/sunrust.mp4, o el que indique la
+//      variable VIDEO_DEMO). Como el programa es una demo, cualquier evento
+//      nuevo se ve con este video aunque el artista no tenga uno propio.
+//   3. Solo si falta el video de demostracion: un recital real de YouTube,
+//      mostrado en el reproductor incrustado que
 //      ofrece YouTube:
 //        - Con una clave (variable YOUTUBE_API_KEY o archivo
 //          ~/.uadebeats/youtube.key) usa la API oficial: busca primero un
@@ -188,6 +192,16 @@ const TIPOS = { ".mp4": "video/mp4", ".m4v": "video/mp4", ".webm": "video/webm" 
 
 // Nombre de archivo de un artista: "Sabrina Carpenter" -> "sabrina-carpenter".
 const aNombreDeArchivo = (t) => sinAcentos(t).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+// Video que se usa para cualquier evento cuyo artista no tenga uno propio.
+const VIDEO_DEMO = process.env.VIDEO_DEMO || "sunrust.mp4";
+
+// El video de demostracion si esta en media/, o null.
+function buscarVideoDemo() {
+  return fs.existsSync(path.join(CARPETA_MEDIA, path.basename(VIDEO_DEMO)))
+    ? path.basename(VIDEO_DEMO)
+    : null;
+}
 
 // Archivo de media/ que corresponde al artista, o null.
 function buscarArchivoPropio(artista) {
@@ -394,8 +408,9 @@ async function buscarCandidatos(artista) {
 async function buscarTransmision(artista, inicioMs, espectador) {
   const quien = espectador ? "&e=" + encodeURIComponent(espectador) : "";
 
-  // 1. Video propio: se transmite desde este servicio.
-  const propio = buscarArchivoPropio(artista);
+  // 1. Video propio del artista o, si no tiene, el de demostracion.
+  // Los dos se transmiten desde este servicio.
+  const propio = buscarArchivoPropio(artista) || buscarVideoDemo();
 
   if (propio) {
     return {
@@ -410,7 +425,7 @@ async function buscarTransmision(artista, inicioMs, espectador) {
     };
   }
 
-  // 2. Recital de YouTube que permita reproducirse incrustado.
+  // 2. Sin video de demostracion: recital de YouTube que permita reproducirse incrustado.
   // Los que ya se vieron reproducir van primero; los que fallaron, no se ofrecen.
   const candidatos = (await buscarCandidatos(artista))
     .filter((c) => !noReproducibles.has(c.id))
