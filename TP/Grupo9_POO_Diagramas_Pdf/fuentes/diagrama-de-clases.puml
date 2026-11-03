@@ -1,6 +1,6 @@
 @startuml
 !include estilo.iuml
-title Diagrama de clases completo por paquetes: UADE Beats
+title Diagrama de clases: UADE Beats
 
 package "modelo" {
   abstract class Cuenta {
@@ -892,157 +892,197 @@ package "ui" {
 class "Servicio de transmisiones\n(Node.js)" as Node <<externo>>
 class "cloudflared" as Cloudflared <<externo>>
 
+
+' =====================================================================
+' RELACIONES CORREGIDAS
+' Criterios aplicados (ver informe):
+'  1. Toda relacion lleva nombre (representacion semantica).
+'  2. Realizacion de interfaz: linea punteada con triangulo, rotulo
+'     <<implementa>> y SIN cardinalidad.
+'  3. Asociacion o uso hacia una interfaz: sin cardinalidad.
+'  4. Asociacion (linea llena) solo si existe un atributo en el codigo.
+'     Si la clase solo recibe, crea o usa al otro objeto dentro de un
+'     metodo, es dependencia (punteada) y no lleva cardinalidad.
+'  5. Flecha (navegabilidad) solo cuando una clase conoce a la otra y no
+'     al reves. La unica relacion bidireccional del codigo es
+'     Evento <-> Artista y va sin flecha.
+'  [NUEVA] = relacion que existe en el codigo y faltaba en el diagrama.
+' =====================================================================
+
 ' ---------- modelo ----------
 Cuenta <|-- Usuario
 Cuenta <|-- Artista
-Cuenta "*" --> "1" TipoUsuario : rol
-Usuario "*" --> "1" PlanSuscripcion : plan
+Cuenta "*" --> "1" TipoUsuario : tiene rol >
+Usuario "*" --> "1" PlanSuscripcion : esta suscripto a >
 Evento <|-- RecitalEnVivo
-Evento "*" --> "1" EstadoEvento : estado
-Evento "0..*" -- "0..*" Artista : artistas
-RecitalEnVivo "0..*" o-- "0..*" Usuario : usuariosConectados
-RecitalEnVivo "*" --> "1" PlanSuscripcion : planMinimo
-RecitalEnVivo ..> DatosRecital
-AccesoEvento "*" --> "1" Usuario
-AccesoEvento "*" --> "1" Evento
-RegistroAcceso "*" --> "1" Usuario
-RegistroAcceso "*" --> "1" Evento
-Cuenta ..> Contrasenas
+Evento "*" --> "1" EstadoEvento : se encuentra en >
+Evento "0..*" -- "0..*" Artista : participa en <
+RecitalEnVivo "0..*" o-- "0..*" Usuario : tiene conectados >
+RecitalEnVivo "*" --> "1" PlanSuscripcion : exige como minimo >
+RecitalEnVivo ..> DatosRecital : se construye con >
+AccesoEvento "*" --> "1" Usuario : solicitante >
+AccesoEvento "*" --> "1" Evento : evento solicitado >
+AccesoEvento "*" --> "1" PlanSuscripcion : plan requerido >
+RegistroAcceso "*" --> "1" Usuario : registra intento de >
+RegistroAcceso "*" --> "1" Evento : registra intento en >
+DatosRecital "*" --> "1" EstadoEvento : estado inicial >
+DatosRecital "*" --> "1" PlanSuscripcion : plan minimo >
+Cuenta ..> Contrasenas : verifica hash con >
 
 ' ---------- excepciones ----------
 ErrorDeServicioException <|-- PersistenciaException
 ErrorDeServicioException <|-- ConexionException
 
-' ---------- gestor ----------
-ServicioEventos --|> ServicioSesion
-ServicioEventos --|> ServicioConsultas
-ServicioEventos --|> ServicioComandos
-GestorEventosEnVivo ..|> ServicioEventos
-GestorRemoto ..|> ServicioEventos
-GestorEventosEnVivo "1" o-- "0..*" Usuario
-GestorEventosEnVivo "1" o-- "0..*" Artista
-GestorEventosEnVivo "1" o-- "0..*" Evento
-GestorEventosEnVivo "1" *-- "1" ControlAcceso
-GestorEventosEnVivo "1" *-- "1" ControlSesion
-GestorEventosEnVivo "1" *-- "1" ControlTransmision
-GestorEventosEnVivo "1" *-- "1" PoliticasVisibilidad : visibilidad
-ControlTransmision "1" --> "1" ProveedorTransmision
-PoliticasVisibilidad "1" *-- "3" PoliticaVisibilidadEvento : porRol
-VisibilidadGeneral ..|> PoliticaVisibilidadEvento
-VisibilidadArtista ..|> PoliticaVisibilidadEvento
-ControlAcceso "1" o-- "0..*" RegistroAcceso
-ControlAcceso "1" --> "1" Notificador
-ControlSesion "1" --> "0..1" Cuenta : cuentaActual
-ControlSesion "1" *-- "1" Permisos
-Permisos "1" --> "1..*" Accion
-GestorEventosEnVivo "1" --> "1" Persistencia
-GestorEventosEnVivo "1" --> "1" PublicadorCalendario
-GestorEventosEnVivo ..> "0..1" VinculoCalendario
-ProveedorTransmision ..> ConsultaTransmision
-ProveedorTransmision ..> Transmision
-GestorEventosEnVivo ..> PermisoDenegadoException
-GestorEventosEnVivo ..> AccesoDenegadoException
-GestorEventosEnVivo ..> PersistenciaException
+' ---------- servicio y gestor ----------
+ServicioEventos --|> ServicioSesion : <<extiende>>
+ServicioEventos --|> ServicioConsultas : <<extiende>>
+ServicioEventos --|> ServicioComandos : <<extiende>>
+GestorEventosEnVivo ..|> ServicioEventos : <<implementa>>
+GestorRemoto ..|> ServicioEventos : <<implementa>>
+GestorEventosEnVivo "1" o-- "0..*" Usuario : administra >
+GestorEventosEnVivo "1" o-- "0..*" Artista : administra >
+GestorEventosEnVivo "1" o-- "0..*" Evento : administra >
+GestorEventosEnVivo "1" *-- "1" ControlAcceso : delega ingresos en >
+GestorEventosEnVivo "1" *-- "1" ControlSesion : delega la sesion en >
+GestorEventosEnVivo "1" *-- "1" ControlTransmision : delega transmisiones en >
+GestorEventosEnVivo "1" *-- "1" PoliticasVisibilidad : consulta visibilidad en >
+GestorEventosEnVivo --> Persistencia : guarda y carga mediante >
+GestorEventosEnVivo --> PublicadorCalendario : publica calendarios mediante >
+GestorEventosEnVivo ..> VinculoCalendario : vincula con (estrategia) >
+GestorEventosEnVivo ..> PermisoDenegadoException : <<lanza>>
+GestorEventosEnVivo ..> AccesoDenegadoException : <<lanza>>
+GestorEventosEnVivo ..> PersistenciaException : <<lanza>>
+ControlTransmision --> ProveedorTransmision : pide la transmision a >
+PoliticasVisibilidad --> PoliticaVisibilidadEvento : elige estrategia por rol >
+PoliticasVisibilidad --> TipoUsuario : indexa por >
+VisibilidadGeneral ..|> PoliticaVisibilidadEvento : <<implementa>>
+VisibilidadArtista ..|> PoliticaVisibilidadEvento : <<implementa>>
+ControlAcceso "1" o-- "0..*" RegistroAcceso : guarda >
+ControlAcceso ..> AccesoEvento : <<crea>>
+ControlAcceso --> Notificador : avisa mediante >
+ProveedorTransmision ..> ConsultaTransmision : recibe >
+ProveedorTransmision ..> Transmision : devuelve >
+
+' ---------- seguridad ----------
+ControlSesion "1" --> "0..1" Cuenta : cuenta actual >
+ControlSesion "1" *-- "1" Permisos : consulta >
+Permisos "1" --> "1..*" Accion : habilita >
+Permisos "1" --> "1..*" TipoUsuario : asigna acciones por >
 
 ' ---------- persistencia ----------
-PersistenciaSqlite ..|> Persistencia
-PersistenciaSqlite "1" *-- "1" RepositorioUsuarios
-PersistenciaSqlite "1" *-- "1" RepositorioArtistas
-PersistenciaSqlite "1" *-- "1" RepositorioEventos
-PersistenciaSqlite "1" *-- "1" RepositorioRegistros
-PersistenciaSqlite ..> "1" ConexionSqlite
-RepositorioUsuarios ..> "0..*" Usuario
-RepositorioArtistas ..> "0..*" Artista
-RepositorioEventos ..> "0..*" Evento
-RepositorioRegistros ..> "0..*" RegistroAcceso
+PersistenciaSqlite ..|> Persistencia : <<implementa>>
+PersistenciaSqlite "1" *-- "1" RepositorioUsuarios : guarda usuarios con >
+PersistenciaSqlite "1" *-- "1" RepositorioArtistas : guarda artistas con >
+PersistenciaSqlite "1" *-- "1" RepositorioEventos : guarda eventos con >
+PersistenciaSqlite "1" *-- "1" RepositorioRegistros : guarda registros con >
+PersistenciaSqlite ..> ConexionSqlite : abre conexion con >
+RepositorioUsuarios ..> Usuario : lee y escribe >
+RepositorioArtistas ..> Artista : lee y escribe >
+RepositorioEventos ..> Evento : lee y escribe >
+RepositorioRegistros ..> RegistroAcceso : lee y escribe >
 
 ' ---------- avisos, calendario y transmision ----------
-NotificadorInactivo ..|> Notificador
-VinculoGoogle ..|> VinculoCalendario
-VinculoApple ..|> VinculoCalendario
-PublicadorHttp ..|> PublicadorCalendario
-ClienteTransmision ..|> ProveedorTransmision
-ManejadorCalendario ..> FormatoIcs
-ClienteTransmision "*" ..> "1" Node : HTTP
-ProcesoServicio "1" ..> "0..1" Node : inicia y cierra
+NotificadorInactivo ..|> Notificador : <<implementa>>
+VinculoGoogle ..|> VinculoCalendario : <<implementa>>
+VinculoApple ..|> VinculoCalendario : <<implementa>>
+PublicadorHttp ..|> PublicadorCalendario : <<implementa>>
+ClienteTransmision ..|> ProveedorTransmision : <<implementa>>
+ManejadorCalendario ..> FormatoIcs : genera .ics con >
+ClienteTransmision ..> Node : consulta por HTTP >
+ProcesoServicio ..> Node : inicia y cierra >
 
 ' ---------- servidor ----------
-ServidorHttp "1" --> "1" ManejadorApi
-ServidorHttp "1" --> "1" ManejadorCalendario
-ServidorHttp "1" --> "1" ConfiguracionServidor
-ManejadorApi "1" *-- "1" Sesiones
-ManejadorApi "1" --> "1" Instantanea
-ManejadorApi "1" --> "1" GestorEventosEnVivo
-ManejadorApi "1" --> "1" ProveedorTransmision
-Instantanea ..> Conversor
-Instantanea ..> EstadoDto
-Conversor ..> UsuarioDto
-Conversor ..> EventoDto
-ManejadorCalendario "1" --> "1" CodigosCalendario
-ManejadorCalendario "1" --> "1" GestorEventosEnVivo
-PublicadorHttp "1" --> "1" CodigosCalendario
-PublicadorHttp "1" --> "1" ConfiguracionServidor
+ServidorHttp ..> ManejadorApi : registra >
+ServidorHttp ..> ManejadorCalendario : registra >
+ServidorHttp ..> ConfiguracionServidor : lee puerto de >
+ManejadorApi "1" *-- "1" Sesiones : guarda tokens en >
+ManejadorApi "*" --> "1" GestorEventosEnVivo : atiende pedidos con >
+ManejadorApi --> ProveedorTransmision : consulta >
+ManejadorApi ..> Instantanea : arma el estado con >
+Instantanea ..> Conversor : convierte con >
+Instantanea ..> EstadoDto : <<crea>>
+Conversor ..> CuentaDto : <<crea>>
+Conversor ..> UsuarioDto : <<crea>>
+Conversor ..> ArtistaDto : <<crea>>
+Conversor ..> EventoDto : <<crea>>
+Conversor ..> RegistroDto : <<crea>>
+ManejadorCalendario "1" --> "1" CodigosCalendario : valida codigo con >
+ManejadorCalendario "*" --> "1" GestorEventosEnVivo : consulta eventos en >
+PublicadorHttp "1" --> "1" CodigosCalendario : genera codigo con >
+PublicadorHttp "1" --> "1" ConfiguracionServidor : toma la direccion de >
 
 ' ---------- API y cliente ----------
-EstadoDto "1" *-- "1" CuentaDto
-EstadoDto "1" *-- "0..*" UsuarioDto
-EstadoDto "1" *-- "0..*" ArtistaDto
-EstadoDto "1" *-- "0..*" EventoDto
-EstadoDto "1" *-- "0..*" RegistroDto
-SesionDto "1" *-- "1" CuentaDto
-GestorRemoto "1" --> "1" ClienteHttp
-GestorRemoto "1" *-- "0..1" EstadoLocal
-EstadoLocal ..> EstadoDto
-ClienteHttp ..> Json
-ClienteHttp ..> ConexionException
-ClienteHttp "*" ..> "1" ManejadorApi : HTTP + JSON
-GestorRemoto ..> TransmisionDto
+EstadoDto "1" *-- "1" CuentaDto : contiene >
+EstadoDto "1" *-- "0..*" UsuarioDto : contiene >
+EstadoDto "1" *-- "0..*" ArtistaDto : contiene >
+EstadoDto "1" *-- "0..*" EventoDto : contiene >
+EstadoDto "1" *-- "0..*" RegistroDto : contiene >
+SesionDto "1" *-- "1" CuentaDto : contiene >
+GestorRemoto "1" --> "1" ClienteHttp : envia pedidos con >
+GestorRemoto "1" *-- "0..1" EstadoLocal : guarda copia en >
+GestorRemoto "1" *-- "1" Permisos : verifica permisos con >
+EstadoLocal ..> EstadoDto : se arma desde >
+EstadoLocal "1" --> "0..1" Cuenta : cuenta de la sesion >
+EstadoLocal "1" o-- "0..*" Usuario : copia de >
+EstadoLocal "1" o-- "0..*" Artista : copia de >
+EstadoLocal "1" o-- "0..*" Evento : copia de >
+EstadoLocal "1" o-- "0..*" RegistroAcceso : copia de >
+ClienteHttp ..> Json : serializa con >
+ClienteHttp ..> ConexionException : <<lanza>>
+ClienteHttp ..> ErrorDto : interpreta >
+ClienteHttp ..> ManejadorApi : HTTP + JSON >
+GestorRemoto ..> TransmisionDto : recibe >
 
 ' ---------- peticiones y respuestas de la API ----------
-ManejadorApi ..> InicioSesionDto
-ManejadorApi ..> NuevoUsuarioDto
-ManejadorApi ..> NuevoArtistaDto
-ManejadorApi ..> NuevoEventoDto
-ManejadorApi ..> UsuarioPedidoDto
-ManejadorApi ..> IdDto
-ManejadorApi ..> UrlDto
-ManejadorApi ..> ErrorDto
-GestorRemoto ..> InicioSesionDto
-GestorRemoto ..> NuevoUsuarioDto
-GestorRemoto ..> NuevoArtistaDto
-GestorRemoto ..> NuevoEventoDto
-GestorRemoto ..> UsuarioPedidoDto
-GestorRemoto ..> IdDto
-GestorRemoto ..> UrlDto
-ClienteHttp ..> ErrorDto
+ManejadorApi ..> InicioSesionDto : recibe >
+ManejadorApi ..> NuevoUsuarioDto : recibe >
+ManejadorApi ..> NuevoArtistaDto : recibe >
+ManejadorApi ..> NuevoEventoDto : recibe >
+ManejadorApi ..> UsuarioPedidoDto : recibe >
+ManejadorApi ..> IdDto : responde >
+ManejadorApi ..> UrlDto : responde >
+ManejadorApi ..> ErrorDto : responde >
+GestorRemoto ..> InicioSesionDto : envia >
+GestorRemoto ..> NuevoUsuarioDto : envia >
+GestorRemoto ..> NuevoArtistaDto : envia >
+GestorRemoto ..> NuevoEventoDto : envia >
+GestorRemoto ..> UsuarioPedidoDto : envia >
+GestorRemoto ..> IdDto : recibe >
+GestorRemoto ..> UrlDto : recibe >
 
 ' ---------- arranque y vistas ----------
-Main "1" --> "1" App
-App "1" --> "0..1" Arranque
-App "1" --> "0..1" GestorRemoto
-App "1" --> "0..1" MenuPorRol
-App "1" --> "0..1" AppSwing
-Arranque "1" --> "1" GestorEventosEnVivo
-Arranque "1" --> "1" ServidorHttp
-Arranque ..> ProcesoServicio
-Arranque ..> ProcesoTunel
-Arranque ..> "0..1" ManejadorCalendario : servidor solo de calendarios
-ProcesoTunel ..> "1" ConfiguracionServidor : usarUrlPublica
-ProcesoTunel "1" ..> "0..1" Cloudflared : inicia y cierra
-Arranque ..> "0..1" DatosIniciales
-DatosIniciales ..> GestorEventosEnVivo
-MenuPorRol "1" --> "1" MenuAcciones
-MenuAcciones "1" --> "1" ConsoleIO
-MenuAcciones "1" --> "1" ServicioEventos
-MenuAcciones ..> Navegador
-AppSwing "1" --> "1" VentanaLogin
-VentanaLogin "1" --> "0..1" VentanaPrincipal
-VentanaLogin "1" --> "1" Logo
-VentanaLogin "1" --> "1" ServicioEventos
-VentanaPrincipal "1" *-- "4" ModeloTabla
-VentanaPrincipal "1" *-- "1" Formularios
-Formularios "1" --> "1" ServicioEventos
-VentanaPrincipal "1" --> "1" Logo
-VentanaPrincipal "1" --> "1" ServicioEventos
-VentanaPrincipal ..> Navegador
+Main ..> App : inicia >
+App ..> Arranque : arranca el modo local con >
+App ..> GestorRemoto : <<crea>> (modo cliente)
+App ..> MenuPorRol : abre la consola >
+App ..> AppSwing : abre la ventana >
+Arranque ..> GestorEventosEnVivo : <<crea>>
+Arranque ..> PersistenciaSqlite : <<crea>>
+Arranque ..> NotificadorInactivo : <<crea>>
+Arranque ..> PublicadorHttp : <<crea>>
+Arranque ..> ClienteTransmision : <<crea>>
+Arranque ..> ManejadorApi : <<crea>>
+Arranque ..> ManejadorCalendario : <<crea>>
+Arranque ..> ServidorHttp : inicia >
+Arranque ..> ProcesoServicio : inicia >
+Arranque ..> ProcesoTunel : inicia >
+Arranque ..> DatosIniciales : carga datos de prueba con >
+ProcesoTunel ..> ConfiguracionServidor : informa la URL publica >
+ProcesoTunel ..> Cloudflared : inicia y cierra >
+DatosIniciales ..> GestorEventosEnVivo : carga datos en >
+MenuPorRol ..> MenuAcciones : delega la accion en >
+MenuPorRol ..> Accion : lista >
+MenuAcciones ..> ConsoleIO : lee y escribe con >
+MenuAcciones ..> ServicioEventos : opera con >
+MenuAcciones ..> Navegador : abre la transmision con >
+AppSwing ..> VentanaLogin : abre >
+VentanaLogin --> ServicioEventos : inicia sesion con >
+VentanaLogin ..> VentanaPrincipal : abre >
+VentanaLogin ..> Logo : aplica >
+VentanaPrincipal "1" *-- "4" ModeloTabla : muestra datos en >
+VentanaPrincipal "1" *-- "1" Formularios : delega las altas en >
+VentanaPrincipal --> ServicioEventos : opera con >
+VentanaPrincipal ..> Logo : aplica >
+VentanaPrincipal ..> Navegador : abre la transmision con >
+Formularios --> ServicioEventos : registra mediante >
 @enduml

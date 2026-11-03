@@ -1,17 +1,24 @@
-# Iteración 4 - UADE Beats
+# Iteración final - UADE Beats
 
-Rama de desarrollo: `iteracion-4`.
+Rama: `iteracion-final`. Parte de `iteracion-4` sin cambios en el código.
 
-Se incorpora Strategy para la visibilidad de eventos, conservando permisos, transmisión y persistencia. El diagrama completo se contrastó con las 91 fuentes Java y sus 97 tipos propios. Las 110 comprobaciones de regresión cubren permisos, visibilidad, transmisión local/HTTP y SQLite.
+Esta iteración reemplaza los diagramas de clases anteriores (el completo por paquetes y las siete vistas parciales) por un único diagrama de clases corregido según las observaciones de la cátedra:
 
-## Diagrama de clases completo
+| Corrección | Qué se hizo |
+|---|---|
+| Representación semántica | Todas las relaciones llevan un nombre que explica la relación (por ejemplo «delega ingresos en», «administra», «guarda»). |
+| Interfaces | La realización de una interfaz se dibuja punteada con triángulo, con el rótulo «implementa» y sin cardinalidad. La herencia entre interfaces lleva «extiende». Las relaciones hacia una interfaz no llevan cardinalidad. |
+| Asociación o dependencia | Solo es asociación (línea llena) cuando hay un atributo en el código. Lo que se crea o usa dentro de un método pasa a dependencia (punteada, «crea», «usa», «lanza») sin cardinalidad. |
+| Dirección de las flechas | La flecha indica que una clase conoce a la otra y no al revés. La única relación bidireccional del código, `Evento` ↔ `Artista`, va sin flechas. |
+| Relaciones faltantes | Se agregaron las que existían en el código y no figuraban (por ejemplo `AccesoEvento` → `PlanSuscripcion`, `EstadoLocal` → `Usuario`/`Evento`, `ControlAcceso` «crea» `AccesoEvento` y las clases concretas que crea `Arranque`). |
 
-- [PlantUML editable](TP/Grupo9_POO_Diagramas_Pdf/fuentes/clases-completo-paquetes.puml).
-- [SVG ampliable](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes.svg) ([oscuro](<TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes (oscuro).svg>)).
-- [PNG](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes.png).
-- [PDF](<TP/Grupo9_POO_Diagramas_Pdf/Diagrama de clase por paquetes.pdf>) ([oscuro](<TP/Grupo9_POO_Diagramas_Pdf/Diagrama de clase por paquetes (oscuro).pdf>)).
+## Diagrama de clases
 
-Todos corresponden al mismo modelo: los 94 tipos del código agrupados por paquete, con atributos, métodos, cardinalidades y líneas ortogonales. La documentación y los informes están en [docs/iteracion-4/](docs/iteracion-4/README.md).
+- [PlantUML editable](TP/Grupo9_POO_Diagramas_Pdf/fuentes/diagrama-de-clases.puml).
+- [SVG ampliable](TP/Grupo9_POO_Diagramas_Pdf/imagenes/diagrama-de-clases.svg).
+- [PNG](TP/Grupo9_POO_Diagramas_Pdf/imagenes/diagrama-de-clases.png).
+
+Los 94 tipos del código agrupados por paquete, con atributos, métodos, relaciones con nombre y cardinalidades. El resto de este documento describe el sistema tal como quedó en la iteración 4.
 
 ![Logo de UADE Beats](logo.png)
 
@@ -54,8 +61,6 @@ Los parámetros se pasan como propiedades de Java (`-D`):
 | `uadebeats.cloudflared` | (se busca en el PATH) | Ruta del ejecutable de `cloudflared`. |
 | `uadebeats.servidor` | (ninguna) | Dirección del servidor para el modo cliente, si no se la pasa como argumento. |
 
-![Diagrama de servidor, API y cliente](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-red.png)
-
 ## 3. Patrones de diseño aplicados
 
 | Patrón | Dónde | Para qué |
@@ -65,10 +70,6 @@ Los parámetros se pasan como propiedades de Java (`-D`):
 | DTO | Paquete `api` | Registros que viajan por la red. Ninguno lleva contraseñas, y el servidor los arma ya filtrados por rol. |
 | Inversión de dependencias | `Persistencia`, `Notificador`, `PublicadorCalendario` y `VinculoCalendario` | El gestor depende de interfaces que recibe por constructor o por parámetro. `PersistenciaSqlite` reemplaza a la de archivos sin tocar el gestor. |
 | Segregación de interfaces | `ServicioSesion`, `ServicioConsultas` y `ServicioComandos` | Tres interfaces chicas que `ServicioEventos` reúne para las vistas. |
-
-![Controlador y sus interfaces](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-controlador.png)
-
-![Colaboradores del gestor](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-colaboradores.png)
 
 ### Paquetes
 
@@ -116,8 +117,6 @@ Un archivo SQLite con seis tablas. Las claves foráneas están activadas.
 | `registros_acceso` | Usuario, evento, fecha, resultado y motivo del rechazo |
 
 Un intento de ingreso con un usuario o un evento inexistente se informa al momento pero no se guarda, porque no refiere a ninguna fila.
-
-![Persistencia en SQLite](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-persistencia.png)
 
 ### Datos de prueba
 
@@ -277,19 +276,18 @@ Para probarlo: iniciar el programa (el servicio arranca solo), registrar un arti
 
 ## 11. Diagramas
 
-Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_Pdf/fuentes` y los PDF listos para presentar, con su versión oscura, en `TP/Grupo9_POO_Diagramas_Pdf`.
+Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_Pdf/fuentes`. El diagrama de clases está en `imagenes` como SVG y PNG; los demás tienen sus PDF en `TP/Grupo9_POO_Diagramas_Pdf`.
 
 | Diagrama | Contenido |
 |---|---|
-| Diagrama de clase por paquetes | Una sola página con todas las clases e interfaces agrupadas por paquete, con sus atributos, constructores y métodos no privados, relaciones, cardinalidades y roles, y líneas ortogonales (`clases-completo-paquetes.puml`, también en `.svg` claro y oscuro en `imagenes`) |
-| Diagrama de clase | Siete páginas, una por parte, con más detalle de atributos y métodos: modelo, controlador, colaboradores, persistencia, red, servicio de transmisiones y vistas |
+| Diagrama de clases | Una sola página con todas las clases e interfaces agrupadas por paquete, con sus atributos, constructores y métodos no privados, relaciones con nombre, cardinalidades y líneas ortogonales (`diagrama-de-clases.puml`, también en `.svg` y `.png` en `imagenes`) |
 | Diagrama de secuencia | Tres páginas: solicitar ingreso con el gestor local, desde un cliente remoto y ver la transmisión de un evento |
 | Diagrama de base de datos | Las seis tablas con claves primarias y foráneas y cardinalidades |
 | Diagrama de despliegue | Qué corre en la PC del servidor y en la PC cliente, y cómo se conectan |
 
-Todas las relaciones llevan su multiplicidad en cada extremo y, cuando aporta, el nombre del rol. Se usan composición (rombo lleno) cuando el objeto no existe sin su dueño, agregación (rombo vacío) para las colecciones, flechas sólidas para las asociaciones, punteadas para las dependencias y triángulos huecos para la herencia y la implementación de interfaces.
+Cada relación lleva su nombre y, si es una asociación, su multiplicidad en cada extremo. Se usan composición (rombo lleno) cuando el objeto no existe sin su dueño, agregación (rombo vacío) para las colecciones, línea llena con flecha para las asociaciones de un solo sentido, línea llena sin flechas para la bidireccional (`Evento` ↔ `Artista`), punteada para las dependencias, triángulo hueco para la herencia y punteada con triángulo y «implementa», sin cardinalidad, para las interfaces.
 
-![Diagrama de clases por paquetes](TP/Grupo9_POO_Diagramas_Pdf/imagenes/clases-completo-paquetes.png)
+![Diagrama de clases](TP/Grupo9_POO_Diagramas_Pdf/imagenes/diagrama-de-clases.png)
 
 ![Diagrama de la base de datos](TP/Grupo9_POO_Diagramas_Pdf/imagenes/der-base-de-datos.png)
 
