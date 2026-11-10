@@ -1,4 +1,0 @@
-*.pdf binary
-*.png binary
-*.svg text eol=lf
-*.puml text eol=lf

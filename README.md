@@ -1,338 +1,80 @@
-# Iteración final - UADE Beats
+# UADE Beats - Entrega final
 
-Rama: `iteracion-final`. Parte de `iteracion-4` sin cambios en el código.
+Proceso de Desarrollo de Software (3.4.210) - Martes mañana - 2C 2026
+Grupo 10: Franco Beron y Leandro Ferraro
 
-Esta iteración reemplaza los diagramas de clases anteriores (el completo por paquetes y las siete vistas parciales) por un único diagrama de clases corregido según las observaciones de la cátedra:
+## Qué es
 
-| Corrección | Qué se hizo |
-|---|---|
-| Representación semántica | Todas las relaciones llevan un nombre que explica la relación (por ejemplo «delega ingresos en», «administra», «guarda»). |
-| Interfaces | La realización de una interfaz se dibuja punteada con triángulo, con el rótulo «implementa» y sin cardinalidad. La herencia entre interfaces lleva «extiende». Las relaciones hacia una interfaz no llevan cardinalidad. |
-| Asociación o dependencia | Solo es asociación (línea llena) cuando hay un atributo en el código. Lo que se crea o usa dentro de un método pasa a dependencia (punteada, «crea», «usa», «lanza») sin cardinalidad. |
-| Dirección de las flechas | La flecha indica que una clase conoce a la otra y no al revés. La única relación bidireccional del código, `Evento` ↔ `Artista`, va sin flechas. |
-| Relaciones faltantes | Se agregaron las que existían en el código y no figuraban (por ejemplo `AccesoEvento` → `PlanSuscripcion`, `EstadoLocal` → `Usuario`/`Evento`, `ControlAcceso` «crea» `AccesoEvento` y las clases concretas que crea `Arranque`). |
+UADE Beats es un sistema para gestionar recitales en vivo. Hay tres roles:
 
-## Diagrama de clases
+- El administrador da de alta usuarios y artistas, maneja los eventos y puede expulsar gente.
+- El artista crea sus eventos, los inicia, los pausa y los termina.
+- El usuario pide entrar a un evento. El sistema lo deja pasar o no según su plan (Free, Premium o Artist Pass), el estado del evento, el horario y la capacidad.
 
-- [PlantUML editable](TP/Grupo9_POO_Diagramas_Pdf/fuentes/diagrama-de-clases.puml).
-- [SVG ampliable](TP/Grupo9_POO_Diagramas_Pdf/imagenes/diagrama-de-clases.svg).
-- [PNG](TP/Grupo9_POO_Diagramas_Pdf/imagenes/diagrama-de-clases.png).
+Todos los intentos de ingreso, los que entran y los rechazados, quedan registrados. Los datos se guardan en una base SQLite. Además se puede usar desde otra PC conectándose a un servidor, suscribir un evento a Google Calendar o Apple Calendar y ver la transmisión de un evento que está en curso.
 
-Los 94 tipos del código agrupados por paquete, con atributos, métodos, relaciones con nombre y cardinalidades. El resto de este documento describe el sistema tal como quedó en la iteración 4.
+Partimos de un TP que teníamos de POO (la versión 0) y lo fuimos mejorando a lo largo de la cursada.
 
-![Logo de UADE Beats](logo.png)
+## Cómo lo corremos
 
-Módulo: UADE Beats, acceso a eventos en vivo
-
-## 1. Resumen
-
-Esta iteración reemplaza los archivos de texto por una base SQLite, agrega un servidor con una API HTTP y permite abrir el programa en otra PC como solo cliente. Parte de la iteración 3 (principios SOLID, arquitectura MVC y roles y permisos), que no cambia en su diseño.
-
-| Cambio | Qué se hizo |
-|---|---|
-| Base de datos | Los TXT se reemplazan por una base SQLite. Cada tipo de dato tiene su repositorio y todo se guarda en una transacción. |
-| Servidor | El programa expone el gestor por una API HTTP con JSON. Cada pedido lleva el token de una sesión y el servidor filtra lo que ve cada rol. |
-| Modo cliente | Otra PC corre solo la interfaz, sin datos propios, y se conecta al servidor. La ventana y la consola son las mismas. |
-| Interfaces | Las vistas dependen de `ServicioEventos` y no del gestor concreto, de modo que usan igual un gestor local o uno remoto. |
-| Guardado | El gestor guarda después de cada cambio. Se quitan los botones y opciones de guardar y cargar. |
-| Contraseñas | Se guardan como hash PBKDF2 con sal por cuenta y nunca en texto plano. |
-| Calendarios | Una persona puede suscribir Google Calendar o Apple Calendar a un evento. El servidor publica el calendario de cada evento. |
-| Transmisiones | Un microservicio aparte (`TP/Grupo9_Servicio_Transmision`) busca en YouTube un recital del artista del evento. Quien ingresa a un evento en curso puede abrirlo desde la ventana o la consola. |
-| Avisos | Se elimina la implementación de ntfy. Queda la interfaz `Notificador` con la implementación inactiva. |
-
-## 2. Modos de ejecución
-
-| Modo | Comando | Qué hace |
-|---|---|---|
-| Completo | `Main` | Datos propios en SQLite, API para clientes remotos (solo accesible desde el mismo equipo), calendarios publicados en la red local y ventana o consola local. |
-| Servidor | `Main servidor` | Solo datos y API, sin interfaz. Acepta conexiones de la red. Se deja corriendo en una PC. |
-| Cliente | `Main cliente http://192.168.0.10:8765` | Solo interfaz. No guarda nada: se conecta al servidor, inicia sesión allí y trabaja con lo que su rol puede ver. |
-
-Los parámetros se pasan como propiedades de Java (`-D`):
-
-| Propiedad | Valor por defecto | Uso |
-|---|---|---|
-| `uadebeats.db` | `~/.uadebeats/uadebeats.db` | Archivo de la base SQLite. |
-| `uadebeats.puerto` | `8765` | Puerto del servidor. En modo completo, si no se lo indica y está ocupado, se usa uno libre. |
-| `uadebeats.escuchar` | `local` en modo completo, `todas` en modo servidor | `todas` acepta conexiones de la red. |
-| `uadebeats.puerto.calendario` | `8767` | Puerto con el que el modo completo publica los calendarios en la red local. Si está ocupado se usa uno libre. |
-| `uadebeats.url` | (ninguna) | Dirección pública con https por la que se alcanza el servidor. Si falta, los calendarios usan la dirección de la red local o la del túnel. |
-| `uadebeats.tunel` | (sí) | `no` evita abrir el túnel de Cloudflare aunque `cloudflared` esté instalado. |
-| `uadebeats.cloudflared` | (se busca en el PATH) | Ruta del ejecutable de `cloudflared`. |
-| `uadebeats.servidor` | (ninguna) | Dirección del servidor para el modo cliente, si no se la pasa como argumento. |
-
-## 3. Patrones de diseño aplicados
-
-| Patrón | Dónde | Para qué |
-|---|---|---|
-| Repository | `RepositorioUsuarios`, `RepositorioArtistas`, `RepositorioEventos` y `RepositorioRegistros` | Cada uno traduce entre una tabla y los objetos del modelo. El resto del programa no conoce SQL. |
-| Proxy remoto | `GestorRemoto` | Implementa `ServicioEventos` igual que `GestorEventosEnVivo` y reenvía cada pedido al servidor. Las vistas no distinguen cuál usan. |
-| DTO | Paquete `api` | Registros que viajan por la red. Ninguno lleva contraseñas, y el servidor los arma ya filtrados por rol. |
-| Inversión de dependencias | `Persistencia`, `Notificador`, `PublicadorCalendario` y `VinculoCalendario` | El gestor depende de interfaces que recibe por constructor o por parámetro. `PersistenciaSqlite` reemplaza a la de archivos sin tocar el gestor. |
-| Segregación de interfaces | `ServicioSesion`, `ServicioConsultas` y `ServicioComandos` | Tres interfaces chicas que `ServicioEventos` reúne para las vistas. |
-
-### Paquetes
-
-| Paquete | Contenido |
-|---|---|
-| `modelo` | Entidades y reglas de negocio |
-| `gestor` | `GestorEventosEnVivo`, `ControlAcceso`, `ControlTransmision` y las políticas de visibilidad |
-| `servicio` | Las interfaces que piden las vistas: `ServicioEventos` y sus tres partes |
-| `seguridad` | `ControlSesion`, `Permisos` y `Accion` |
-| `puertos` | Las interfaces que el gestor recibe (`Persistencia`, `Notificador`, `PublicadorCalendario`, `ProveedorTransmision`, `VinculoCalendario`) y los datos de la transmisión |
-| `persistencia`, `notificacion`, `calendario`, `transmision` | Implementaciones de esos puertos |
-| `servidor`, `api`, `cliente` | API HTTP, sus DTO y el cliente remoto |
-| `app` | Arranque y datos de prueba |
-| `consola` | Menús de consola |
-| `ui` | Ventanas Swing, sus formularios y el logo |
-
-## 4. Elecciones y motivos
-
-| Tema | Elección | Alternativa descartada | Motivo |
-|---|---|---|---|
-| Driver de SQLite | `sqlite-jdbc` como jar en `Codigo/lib` | Descargarlo al compilar | El proyecto compila con `javac` sin Maven. Con el jar en el repositorio funciona sin internet. |
-| Acceso del cliente | A través de la API del servidor | Que el cliente abra la base | SQLite es un archivo y no acepta conexiones de red. Además, así los permisos se aplican en un solo lugar. |
-| Formato de la API | HTTP con JSON (`gson`) | Sockets con serialización de objetos | Es estándar, legible y no ata cliente y servidor a la misma versión de las clases. Se agregó el jar de `gson`. |
-| Servidor HTTP | El del JDK (`com.sun.net.httpserver`) | Un framework web | Ya se usaba para los calendarios y no agrega dependencias. |
-| Forma de guardar | Se reescriben las tablas completas en una transacción | Actualizar solo las filas modificadas | Con pocos datos es más simple y la base queda siempre consistente: si algo falla se deshace todo. |
-| Quién guarda | El gestor, después de cada operación | Las vistas | Servidor, ventana y consola quedan con el mismo comportamiento y las vistas se simplifican. |
-| Persistencia en TXT | Se eliminó junto con los archivos | Dejarla como alternativa | Sin código sin uso. Los datos de prueba pasaron a `DatosIniciales`. |
-| Qué ve el cliente | Una copia de solo lectura que se vuelve a pedir tras cada cambio | Repetir las reglas en el cliente | Las reglas y los permisos se aplican solo en el servidor, que es quien las verifica. |
-| Hash de contraseñas | PBKDF2 con HMAC-SHA256 del JDK, 120.000 iteraciones y sal aleatoria de 16 bytes por contraseña, en el formato `pbkdf2$iteraciones$sal$hash` | Una librería externa (bcrypt, argon2) | No agrega dependencias. Guardar las iteraciones junto al hash permite subirlas más adelante sin invalidar los hash ya guardados. |
-| Sesiones remotas | Token aleatorio por inicio de sesión, en memoria | Enviar usuario y contraseña en cada pedido | La contraseña viaja una sola vez. Al reiniciar el servidor hay que volver a iniciar sesión. |
-| Concurrencia | Las operaciones del gestor son `synchronized` y cada pedido remoto abre y devuelve su sesión | Un gestor por sesión | Un solo conjunto de datos compartido. La sesión de quien usa el equipo del servidor no se pisa. |
-| Conectados que ve cada rol | Administrador y artista ven nombres; el usuario solo ve cuántos hay | Enviar todo | El servidor no envía datos que el rol no puede ver. |
-
-## 5. Base de datos
-
-Un archivo SQLite con seis tablas. Las claves foráneas están activadas.
-
-| Tabla | Contenido |
-|---|---|
-| `usuarios` | Usuarios y administrador: cuenta (única, sin distinguir mayúsculas), nombre, apellido, email, hash de la contraseña, plan, activo y rol |
-| `artistas` | Cuenta, hash de la contraseña, nombre artístico, género, biografía y verificado |
-| `eventos` | Título, descripción, inicio, fin, estado, capacidad, plan mínimo, ubicación y streaming |
-| `evento_artistas` | Artistas de cada evento |
-| `evento_conectados` | Usuarios conectados a cada evento |
-| `registros_acceso` | Usuario, evento, fecha, resultado y motivo del rechazo |
-
-Un intento de ingreso con un usuario o un evento inexistente se informa al momento pero no se guarda, porque no refiere a ninguna fila.
-
-### Datos de prueba
-
-Si la base está vacía, el programa carga ocho usuarios, cinco artistas, siete eventos en distintos estados y dieciséis accesos coherentes entre sí. Con ellos se pueden probar todos los casos de ingreso a un evento.
-
-| Cuenta | Rol | Contraseña |
-|---|---|---|
-| `admin` | Administrador | `admin123` |
-| `lgabian`, `lferraro`, `ncaggia`, `mrossi`, `jperez`, `sdiaz` | Usuario | `<cuenta>2024` |
-| `tgomez` | Usuario inactivo, no puede iniciar sesión | `tgomez2024` |
-| `bandahorizonte`, `djprisma`, `lunanocturna`, `losdelsur`, `sunrust` | Artista | `horizonte2024`, `prisma2024`, `luna2024`, `sur2024` y `sunrust2024` |
-
-| Evento | Estado | Plan mínimo | Conectados |
-|---|---|---|---|
-| 100 Rock en Vivo | En curso | Premium | `lgabian`, `mrossi` y `lferraro` (3 de 5) |
-| 101 Backstage Prisma Live | En espera | Artist Pass | Ninguno |
-| 102 Noche de Folklore | Pausado | Free | `ncaggia` (1 de 20) |
-| 103 Luna en Vivo (Acústico) | Programado | Free | Ninguno |
-| 104 Festival de Verano 2025 | Finalizado | Free | Ninguno |
-| 105 Fiesta Electrónica Cancelada | Cancelado | Premium | Ninguno |
-| 106 Sunrust - Transmisión permanente | En curso, sin fin (hasta 2099) | Free | Ninguno |
-
-## 6. API
-
-Después de iniciar sesión, cada pedido lleva `Authorization: Bearer <token>`. Los errores devuelven un JSON con `tipo` y `mensaje`, y el cliente los convierte en las mismas excepciones que lanza el gestor local.
-
-| Método y ruta | Acción |
-|---|---|
-| `POST /api/sesion` | Inicia sesión y devuelve el token |
-| `DELETE /api/sesion` | Cierra la sesión |
-| `GET /api/estado` | Todo lo que la cuenta puede ver, ya filtrado por rol |
-| `POST /api/usuarios` | Registra un usuario |
-| `POST /api/usuarios/{id}/alternar-activo` | Activa o desactiva un usuario |
-| `POST /api/artistas` | Registra un artista |
-| `POST /api/eventos` | Crea un evento a nombre de un artista |
-| `POST /api/eventos/{id}/{iniciar, pausar, reanudar, finalizar, cancelar}` | Cambia el estado del evento |
-| `POST /api/eventos/{id}/ingresos` | Solicita el ingreso de un usuario |
-| `POST /api/eventos/{id}/expulsiones` | Expulsa a un usuario |
-| `GET /api/eventos/{id}/calendario` | Dirección del calendario del evento |
-| `GET /api/eventos/{id}/transmision` | Transmisión del evento en curso |
-
-| Código | Tipo | Excepción en el cliente |
-|---|---|---|
-| 409 | `acceso` | `AccesoDenegadoException` (regla del negocio) |
-| 403 y 401 | `permiso` y `sesion` | `PermisoDenegadoException` |
-| 500 | `persistencia` | `PersistenciaException` |
-| 409 | `externo` | `IOException` (calendario o servicio de transmisiones) |
-| 400 | `pedido` | `IllegalArgumentException` |
-| Sin conexión | | `ConexionException` |
-
-Qué recibe cada rol en `/api/estado`:
-
-| Rol | Eventos | Usuarios | Registros |
-|---|---|---|---|
-| Administrador | Todos | Todos | Todos |
-| Artista | Solo los suyos | Los conectados a sus eventos | Ninguno |
-| Usuario | Todos | Su cuenta y los conectados sin datos personales | Solo los propios |
-
-Las contraseñas nunca viajan al cliente.
-
-![Solicitar ingreso desde un cliente remoto](TP/Grupo9_POO_Diagramas_Pdf/imagenes/secuencia-cliente-remoto.png)
-
-## 7. Roles y permisos
-
-Sin cambios respecto de la iteración 3, salvo que el administrador ya no solicita ingresos y que se quitan guardar y cargar datos (ahora automáticos) y se agrega el calendario.
-
-| Acción | Usuario | Artista | Administrador |
-|---|---|---|---|
-| Solicitar ingreso a un evento | Sí | No | No |
-| Ver eventos | Todos | Solo los propios | Todos |
-| Ver capacidad de un evento | Sí | Solo los propios | Sí |
-| Agregar un evento a mi calendario | Sí | Solo los propios | Sí |
-| Ver la transmisión de un evento en curso | Solo si ingresó | Solo los propios | Sí |
-| Ver sus registros de acceso | Sí | No | No |
-| Crear un evento | No | A su nombre | Sí |
-| Iniciar, pausar, reanudar, finalizar y cancelar un evento | No | Solo los propios | Cualquiera |
-| Ver los usuarios conectados | No | Solo los propios | Sí |
-| Registrar usuarios y artistas | No | No | Sí |
-| Activar o desactivar usuarios | No | No | Sí |
-| Expulsar a un usuario | No | No | Sí |
-| Ver todos los registros | No | No | Sí |
-| Abrir la ventana gráfica | Sí | Sí | Sí |
-
-## 8. Calendarios
-
-Una persona selecciona un evento y toca Google Calendar o Apple Calendar. Se abre el navegador (Google) o la app Calendario (Apple) con la suscripción armada, y confirma allí. Desde entonces ese evento se mantiene al día: si cambia de horario aparece el cambio, y si se cancela queda marcado como cancelado. Puede repetirlo con otros eventos; un artista solo con los suyos.
-
-El servidor publica cada evento en `/calendario/<código>/<id>.ics`. El código es un HMAC de la cuenta con una clave guardada en `~/.uadebeats/calendario.key`, por lo que no se puede adivinar y no hace falta login. Responde 404 si la cuenta está desactivada, el evento no existe o la cuenta no puede verlo. En modo cliente, el pedido pasa por el servidor, que es quien arma la dirección.
-
-El servidor de calendarios arranca solo con el programa, sin ejecutar `Main servidor`:
-
-| Modo | Dónde se publican los calendarios |
-|---|---|
-| Completo | Un servidor aparte (`ServidorHttp.iniciarCalendarios`) que atiende solo `/calendario/` en todas las interfaces, puerto 8767. La API sigue escuchando solo este equipo. |
-| Servidor | El mismo servidor de la API, que ya acepta conexiones de la red. |
-| Cliente | Le pide la dirección al servidor. |
-
-La dirección de los enlaces se elige en este orden:
-
-1. `-Duadebeats.url=https://...`, si se indica.
-2. La del túnel de Cloudflare: en modo completo, si `cloudflared` está instalado, el programa lo inicia como proceso hijo hacia el puerto de los calendarios (no hacia la API), toma la dirección `https://...trycloudflare.com` de su salida y lo cierra al salir. Esa dirección cambia en cada ejecución, por lo que las suscripciones hechas con ella dejan de actualizarse al cerrar el programa.
-3. La de este equipo en la red local, por ejemplo `http://192.168.0.10:8767`.
-
-| Calendario | Requisito |
-|---|---|
-| Google Calendar | Lee la dirección desde sus servidores: necesita https (túnel o `uadebeats.url`). Con una dirección de la red local se informa el motivo y no se abre nada. |
-| Apple Calendar | Con túnel usa la dirección https. Sin túnel recibe `webcal://` sobre la dirección de la red local. **Sin verificar:** en una prueba anterior en Mac, Calendario convirtió `webcal://` en `https://` y la suscripción a una dirección local quedó procesando sin terminar. Si pasa, instalar `cloudflared` resuelve el caso. |
-
-En Windows, la primera vez que se publica en la red puede aparecer el aviso del firewall para Java: hay que permitir el acceso en redes privadas para que otros equipos lleguen al puerto 8767.
-
-## 9. Interfaz de la ventana
-
-Mejoras de uso en la ventana Swing, sin clases nuevas (todas en `VentanaPrincipal`):
-
-| Mejora | Qué hace |
-|---|---|
-| Eventos «EN VIVO» | Los eventos en curso se muestran con «● EN VIVO» en rojo y negrita. |
-| Doble clic con acción según el rol | Un usuario entra al evento (si ya estaba conectado, abre la transmisión). Artista y administrador abren la transmisión del evento en curso o, si no está en curso, ven los conectados. |
-| Confirmaciones | Pregunta antes de finalizar o cancelar un evento, expulsar a un usuario o desactivar una cuenta. |
-| Actualización automática | Las tablas se refrescan solas cada 5 segundos, por lo que en modo cliente se ven los cambios de otros. Si no hay respuesta, lo informa en la barra de estado. |
-| Cursor de espera | Al buscar una transmisión se muestra «Buscando la transmisión…» y el cursor de espera. |
-| Buscador | Filtra la tabla de eventos por título, estado o artista mientras se escribe; «en vivo» encuentra los eventos en curso. |
-| Barra de estado | Los mensajes tienen color (verde para éxito, rojo para error) y se borran solos a los 8 segundos. |
-| Menos botones | Dos filas en lugar de tres; los calendarios están en un solo botón con menú. |
-| Filas alternadas | Las tablas alternan el fondo de las filas para leerlas mejor. |
-
-## 10. Transmisiones
-
-El servicio `TP/Grupo9_Servicio_Transmision` (Node.js, ver su README) muestra el recital del artista en una página a pantalla completa, que simula una transmisión en vivo. El video es un recital real de YouTube en el reproductor incrustado que ofrece YouTube: con una clave de la API busca un directo en este momento o un recital que permita incrustarse, y sin clave prueba varios resultados. Opcionalmente, un archivo propio de la carpeta `media/` se transmite desde el servicio. La página arranca en el minuto que corresponde según cuándo empezó el evento y no deja pausar, adelantar ni volver. El programa principal lo consulta a través de la interfaz `ProveedorTransmision`, implementada por `ClienteTransmision`, pasándole el artista y la hora de inicio del evento.
-
-Un usuario entra a la transmisión al ingresar: al autorizarse su ingreso a un evento en curso, se abre sola la página del reproductor en el navegador. También puede volver a abrirla seleccionando el evento y tocando «Ver transmisión» (en consola, la opción «Ver la transmisión de un evento»). El botón queda apagado hasta seleccionar un evento en curso. Artistas y administrador usan ese mismo botón, sin necesidad de ingresar.
-
-| Regla | Detalle |
-|---|---|
-| Estado | Solo mientras el evento está en curso. |
-| Usuario | Tiene que haber ingresado al evento: la transmisión es lo que se obtiene al conectarse. |
-| Artista | Solo en sus propios eventos. |
-| Quién la ve | Cada persona que la abre es un espectador del servicio, que se cierra al salir (ver arriba). |
-| Video | Recital real de YouTube en su reproductor incrustado, con clave de la API o sin ella (ver el README del servicio). Un archivo `media/<artista>.mp4` opcional se transmite desde el servicio. Los videos que sus dueños no permiten reproducir fuera de YouTube no se retransmiten. |
-| Qué se busca | El nombre artístico del primer artista del evento o, si no tiene, el título. |
-| Cliente remoto | Pide la transmisión al servidor, que consulta el servicio fuera de su bloqueo para no frenar a los demás. |
-| Direcciones | `uadebeats.transmision` es con la que el programa llama al servicio (`http://localhost:8766`). `uadebeats.transmision.publica` es la que abre el navegador de cada persona; hay que cambiarla si los clientes están en otra PC y no ven `localhost`. |
-
-El servicio de Node arranca solo con el programa en los modos completo y servidor, como proceso hijo, y se cierra cuando el programa termina. No hace nada hasta que alguien pide una transmisión, y cada transmisión se cierra cuando la persona sale.
-
-| Qué | Cómo |
-|---|---|
-| Inicio | `ProcesoServicio` lo arranca con `node servidor.js` (busca Node en el PATH y en las carpetas habituales, y el script subiendo por las carpetas). Si ya hay uno funcionando, lo usa. Si no encuentra Node, avisa y sigue. Propiedades opcionales: `uadebeats.node` y `uadebeats.servicio`. |
-| Qué espectador es | Cada transmisión se pide con un nombre de espectador (cuenta y evento), por ejemplo `USUARIO1:106`. |
-| Cierre por salida | El gestor avisa al servicio cuando una persona cierra sesión, es expulsada o desactivada, o cuando el evento finaliza o se cancela. La página detiene el video y muestra que la transmisión se cerró. |
-| Cierre por abandono | La página manda un latido cada pocos segundos; si se cierra la pestaña, a los 15 segundos el espectador se da de baja. |
-| Sin espectadores | El servicio no hace trabajo de fondo ni guarda resultados. |
-
-El evento 106 de los datos de prueba, «Sunrust - Transmisión permanente», está siempre en curso: empezó en el pasado y termina en 2099, por lo que siempre se puede ingresar, y su video se repite en bucle según el tiempo transcurrido. Sirve para tener una demostración siempre lista. Usa el recital libre de la carpeta `media/` del servicio, que se baja con `TP/Grupo9_Servicio_Transmision/descargar-demo.sh`.
-
-Para probarlo: iniciar el programa (el servicio arranca solo), registrar un artista con el nombre artístico buscado (por ejemplo «Sabrina Carpenter»), crear el evento a su nombre, iniciarlo, ingresar con un usuario y tocar «Ver transmisión».
-
-## 11. Diagramas
-
-Se generan con PlantUML. Los fuentes `.puml` están en `TP/Grupo9_POO_Diagramas_Pdf/fuentes`. El diagrama de clases está en `imagenes` como SVG y PNG; los demás tienen sus PDF en `TP/Grupo9_POO_Diagramas_Pdf`.
-
-| Diagrama | Contenido |
-|---|---|
-| Diagrama de clases | Una sola página con todas las clases e interfaces agrupadas por paquete, con sus atributos, constructores y métodos no privados, relaciones con nombre, cardinalidades y líneas ortogonales (`diagrama-de-clases.puml`, también en `.svg` y `.png` en `imagenes`) |
-| Diagrama de secuencia | Tres páginas: solicitar ingreso con el gestor local, desde un cliente remoto y ver la transmisión de un evento |
-| Diagrama de base de datos | Las seis tablas con claves primarias y foráneas y cardinalidades |
-| Diagrama de despliegue | Qué corre en la PC del servidor y en la PC cliente, y cómo se conectan |
-
-Cada relación lleva su nombre y, si es una asociación, su multiplicidad en cada extremo. Se usan composición (rombo lleno) cuando el objeto no existe sin su dueño, agregación (rombo vacío) para las colecciones, línea llena con flecha para las asociaciones de un solo sentido, línea llena sin flechas para la bidireccional (`Evento` ↔ `Artista`), punteada para las dependencias, triángulo hueco para la herencia y punteada con triángulo y «implementa», sin cardinalidad, para las interfaces.
-
-![Diagrama de clases](TP/Grupo9_POO_Diagramas_Pdf/imagenes/diagrama-de-clases.png)
-
-![Diagrama de la base de datos](TP/Grupo9_POO_Diagramas_Pdf/imagenes/der-base-de-datos.png)
-
-![Diagrama de despliegue](TP/Grupo9_POO_Diagramas_Pdf/imagenes/despliegue.png)
-
-![Diagrama de secuencia de solicitar ingreso](TP/Grupo9_POO_Diagramas_Pdf/imagenes/secuencia-solicitar-ingreso.png)
-
-![Diagrama de secuencia de ver la transmisión](TP/Grupo9_POO_Diagramas_Pdf/imagenes/secuencia-transmision.png)
-
-Para regenerarlos, desde `TP/Grupo9_POO_Diagramas_Pdf/fuentes`:
+Hace falta Java 17 o más nuevo. Desde `TP/Grupo9_POO_EntregaFinal/Codigo`, en PowerShell:
 
 ```
-java -jar plantuml.jar -charset UTF-8 -tpdf *.puml
+javac -encoding UTF-8 -cp "lib/*" -d out (Get-ChildItem -Recurse src,test -Filter *.java).FullName
+java --enable-native-access=ALL-UNNAMED -cp "out;lib/*" Main
 ```
 
-## 12. Ejecución
-
-Desde `TP/Grupo9_POO_EntregaFinal/Codigo`:
+En Mac o Linux es así:
 
 ```
-javac -encoding UTF-8 -cp "lib/*" -d out $(find src -name "*.java")
+javac -encoding UTF-8 -cp "lib/*" -d out $(find src test -name "*.java")
 java --enable-native-access=ALL-UNNAMED -cp "out:lib/*" Main
-java --enable-native-access=ALL-UNNAMED -cp "out:lib/*" Main servidor
-java -cp "out:lib/*" Main cliente http://192.168.0.10:8765
 ```
 
-Para exponer el servidor con un túnel de Cloudflare en un solo paso (requiere `cloudflared`), desde la misma carpeta:
+También se puede abrir la carpeta `Codigo` en IntelliJ, agregar `lib` como librería y correr `Main`.
 
-```
-./servidor-publico.sh
-```
+Al arrancar, el programa pregunta si queremos la ventana o la consola y después pide usuario y contraseña. La base se crea sola la primera vez, con datos de prueba.
 
-El script abre el túnel, toma la dirección https que le asignan, arranca el servidor con `-Duadebeats.url` y muestra el comando para conectar un cliente. Con el argumento `completo` arranca además la interfaz local. Ctrl+C cierra el túnel y el servidor.
+Algunas cuentas para probar:
 
-En Windows el separador del classpath es `;` en lugar de `:`. La opción `--enable-native-access` evita el aviso que muestra Java al cargar el driver de SQLite; el modo cliente no usa SQLite y no la necesita.
+- `admin` / `admin123`: administrador
+- `lferraro` / `lferraro2024`: usuario
+- `bandahorizonte` / `horizonte2024`: artista
 
-Para usar el cliente desde otra PC, el servidor debe aceptar conexiones de la red (modo `servidor`, o el completo con `-Duadebeats.escuchar=todas`) y el puerto estar abierto en el firewall.
+Para probar los ingresos y la transmisión está el evento 106, que está en curso todo el tiempo. La transmisión necesita Node instalado. Los otros eventos sirven para ver los rechazos: el 100 figura en curso pero su horario ya pasó, el 102 está pausado y el 105 está cancelado.
 
-## 13. Limitaciones conocidas
+Hay otros dos modos de arranque: `Main servidor` deja corriendo solo los datos y la API, y `Main cliente http://IP:8765` abre solamente la interfaz y trabaja contra ese servidor.
 
-| Limitación | Detalle |
-|---|---|
-| Conexión sin cifrar | La API usa HTTP. Fuera de una red de confianza conviene exponerla por un túnel con https o una VPN, porque el inicio de sesión envía la contraseña. En la base y en la memoria del servidor solo queda el hash, pero por la red viaja una vez al iniciar sesión. |
-| Base anterior | Una base creada antes de guardar hashes no es compatible: hay que borrar `~/.uadebeats/uadebeats.db` para que se cree de nuevo con los datos de prueba. |
-| Sesiones | Viven en memoria y no vencen por tiempo. |
-| Concurrencia | Las operaciones están sincronizadas, pero la ventana del equipo servidor lee objetos del modelo sin bloqueo mientras un cliente remoto puede modificarlos. |
-| Transmisiones | Sin clave de la API, el servicio lee la página de resultados de YouTube, que no es una API estable, y muchos recitales no permiten reproducirse fuera de YouTube. Con la clave filtra los que sí se pueden incrustar; esa ruta no se probó con una clave real. |
-| Fin del evento | `fechaHoraFin` es la ventana en la que se permite ingresar y no la duración real del evento. Es un problema heredado del diseño original del modelo. |
+Las pruebas están en `test/PruebasIteracion4.java` y se compilan junto con el resto con los comandos de arriba. Se corren con `java -cp "out;lib/*" PruebasIteracion4`: hace 110 comprobaciones y al final tiene que decir OK.
+
+## Cómo fue cambiando el proyecto
+
+**Versión 0.** El TP de POO como estaba: una clase `App` de casi mil líneas con todo adentro, `Usuario` y `Artista` con los mismos datos repetidos y la persistencia en archivos de texto.
+
+**Iteración 1 - Bad smells.** Creamos la clase `Cuenta` como base de `Usuario` y `Artista`. Partimos la God Class `App` en `ConsoleIO`, `DatosIniciales` y `MenuAcciones`. Agrupamos los 11 parámetros del constructor del recital en `DatosRecital`. También sacamos código duplicado y partimos métodos largos.
+
+**Iteración 2 - GRASP.** Ordenamos quién hace qué. Cada validación quedó en la clase que tiene los datos: `AccesoEvento` valida la autorización y el plan, y `RecitalEnVivo` valida el estado, el horario y la capacidad. El gestor quedó como controlador y las pantallas dejaron de llamar directamente a los métodos de `Evento`. Borramos los métodos que no hacían nada y sacamos los `System.out` del modelo.
+
+**Iteración 3 - SOLID y MVC.** Separamos los ingresos en `ControlAcceso` (responsabilidad única). Sacamos los `instanceof RecitalEnVivo` para que cualquier tipo de `Evento` sirva (abierto/cerrado y Liskov). El gestor pasó a depender de la interfaz `Persistencia` y no de la clase concreta (inversión de dependencias). Separamos modelo, vista y controlador, y agregamos los roles con sus permisos y la ventana de login.
+
+**Iteración 4.** Pasamos de los TXT a SQLite, con un repositorio por tabla. Agregamos el servidor con API HTTP y el modo cliente. Las contraseñas pasaron a guardarse con hash. Sumamos la suscripción a calendarios y el servicio de transmisiones. Las vistas pasaron a depender de la interfaz `ServicioEventos`, así les da lo mismo usar el gestor local o el remoto. Para lo que ve cada rol usamos el patrón Strategy (`PoliticasVisibilidad`).
+
+**Iteración final.** Rehicimos el diagrama de clases con las correcciones que nos marcaron:
+
+- todas las relaciones tienen nombre;
+- las interfaces se dibujan punteadas, con triángulo y sin cardinalidad;
+- solo es asociación cuando hay un atributo, y lo que se crea o se usa dentro de un método es dependencia;
+- las flechas van en el sentido correcto;
+- agregamos las relaciones que faltaban.
+
+También rehicimos los diagramas GRASP sobre el código actual. En el código hicimos tres cambios chicos: sacamos el atributo `exclusivo` de los eventos, que no se usaba; los eventos sin video propio ahora usan el video de demostración; y el administrador ya no puede solicitar ingresos, porque no tiene sentido que entre a un recital.
+
+## Patrones que usamos
+
+- GRASP: experto en información, creador, controlador, bajo acoplamiento y alta cohesión. Los diagramas de cada uno están en `Diagramas GRASP.pdf`.
+- SOLID: los cinco, como se cuenta en la iteración 3.
+- MVC, para separar el modelo, las vistas (ventana y consola) y el controlador (`GestorEventosEnVivo`).
+- Strategy, para lo que ve cada rol (`VisibilidadGeneral` y `VisibilidadArtista`).
+- Repository, uno por tabla de la base.
+- Proxy remoto (`GestorRemoto`) y DTO para la API.
+
